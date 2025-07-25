@@ -22,33 +22,50 @@ model User {
 
   image       UserImage?
   password    Password?
-  notes       Note[]
+  
+  vendor     Vendor? 
+  reviews    Review[]
+  bookings   Booking[]
+
   roles       Role[]
   sessions    Session[]
   connections Connection[]
   passkey     Passkey[]
 }
 
-model Note {
-  id      String @id @default(cuid())
-  title   String
-  content String
+model Vendor {
+  id         String   @id @default(cuid())
+  businessName String
+  description String?
+  city String
+  address String?
+  phone String?
+  website String?
+  socialLinks Json?
+  rating Float @default(0)
+  profileImage VendorProfileImage?
+  coverImage VendorCoverImage?
+
+  gallery VendorImage[]
+  packages Package[]
+  reviews Review[]
+  bookings Booking[]
+  isFeatured Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  ownerId String
+  category   VendorCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoryId String
 
-  images NoteImage[]
+  owner     User   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  ownerId   String @unique
 
   // non-unique foreign key
   @@index([ownerId])
-  // This helps our order by in the user search a LOT
-  @@index([ownerId, updatedAt])
 }
 
-model NoteImage {
+model VendorImage {
   id        String  @id @default(cuid())
   altText   String?
   objectKey String
@@ -56,12 +73,100 @@ model NoteImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  noteId String
+  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId String
 
   // non-unique foreign key
-  @@index([noteId])
+  @@index([vendorId])
 }
+
+model VendorProfileImage {
+  id        String  @id @default(cuid())
+  altText   String?
+  objectKey String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId String @unique
+}
+
+model VendorCoverImage {
+  id        String  @id @default(cuid())
+  altText   String?
+  objectKey String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId String @unique
+}
+
+model Package {
+  id         String   @id @default(cuid())
+  title      String
+  description String
+  price      Int      // Store in BDT
+
+  vendorId   String
+  vendor     Vendor   @relation(fields: [vendorId], references: [id])
+  bookings   Booking[]
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  vendorId   String
+  userId     String
+  packageId  String?
+  date       DateTime
+  status     String @default("pending")
+  message    String?
+  totalPrice Int // Store in BDT
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  // non-unique foreign keys
+  @@index([vendorId])
+  @@index([userId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  vendorId   String
+  userId     String
+
+  rating     Int      // 1 to 5
+  comment    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // non-unique foreign keys
+  @@index([vendorId])
+  @@index([userId])
+}
+
+model VendorCategory {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendors Vendor[]
+}
+
 
 model UserImage {
   id        String  @id @default(cuid())
