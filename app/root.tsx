@@ -158,7 +158,7 @@ function Document({
 				)}
 				<Links />
 			</head>
-			<body className="bg-background text-foreground">
+			<body className="bg-background text-foreground min-h-screen antialiased">
 				{children}
 				<script
 					nonce={nonce}

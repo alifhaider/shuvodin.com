@@ -147,6 +147,10 @@
 	--animate-slide-top: slide-top 0.3s ease-out;
 	--animate-caret-blink: caret-blink 1.25s ease-out infinite;
 
+	--font-title: 'Cormorant-Garamond', serif;
+	--font-body: 'Source-Sans-3', sans-serif;
+	--font-bengali: 'Hind-Siliguri', sans-serif;
+
 	@keyframes roll-reveal {
 		from {
 			transform: rotate(12deg) scale(0);
@@ -197,6 +201,97 @@
 	}
 }
 
+@font-face {
+	font-family: 'Cormorant-Garamond';
+	src: url('/fonts/CormorantGaramond-Bold.ttf');
+	font-weight: 700;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Cormorant-Garamond';
+	src: url('/fonts/CormorantGaramond-SemiBold.ttf');
+	font-weight: 600;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Cormorant-Garamond';
+	src: url('/fonts/CormorantGaramond-Medium.ttf');
+	font-weight: 500;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Cormorant-Garamond';
+	src: url('/fonts/CormorantGaramond-Regular.ttf');
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Hind-Siliguri';
+	src: url('/fonts/HindSiliguri-Regular.ttf');
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-ExtraLight.ttf');
+	font-weight: 200;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-Light.ttf');
+	font-weight: 300;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-Regular.ttf');
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-Medium.ttf');
+	font-weight: 500;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-SemiBold.ttf');
+	font-weight: 600;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-Bold.ttf');
+	font-weight: 700;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-ExtraBold.ttf');
+	font-weight: 800;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Source-Sans-3';
+	src: url('/fonts/SourceSans3-Black.ttf');
+	font-weight: 900;
+	font-display: swap;
+}
+
 @utility container {
 	margin-inline: auto;
 	padding-inline: 2rem;
@@ -215,5 +310,20 @@
 	::backdrop,
 	::file-selector-button {
 		border-color: hsl(var(--border));
+	}
+
+	body {
+		font-family: var(--font-body);
+		line-height: var(--text-body-md--line-height);
+		font-size: var(--text-body-md);
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-family: var(--font-title);
 	}
 }
