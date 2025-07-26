@@ -1,12 +1,30 @@
+import * as React from 'react'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from '#app/components/ui/tooltip.tsx'
+import { Button } from '#app/components/ui/button.tsx'
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from '#app/components/ui/command.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '#app/components/ui/popover.tsx'
 import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/index.ts'
 import { logos } from './logos/logos.ts'
+import { prisma } from '#app/utils/db.server.ts'
+import { Image } from 'openimg/react'
 
 export const meta: Route.MetaFunction = () => [{ title: 'Epic Notes' }]
 
@@ -27,75 +45,107 @@ const rowClasses: Record<(typeof logos)[number]['row'], string> = {
 	6: 'xl:row-start-6',
 }
 
-export default function Index() {
+export async function loader() {
+	const vendorCategories = await prisma.vendorCategory.findMany({
+		select: {
+			name: true,
+			id: true,
+		},
+		orderBy: {
+			name: 'asc',
+		},
+	})
+	return { vendorCategories }
+}
+
+export default function Index({ loaderData }: Route.ComponentProps) {
+	const [open, setOpen] = React.useState(false)
+	const [value, setValue] = React.useState('')
+	const { vendorCategories } = loaderData
 	return (
-		<main className="font-poppins grid h-full place-items-center">
-			<div className="grid place-items-center px-4 py-16 xl:grid-cols-2 xl:gap-24">
-				<div className="flex max-w-md flex-col items-center text-center xl:order-2 xl:items-start xl:text-left">
-					<a
-						href="https://www.epicweb.dev/stack"
-						className="animate-slide-top xl:animate-slide-left [animation-fill-mode:backwards] xl:[animation-delay:0.5s] xl:[animation-fill-mode:backwards]"
-					>
-						<svg
-							className="text-foreground size-20 xl:-mt-4"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 65 65"
-						>
-							<path
-								fill="currentColor"
-								d="M39.445 25.555 37 17.163 65 0 47.821 28l-8.376-2.445Zm-13.89 0L28 17.163 0 0l17.179 28 8.376-2.445Zm13.89 13.89L37 47.837 65 65 47.821 37l-8.376 2.445Zm-13.89 0L28 47.837 0 65l17.179-28 8.376 2.445Z"
-							></path>
-						</svg>
-					</a>
-					<h1
-						data-heading
-						className="animate-slide-top text-foreground xl:animate-slide-left mt-8 text-4xl font-medium [animation-delay:0.3s] [animation-fill-mode:backwards] md:text-5xl xl:mt-4 xl:text-6xl xl:[animation-delay:0.8s] xl:[animation-fill-mode:backwards]"
-					>
-						<a href="https://www.epicweb.dev/stack">The Epic Stack</a>
-					</h1>
-					<p
-						data-paragraph
-						className="animate-slide-top text-muted-foreground xl:animate-slide-left mt-6 text-xl/7 [animation-delay:0.8s] [animation-fill-mode:backwards] xl:mt-8 xl:text-xl/6 xl:leading-10 xl:[animation-delay:1s] xl:[animation-fill-mode:backwards]"
-					>
-						Check the{' '}
-						<a
-							className="underline hover:no-underline"
-							href="https://github.com/epicweb-dev/epic-stack/blob/main/docs/getting-started.md"
-						>
-							Getting Started guide
-						</a>{' '}
-						file for how to get your project off the ground!
-					</p>
+		<main className="bg-background h-full">
+			<section className="relative overflow-hidden py-20 lg:py-32">
+				<div className="from-primary/10 via-accent/5 to-secondary/10 absolute inset-0 bg-gradient-to-br" />
+				<div className="relative container">
+					<div className="grid items-center gap-12 lg:grid-cols-2">
+						<div className="space-y-8">
+							<div className="space-y-4">
+								<h1 className="text-foreground font-serif text-4xl leading-tight font-bold lg:text-6xl">
+									Your Perfect
+									<span className="text-primary block">Wedding Day</span>
+									Starts Here
+								</h1>
+								<p className="text-muted-foreground max-w-lg text-xl">
+									Connect with the best wedding vendors in Bangladesh. From
+									photographers to venues, find everything you need for your
+									special day.
+								</p>
+							</div>
+
+							<div className="text-muted-foreground flex items-center gap-8 text-sm">
+								<div className="flex items-center gap-2">
+									<Icon name="shield" className="text-primary h-4 w-4" />
+									Verified Vendors
+								</div>
+								<div className="flex items-center gap-2">
+									<Icon name="star" className="text-primary h-4 w-4" />
+									Rated & Reviewed
+								</div>
+								<div className="flex items-center gap-2">
+									<Icon name="heart" className="text-primary h-4 w-4" />
+									Trusted by 10k+ Couples
+								</div>
+							</div>
+						</div>
+
+						<div className="relative">
+							<div className="from-primary/20 to-accent/20 aspect-square overflow-hidden rounded-2xl bg-gradient-to-br">
+								<Image
+									src="/placeholder.svg?height=600&width=600"
+									alt="Beautiful Wedding"
+									width={600}
+									height={600}
+									className="h-full w-full object-cover"
+								/>
+							</div>
+							<div className="bg-card absolute -bottom-6 -left-6 rounded-xl border p-4 shadow-lg">
+								<div className="flex items-center gap-3">
+									<Icon name="calendar" className="text-primary h-8 w-8" />
+									<div>
+										<p className="font-semibold">Book in Advance</p>
+										<p className="text-muted-foreground text-sm">
+											Save up to 20%
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
-				<ul className="mt-16 flex max-w-3xl flex-wrap justify-center gap-2 sm:gap-4 xl:mt-0 xl:grid xl:grid-flow-col xl:grid-cols-5 xl:grid-rows-6">
-					<TooltipProvider>
-						{logos.map((logo, i) => (
+			</section>
+			<section className="bg-muted/30 container py-20">
+				<h2 className="text-foreground text-center text-2xl font-bold md:text-4xl">
+					Find Your Perfect Wedding Vendors
+				</h2>
+				<p className="text-muted-foreground mt-2 text-center text-lg md:mt-3">
+					Explore our curated list of wedding vendors to make your day special.
+				</p>
+				{vendorCategories.length > 0 && (
+					<ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+						{vendorCategories.map((category) => (
 							<li
-								key={logo.href}
-								className={cn(
-									columnClasses[logo.column],
-									rowClasses[logo.row],
-									'animate-roll-reveal [animation-fill-mode:backwards]',
-								)}
-								style={{ animationDelay: `${i * 0.07}s` }}
+								key={category.id}
+								className="group border-muted-foreground/20 hover:border-primary relative rounded-lg border p-4 transition-colors"
 							>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<a
-											href={logo.href}
-											className="grid size-20 place-items-center rounded-2xl bg-violet-600/10 p-4 transition hover:-rotate-6 hover:bg-violet-600/15 sm:size-24 dark:bg-violet-200 dark:hover:bg-violet-100"
-										>
-											<img src={logo.src} alt="" />
-										</a>
-									</TooltipTrigger>
-									<TooltipContent>{logo.alt}</TooltipContent>
-								</Tooltip>
+								{category.name}
 							</li>
 						))}
-					</TooltipProvider>
-				</ul>
-			</div>
+					</ul>
+				)}
+				<div className="mt-4 flex justify-center">
+					<Button onClick={() => setOpen(true)}>View Vendors</Button>
+				</div>
+			</section>
 		</main>
 	)
 }
