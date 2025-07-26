@@ -1,32 +1,6 @@
-import * as React from 'react'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '#app/components/ui/tooltip.tsx'
-import { Button } from '#app/components/ui/button.tsx'
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from '#app/components/ui/command.tsx'
-import { Icon, IconName } from '#app/components/ui/icon.tsx'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '#app/components/ui/popover.tsx'
-import { cn } from '#app/utils/misc.tsx'
-import { type Route } from './+types/index.ts'
-import { logos } from './logos/logos.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { Image } from 'openimg/react'
-import { Input } from '#app/components/ui/input.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 import {
 	Card,
 	CardContent,
@@ -34,8 +8,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from '#app/components/ui/card.tsx'
+import { Icon, type IconName } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
+import { prisma } from '#app/utils/db.server.ts'
+import { type Route } from './+types/index.ts'
 
-export const meta: Route.MetaFunction = () => [{ title: 'Epic Notes' }]
+export const meta: Route.MetaFunction = () => [{ title: 'ShuvoDin' }]
 
 const stats = [
 	{ number: '10,000+', label: 'Happy Couples', icon: 'heart' },
@@ -48,71 +26,51 @@ const serviceCategories = [
 	{
 		icon: 'camera',
 		title: 'Photography',
-		description: 'Capture your precious moments',
-		count: '250+ vendors',
 		color: 'bg-blue-50 text-blue-600',
 	},
 	{
 		icon: 'building-2',
 		title: 'Venues',
-		description: 'Perfect locations for your day',
-		count: '180+ venues',
 		color: 'bg-purple-50 text-purple-600',
 	},
 	{
 		icon: 'utensils',
 		title: 'Catering',
-		description: 'Delicious culinary experiences',
-		count: '320+ caterers',
 		color: 'bg-green-50 text-green-600',
 	},
 	{
 		icon: 'palette',
 		title: 'Decoration',
-		description: 'Transform spaces beautifully',
-		count: '190+ decorators',
 		color: 'bg-pink-50 text-pink-600',
 	},
 	{
 		icon: 'users',
 		title: 'Event Planning',
-		description: 'Complete event management',
-		count: '120+ planners',
 		color: 'bg-orange-50 text-orange-600',
 	},
 	{
 		icon: 'music',
 		title: 'Entertainment',
-		description: 'Music and entertainment',
-		count: '85+ artists',
 		color: 'bg-indigo-50 text-indigo-600',
 	},
 	{
 		icon: 'car',
 		title: 'Transportation',
-		description: 'Luxury wedding transport',
-		count: '95+ services',
 		color: 'bg-red-50 text-red-600',
 	},
 	{
 		icon: 'flower-2',
 		title: 'Floristry',
-		description: 'Beautiful floral arrangements',
-		count: '110+ florists',
 		color: 'bg-emerald-50 text-emerald-600',
 	},
 	{
 		icon: 'cake',
 		title: 'Wedding Cakes',
-		description: 'Custom designed cakes',
-		count: '75+ bakers',
 		color: 'bg-yellow-50 text-yellow-600',
 	},
 	{
 		icon: 'shirt',
 		title: 'Bridal Wear',
-		description: 'Stunning wedding attire',
-		count: '140+ designers',
 		color: 'bg-teal-50 text-teal-600',
 	},
 ]
@@ -236,33 +194,35 @@ const testimonials = [
 const popularLocations = [
 	{
 		name: 'Dhaka',
-		venues: 450,
-		image: '/placeholder.svg?height=200&width=300&text=Dhaka',
+		image: '/img/dhaka.jpg',
 	},
 	{
 		name: 'Chittagong',
-		venues: 280,
-		image: '/placeholder.svg?height=200&width=300&text=Chittagong',
+		image: '/img/ctg.jpg',
 	},
 	{
 		name: 'Sylhet',
-		venues: 180,
-		image: '/placeholder.svg?height=200&width=300&text=Sylhet',
+		image: '/img/sylhet.jpg',
 	},
 	{
 		name: 'Rajshahi',
-		venues: 150,
-		image: '/placeholder.svg?height=200&width=300&text=Rajshahi',
+		image: '/img/rajshahi.jpg',
 	},
 	{
 		name: 'Khulna',
-		venues: 120,
-		image: '/placeholder.svg?height=200&width=300&text=Khulna',
+		image: '/img/khulna.jpg',
 	},
 	{
 		name: 'Barisal',
-		venues: 95,
-		image: '/placeholder.svg?height=200&width=300&text=Barisal',
+		image: '/img/barisal.jpg',
+	},
+	{
+		name: 'Rangpur',
+		image: '/img/rangpur.jpg',
+	},
+	{
+		name: 'Mymensingh',
+		image: '/img/mymensingh.jpg',
 	},
 ]
 
@@ -307,15 +267,16 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 								>
 									🇧🇩 Bangladesh's #1 Wedding Marketplace
 								</Badge>
-								<h1 className="font-serif text-5xl leading-tight font-bold lg:text-7xl">
+								<h1 className="font-serif text-5xl leading-18 font-bold lg:text-7xl">
 									Your Dream
 									<span className="text-primary block">Wedding</span>
 									Awaits
 								</h1>
 								<p className="max-w-2xl text-xl text-white/90 lg:text-2xl">
 									Connect with 1,500+ verified wedding vendors across
-									Bangladesh. From photographers to venues, make your special
-									day unforgettable with trusted professionals.
+									Bangladesh. From <strong>photographers to venues</strong>,
+									make your special day unforgettable with trusted
+									professionals.
 								</p>
 							</div>
 
@@ -378,38 +339,24 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 			{/* Service Categories Carousel */}
 			<section className="bg-muted/30 py-20">
 				<div className="container">
-					<div className="mb-16 space-y-4 text-center">
-						<h2 className="font-serif text-4xl font-bold lg:text-5xl">
-							Wedding Services
-						</h2>
-						<p className="text-muted-foreground mx-auto max-w-2xl text-xl">
-							Everything you need for your perfect wedding day, all in one place
-						</p>
-					</div>
+					<h2 className="font-serif text-4xl font-bold lg:text-5xl">
+						Explore wedding vendors by category
+					</h2>
 
-					<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+					<div className="mt-10 grid gap-6 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
 						{serviceCategories.map((service, index) => (
-							<Card
+							<div
 								key={index}
-								className="group bg-secondary/80 cursor-pointer border-0 backdrop-blur transition-all duration-300 hover:shadow-lg"
+								className="group flex cursor-pointer flex-col items-center space-y-2 transition-transform duration-300"
 							>
-								<CardHeader className="pb-4 text-center">
-									<div
-										className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full transition-transform group-hover:scale-110 ${service.color}`}
-									>
-										<Icon name={service.icon as IconName} className="h-8 w-8" />
-									</div>
-									<CardTitle className="text-lg">{service.title}</CardTitle>
-									<CardDescription className="text-sm">
-										{service.description}
-									</CardDescription>
-								</CardHeader>
-								<CardContent className="text-center">
-									<Badge variant="secondary" className="text-xs">
-										{service.count}
-									</Badge>
-								</CardContent>
-							</Card>
+								<div className="bg-secondary group-hover:bg-accent rounded-full p-6 text-center transition-transform duration-300">
+									<Icon
+										name={service.icon as IconName}
+										className="h-8 w-8 group-hover:fill-white"
+									/>
+								</div>
+								<p className="text-center">{service.title}</p>
+							</div>
 						))}
 					</div>
 				</div>
@@ -417,41 +364,31 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 
 			{/* Popular Locations */}
 			<section className="container py-20">
-				<div className="mb-16 space-y-4 text-center">
-					<h2 className="font-serif text-4xl font-bold lg:text-5xl">
-						Popular Locations
-					</h2>
-					<p className="text-muted-foreground mx-auto max-w-2xl text-xl">
-						Discover amazing wedding venues across Bangladesh's major cities
-					</p>
-				</div>
+				<h2 className="font-serif text-4xl font-bold lg:text-5xl">
+					Popular Locations
+				</h2>
 
-				<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+				<div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-6">
 					{popularLocations.map((location, index) => (
-						<Card
+						<div
 							key={index}
-							className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl"
+							className="group relative h-80 w-52 cursor-pointer overflow-hidden rounded-lg transition-all duration-300 hover:shadow-lg"
 						>
-							<div className="relative aspect-[4/3] overflow-hidden">
-								<Image
-									width={300}
-									height={200}
-									loading="lazy"
-									src={location.image || '/placeholder.svg'}
-									alt={location.name}
-									className="object-cover transition-transform duration-300 group-hover:scale-105"
-								/>
-								<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-								<div className="absolute bottom-4 left-4 text-white">
-									<h3 className="font-serif text-2xl font-bold">
-										{location.name}
-									</h3>
-									<p className="text-white/90">
-										{location.venues} venues available
-									</p>
-								</div>
+							<Image
+								width={208}
+								height={320}
+								loading="lazy"
+								src={location.image}
+								alt={location.name}
+								className="rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
+							/>
+							<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+							<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
+								<h3 className="font-serif text-lg font-bold">
+									{location.name}
+								</h3>
 							</div>
-						</Card>
+						</div>
 					))}
 				</div>
 			</section>

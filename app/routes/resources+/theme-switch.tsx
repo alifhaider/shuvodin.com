@@ -12,6 +12,7 @@ import {
 } from '#app/utils/request-info.ts'
 import { type Theme, setTheme } from '#app/utils/theme.server.ts'
 import { type Route } from './+types/theme-switch.ts'
+import { Button } from '#app/components/ui/button.tsx'
 const ThemeFormSchema = z.object({
 	theme: z.enum(['system', 'light', 'dark']),
 	// this is useful for progressive enhancement
@@ -86,12 +87,13 @@ export function ThemeSwitch({
 			</ServerOnly>
 			<input type="hidden" name="theme" value={nextMode} />
 			<div className="flex gap-2">
-				<button
+				<Button
+					variant="ghost"
 					type="submit"
 					className="flex size-8 cursor-pointer items-center justify-center"
 				>
 					{modeLabel[mode]}
-				</button>
+				</Button>
 			</div>
 		</fetcher.Form>
 	)

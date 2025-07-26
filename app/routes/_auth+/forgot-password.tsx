@@ -70,7 +70,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const response = await sendEmail({
 		to: user.email,
-		subject: `Epic Notes Password Reset`,
+		subject: `ShuvoDin Password Reset`,
 		react: (
 			<ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
 		),
@@ -97,7 +97,7 @@ function ForgotPasswordEmail({
 		<E.Html lang="en" dir="ltr">
 			<E.Container>
 				<h1>
-					<E.Text>Epic Notes Password Reset</E.Text>
+					<E.Text>Shuvodin Password Reset</E.Text>
 				</h1>
 				<p>
 					<E.Text>
