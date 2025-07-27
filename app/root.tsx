@@ -204,198 +204,193 @@ function App() {
 			optimizerEndpoint="/resources/images"
 			getSrc={getImgSrc}
 		>
-			<div className="flex min-h-screen flex-col justify-between">
-				<header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full backdrop-blur">
-					<div className="container flex h-20 items-center justify-between">
-						<Link to="/" className="flex items-center space-x-2">
-							<Image
-								src="/img/logo.png"
-								alt="ShuvoDin"
-								width={128}
-								height="auto"
-								className="w-24 object-contain"
-							/>
+			<header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full backdrop-blur">
+				<div className="container flex h-20 items-center justify-between">
+					<Link to="/" className="flex items-center space-x-2">
+						<Image
+							src="/img/logo.png"
+							alt="ShuvoDin"
+							width={128}
+							height="auto"
+							className="w-24 object-contain"
+						/>
+					</Link>
+
+					<nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
+						<Link to="/" className="hover:text-primary transition-colors">
+							Home
 						</Link>
+						<Link
+							to="/services"
+							className="hover:text-primary transition-colors"
+						>
+							Services
+						</Link>
+						<Link
+							to="/vendors"
+							className="hover:text-primary transition-colors"
+						>
+							Vendors
+						</Link>
+						<Link to="/about" className="hover:text-primary transition-colors">
+							About
+						</Link>
+					</nav>
 
-						<nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
-							<Link to="/" className="hover:text-primary transition-colors">
-								Home
-							</Link>
-							<Link
-								to="/services"
-								className="hover:text-primary transition-colors"
-							>
-								Services
-							</Link>
-							<Link
-								to="/vendors"
-								className="hover:text-primary transition-colors"
-							>
-								Vendors
-							</Link>
-							<Link
-								to="/about"
-								className="hover:text-primary transition-colors"
-							>
-								About
-							</Link>
-						</nav>
+					<div className="flex items-center space-x-4">
+						<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+						{user ? (
+							<UserDropdown />
+						) : (
+							<Button variant="ghost" size="sm">
+								Sign In
+							</Button>
+						)}
+						<Button size="sm">Join as Vendor</Button>
+					</div>
+				</div>
+			</header>
 
-						<div className="flex items-center space-x-4">
-							<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
-							{user ? (
-								<UserDropdown />
-							) : (
-								<Button variant="ghost" size="sm">
-									Sign In
-								</Button>
-							)}
-							<Button size="sm">Join as Vendor</Button>
+			<main className="bg-background flex flex-1 flex-col">
+				<Outlet />
+			</main>
+
+			{/* Footer */}
+			<footer className="bg-muted/30 container border-t py-16">
+				<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
+					<div className="space-y-6 lg:col-span-2">
+						<Image
+							src="/logo.png"
+							alt="ShuvoDin"
+							width={150}
+							height={50}
+							className="h-12 w-auto"
+						/>
+						<p className="text-muted-foreground max-w-md">
+							Bangladesh's premier wedding marketplace connecting couples with
+							verified vendors for their perfect wedding day. Trusted by
+							thousands across the country.
+						</p>
+						<div className="flex items-center gap-4">
+							<Badge variant="secondary">🏆 #1 Wedding Platform</Badge>
+							<Badge variant="secondary">⭐ 4.8/5 Rating</Badge>
 						</div>
 					</div>
-				</header>
 
-				<div className="flex flex-1 flex-col">
-					<Outlet />
+					<div className="space-y-4">
+						<h4 className="text-lg font-semibold">Services</h4>
+						<div className="text-muted-foreground space-y-3 text-sm">
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Photography
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Venues
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Catering
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Decoration
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Event Planning
+							</Link>
+						</div>
+					</div>
+
+					<div className="space-y-4">
+						<h4 className="text-lg font-semibold">Locations</h4>
+						<div className="text-muted-foreground space-y-3 text-sm">
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Dhaka
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Chittagong
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Sylhet
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Rajshahi
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								All Cities
+							</Link>
+						</div>
+					</div>
+
+					<div className="space-y-4">
+						<h4 className="text-lg font-semibold">Support</h4>
+						<div className="text-muted-foreground space-y-3 text-sm">
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Help Center
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Contact Us
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Vendor Support
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Terms & Conditions
+							</Link>
+							<Link
+								to="#"
+								className="hover:text-primary block transition-colors"
+							>
+								Privacy Policy
+							</Link>
+						</div>
+					</div>
 				</div>
 
-				{/* Footer */}
-				<footer className="bg-muted/30 container border-t py-16">
-					<div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
-						<div className="space-y-6 lg:col-span-2">
-							<Image
-								src="/logo.png"
-								alt="ShuvoDin"
-								width={150}
-								height={50}
-								className="h-12 w-auto"
-							/>
-							<p className="text-muted-foreground max-w-md">
-								Bangladesh's premier wedding marketplace connecting couples with
-								verified vendors for their perfect wedding day. Trusted by
-								thousands across the country.
-							</p>
-							<div className="flex items-center gap-4">
-								<Badge variant="secondary">🏆 #1 Wedding Platform</Badge>
-								<Badge variant="secondary">⭐ 4.8/5 Rating</Badge>
-							</div>
-						</div>
-
-						<div className="space-y-4">
-							<h4 className="text-lg font-semibold">Services</h4>
-							<div className="text-muted-foreground space-y-3 text-sm">
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Photography
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Venues
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Catering
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Decoration
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Event Planning
-								</Link>
-							</div>
-						</div>
-
-						<div className="space-y-4">
-							<h4 className="text-lg font-semibold">Locations</h4>
-							<div className="text-muted-foreground space-y-3 text-sm">
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Dhaka
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Chittagong
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Sylhet
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Rajshahi
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									All Cities
-								</Link>
-							</div>
-						</div>
-
-						<div className="space-y-4">
-							<h4 className="text-lg font-semibold">Support</h4>
-							<div className="text-muted-foreground space-y-3 text-sm">
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Help Center
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Contact Us
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Vendor Support
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Terms & Conditions
-								</Link>
-								<Link
-									to="#"
-									className="hover:text-primary block transition-colors"
-								>
-									Privacy Policy
-								</Link>
-							</div>
-						</div>
-					</div>
-
-					<p className="text-muted-foreground mt-12 border-t pt-8 text-sm">
-						&copy; 2024 ShuvoDin. All rights reserved. <br /> Made with ❤️ for
-						Bangladesh
-					</p>
-				</footer>
-			</div>
+				<p className="text-muted-foreground mt-12 border-t pt-8 text-sm">
+					&copy; 2024 ShuvoDin. All rights reserved. <br /> Made with ❤️ for
+					Bangladesh
+				</p>
+			</footer>
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
 		</OpenImgContextProvider>
