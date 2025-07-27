@@ -12,6 +12,13 @@ import { Icon, type IconName } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/index.ts'
+import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from '#app/components/ui/carousel.tsx'
 
 export const meta: Route.MetaFunction = () => [{ title: 'ShuvoDin' }]
 
@@ -197,7 +204,7 @@ const popularLocations = [
 		image: '/img/dhaka.jpg',
 	},
 	{
-		name: 'Chittagong',
+		name: 'Chattogram',
 		image: '/img/ctg.jpg',
 	},
 	{
@@ -242,7 +249,7 @@ export async function loader() {
 export default function Index({ loaderData }: Route.ComponentProps) {
 	const { vendorCategories } = loaderData
 	return (
-		<main className="bg-background h-full">
+		<>
 			<section className="relative overflow-hidden py-20 lg:py-32">
 				<div className="absolute inset-0">
 					<Image
@@ -258,57 +265,54 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 				</div>
 
 				<div className="relative z-10 container">
-					<div className="max-w-3xl">
-						<div className="space-y-8 text-white">
-							<div className="space-y-4">
-								<Badge
-									variant="secondary"
-									className="w-fit border-white/30 bg-white/20 tracking-wide text-white"
-								>
-									🇧🇩 Bangladesh's #1 Wedding Marketplace
-								</Badge>
-								<h1 className="font-serif text-5xl leading-18 font-bold lg:text-7xl">
-									Your Dream
-									<span className="text-primary block">Wedding</span>
-									Awaits
-								</h1>
-								<p className="max-w-2xl text-xl text-white/90 lg:text-2xl">
-									Connect with 1,500+ verified wedding vendors across
-									Bangladesh. From <strong>photographers to venues</strong>,
-									make your special day unforgettable with trusted
-									professionals.
-								</p>
-							</div>
+					<div className="max-w-3xl space-y-8 text-white">
+						<div className="space-y-4">
+							<Badge
+								variant="secondary"
+								className="w-fit border-white/30 bg-white/20 tracking-wide text-white"
+							>
+								🇧🇩 Bangladesh's #1 Wedding Marketplace
+							</Badge>
+							<h1 className="font-serif text-5xl leading-18 font-bold lg:text-7xl">
+								Your Dream
+								<span className="text-primary block">Wedding</span>
+								Awaits
+							</h1>
+							<p className="max-w-2xl text-xl text-white/90 lg:text-2xl">
+								Connect with 1,500+ verified wedding vendors across Bangladesh.
+								From <strong>photographers to venues</strong>, make your special
+								day unforgettable with trusted professionals.
+							</p>
+						</div>
 
-							<div className="flex max-w-2xl flex-col gap-4 sm:flex-row">
-								<div className="relative flex-1">
-									<Icon
-										name="magnifying-glass"
-										className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform fill-white stroke-white text-white"
-									/>
-									<Input
-										placeholder="Search vendors, venues, or services..."
-										className="h-14 border-white/20 pl-12 text-lg backdrop-blur"
-									/>
-								</div>
-								<Button size="lg" className="h-14 px-8 text-lg font-semibold">
-									Find Vendors
-								</Button>
+						<div className="flex max-w-2xl flex-col gap-4 sm:flex-row">
+							<div className="relative flex-1">
+								<Icon
+									name="magnifying-glass"
+									className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform fill-white stroke-white text-white"
+								/>
+								<Input
+									placeholder="Search vendors, venues, or services..."
+									className="h-14 border-white/20 pl-12 text-lg backdrop-blur"
+								/>
 							</div>
+							<Button size="lg" className="h-14 px-8 text-lg font-semibold">
+								Find Vendors
+							</Button>
+						</div>
 
-							<div className="flex flex-wrap items-center gap-8 text-sm text-white/80">
-								<div className="flex items-center gap-2">
-									<Icon name="shield" className="text-primary h-5 w-5" />
-									100% Verified Vendors
-								</div>
-								<div className="flex items-center gap-2">
-									<Icon name="star" className="text-primary h-5 w-5" />
-									4.8+ Average Rating
-								</div>
-								<div className="flex items-center gap-2">
-									<Icon name="clock" className="text-primary h-5 w-5" />
-									24/7 Support
-								</div>
+						<div className="flex flex-wrap items-center gap-8 text-sm text-white/80">
+							<div className="flex items-center gap-2">
+								<Icon name="shield" className="text-primary h-5 w-5" />
+								100% Verified Vendors
+							</div>
+							<div className="flex items-center gap-2">
+								<Icon name="star" className="text-primary h-5 w-5" />
+								4.8+ Average Rating
+							</div>
+							<div className="flex items-center gap-2">
+								<Icon name="clock" className="text-primary h-5 w-5" />
+								24/7 Support
 							</div>
 						</div>
 					</div>
@@ -368,29 +372,37 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 					Popular Locations
 				</h2>
 
-				<div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-6">
-					{popularLocations.map((location, index) => (
-						<div
-							key={index}
-							className="group relative h-80 w-52 cursor-pointer overflow-hidden rounded-lg transition-all duration-300 hover:shadow-lg"
-						>
-							<Image
-								width={208}
-								height={320}
-								loading="lazy"
-								src={location.image}
-								alt={location.name}
-								className="rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
-							/>
-							<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-							<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
-								<h3 className="font-serif text-lg font-bold">
-									{location.name}
-								</h3>
-							</div>
-						</div>
-					))}
-				</div>
+				<Carousel
+					opts={{
+						align: 'start',
+					}}
+					className="mx-auto mt-10 w-full"
+				>
+					<CarouselContent className="space-x-5 px-5">
+						{popularLocations.map((location, index) => (
+							<CarouselItem
+								key={index}
+								className="group relative basis-1/2 cursor-pointer overflow-hidden rounded-lg pl-0 transition-all duration-300 hover:shadow-lg md:basis-1/3 lg:basis-1/5"
+							>
+								<Image
+									width={260}
+									height={400}
+									loading="lazy"
+									src={location.image}
+									alt={location.name}
+									className="w-full rounded-lg object-cover brightness-75 duration-300 group-hover:scale-105 group-hover:brightness-50"
+								/>
+								<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
+									<h3 className="font-serif text-lg font-bold">
+										{location.name}
+									</h3>
+								</div>
+							</CarouselItem>
+						))}
+					</CarouselContent>
+					<CarouselNext />
+					<CarouselPrevious />
+				</Carousel>
 			</section>
 
 			{/* Testimonials */}
@@ -509,6 +521,6 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 					</div>
 				</div>
 			</section>
-		</main>
+		</>
 	)
 }
