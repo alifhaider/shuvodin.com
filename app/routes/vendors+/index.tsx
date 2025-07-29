@@ -1,6 +1,7 @@
 import { Input } from '#app/components/ui/input.tsx'
 import { Outlet } from 'react-router'
 import { LocationCombobox } from '../resources+/location-combobox'
+import { VendorCombobox } from '../resources+/vendor-combobox'
 
 export default function VendorsPage() {
 	return (
@@ -21,19 +22,8 @@ export default function VendorsPage() {
 
 					{/* Search Bar */}
 					<div className="flex max-w-4xl flex-col gap-4 lg:flex-row">
-						<div className="relative flex-1">
-							<Input
-								placeholder="Search vendors..."
-								className="border-border/50 h-12 bg-white pl-12"
-							/>
-
-							<LocationCombobox />
-
-							{/* Search Button */}
-							<button className="bg-accent absolute top-1/2 right-2 h-12 -translate-y-1/2 transform rounded px-4 text-white">
-								Search
-							</button>
-						</div>
+						<LocationCombobox />
+						<VendorCombobox />
 					</div>
 				</div>
 			</section>

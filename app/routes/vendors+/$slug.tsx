@@ -2,8 +2,9 @@ import { Link } from 'react-router'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
-import { type Route } from './+types/$slug'
 import { LocationCombobox } from '../resources+/location-combobox'
+import { VendorCombobox } from '../resources+/vendor-combobox'
+import { type Route } from './+types/$slug'
 
 export async function loader({ params }: Route.LoaderArgs) {
 	const { slug } = params
@@ -56,6 +57,7 @@ export default function VendorsPage({ params }: Route.ComponentProps) {
 						/>
 
 						<LocationCombobox />
+						<VendorCombobox />
 					</div>
 					<Button size="lg" className="h-12 px-8">
 						<Icon name="magnifying-glass" className="mr-2 h-4 w-4" />

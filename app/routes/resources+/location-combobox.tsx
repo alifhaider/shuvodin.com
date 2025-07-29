@@ -62,7 +62,11 @@ export function LocationCombobox() {
 		id,
 		items,
 		itemToString: (item) => (item ? item.value : ''),
-		initialSelectedItem: null,
+		initialSelectedItem: items.find(
+			(item) =>
+				item.value === searchParams.get('city') ||
+				item.value === searchParams.get('address'),
+		),
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				await locationFetcher.submit(
@@ -112,7 +116,7 @@ export function LocationCombobox() {
 						className="relative w-full bg-transparent outline-hidden"
 						{...cb.getInputProps({
 							id,
-							placeholder: 'District, Division or Zip Code',
+							placeholder: 'Search by city or address...',
 						})}
 					/>
 					<div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center justify-center">
