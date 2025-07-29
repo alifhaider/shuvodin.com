@@ -216,7 +216,7 @@ async function seed() {
 		},
 	})
 
-	console.timeEnd(`🐨 Created admin user "kody"`)
+	console.timeEnd(`🐨 Created admin user "alif"`)
 
 	console.timeEnd(`🌱 Database has been seeded`)
 }
