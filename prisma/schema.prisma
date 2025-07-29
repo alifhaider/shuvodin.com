@@ -41,8 +41,7 @@ model Vendor {
   businessName String
   description String?
 
-  city String
-  address String?
+  location   VendorLocation?
   
   phone String?
   website String?
@@ -75,6 +74,20 @@ model Vendor {
 
   // non-unique foreign key
   @@index([ownerId])
+}
+
+model VendorLocation {
+  id        String  @id @default(cuid())
+  city      String
+  address   String?
+  latitude  Float?
+  longitude Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId String @unique
 }
 
 model VendorImage {

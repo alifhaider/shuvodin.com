@@ -17,6 +17,21 @@ const mockVendorCategories = [
 	'Caterers',
 ]
 
+const mockVendorLocations = [
+	{
+		city: 'Dhaka',
+		address: '123 Main St, Dhaka',
+	},
+	{
+		city: 'Chittagong',
+		address: '456 Elm St, Chittagong',
+	},
+	{
+		city: 'Sylhet',
+		address: '789 Oak St, Sylhet',
+	},
+]
+
 async function seed() {
 	console.log('🌱 Seeding...')
 
@@ -95,10 +110,9 @@ async function seed() {
 				description: faker.lorem.paragraph(),
 				ownerId: user.id,
 				categoryId: faker.helpers.arrayElement(vendorCategories)?.id,
-				city: faker.location.city(),
-				address: faker.location.streetAddress(),
 				phone: faker.phone.number(),
 				website: faker.internet.url(),
+				location: { create: faker.helpers.arrayElement(mockVendorLocations) },
 				profileImage: {
 					create: {
 						objectKey: userImage?.objectKey ?? 'default-profile-image.png',
