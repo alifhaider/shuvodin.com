@@ -1,15 +1,12 @@
+import clsx from 'clsx'
 import { useCombobox } from 'downshift'
 import { useId } from 'react'
 import { data, useFetcher, useSearchParams } from 'react-router'
-import { prisma } from '#app/utils/db.server.ts'
-import { type Route } from './+types/location-combobox'
-import { Label } from '#app/components/ui/label.tsx'
-import { Input } from '#app/components/ui/input.tsx'
 import { useSpinDelay } from 'spin-delay'
 import { Spinner } from '#app/components/spinner.tsx'
-import clsx from 'clsx'
+import { prisma } from '#app/utils/db.server.ts'
 import { cn } from '#app/utils/misc.tsx'
-import { getInputProps } from '@conform-to/react'
+import { type Route } from './+types/location-combobox'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const searchParams = new URL(request.url).searchParams
