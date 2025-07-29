@@ -67,8 +67,6 @@ export function LocationCombobox() {
 		itemToString: (item) => (item ? item.value : ''),
 		initialSelectedItem: null,
 		onInputValueChange: async ({ inputValue }) => {
-			// TODO: remove locationId from searchParams when user changes input value of location-combobox
-
 			if (inputValue) {
 				await locationFetcher.submit(
 					{ query: inputValue ?? '' },
@@ -134,7 +132,6 @@ export function LocationCombobox() {
 			>
 				{displayMenu && (
 					<>
-						{/* Cities Section */}
 						{cities.length > 0 && (
 							<>
 								<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
@@ -161,7 +158,6 @@ export function LocationCombobox() {
 							</>
 						)}
 
-						{/* Addresses Section */}
 						{addresses.length > 0 && (
 							<>
 								<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
