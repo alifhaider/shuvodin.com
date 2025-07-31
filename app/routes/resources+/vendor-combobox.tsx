@@ -1,9 +1,9 @@
-import { vendorTypes } from '#app/utils/constants.ts'
-import { cn } from '#app/utils/misc.tsx'
 import clsx from 'clsx'
 import { useCombobox } from 'downshift'
 import { useId } from 'react'
 import { useSearchParams } from 'react-router'
+import { vendorTypes } from '#app/utils/constants.ts'
+import { cn } from '#app/utils/misc.tsx'
 
 export function VendorCombobox() {
 	const [searchParams, setSearchParams] = useSearchParams()
@@ -14,17 +14,17 @@ export function VendorCombobox() {
 		itemToString: (item) => (item ? item.title : ''),
 		initialSelectedItem:
 			vendorTypes.find(
-				(item) => item.title === searchParams.get('vendorType'),
+				(item) => item.slug === searchParams.get('vendorType'),
 			) ?? null,
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				const selectedItem = vendorTypes.find(
-					(item) => item.slug.toLowerCase() === inputValue.toLowerCase(),
+					(item) => item.title.toLowerCase() === inputValue.toLowerCase(),
 				)
 				if (selectedItem) {
 					setSearchParams((prev) => {
 						const newParams = new URLSearchParams(prev)
-						newParams.set('vendorType', selectedItem.title)
+						newParams.set('vendorType', selectedItem.slug)
 						return newParams
 					})
 				} else {
@@ -44,8 +44,8 @@ export function VendorCombobox() {
 		},
 		onSelectedItemChange: ({ selectedItem }) => {
 			const newSearchParams = new URLSearchParams(searchParams)
-			if (selectedItem?.title) {
-				newSearchParams.set('vendorType', selectedItem.title)
+			if (selectedItem?.slug) {
+				newSearchParams.set('vendorType', selectedItem.slug)
 			} else {
 				newSearchParams.delete('vendorType')
 			}
@@ -95,7 +95,7 @@ export function VendorCombobox() {
 								),
 							})}
 						>
-							{item.title} {/* Changed from item.value to item.title */}
+							{item.title}
 						</li>
 					))}
 			</ul>

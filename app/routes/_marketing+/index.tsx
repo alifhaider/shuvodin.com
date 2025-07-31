@@ -1,4 +1,5 @@
 import { Image } from 'openimg/react'
+import { Form } from 'react-router'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -8,10 +9,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from '#app/components/ui/card.tsx'
-import { Icon, type IconName } from '#app/components/ui/icon.tsx'
-import { Input } from '#app/components/ui/input.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { type Route } from './+types/index.ts'
 import {
 	Carousel,
 	CarouselContent,
@@ -19,8 +16,11 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from '#app/components/ui/carousel.tsx'
-import { Link } from 'react-router'
+import { Icon, type IconName } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
+import { prisma } from '#app/utils/db.server.ts'
+import { type Route } from './+types/index.ts'
 
 export const meta: Route.MetaFunction = () => [{ title: 'ShuvoDin' }]
 
@@ -297,20 +297,27 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 					</h2>
 
 					<div className="mt-10 grid gap-6 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
-						{vendorTypes.map((vendor, index) => (
-							<Link
-								to={`/vendors/categories/${vendor.slug}`}
-								key={index}
-								className="group flex flex-col items-center space-y-2 transition-transform duration-300"
+						{vendorTypes.map((vendor) => (
+							<Form
+								action="/vendors"
+								method="GET"
+								className="h-full w-full"
+								key={`vendor-type-${vendor.slug}`}
 							>
-								<div className="bg-secondary group-hover:bg-accent rounded-full p-6 text-center transition-transform duration-300">
-									<Icon
-										name={vendor.icon as IconName}
-										className="h-8 w-8 group-hover:fill-white"
-									/>
-								</div>
-								<p className="text-center">{vendor.title}</p>
-							</Link>
+								<input type="hidden" name="vendorType" value={vendor.slug} />
+								<button
+									type="submit"
+									className="group flex cursor-pointer flex-col items-center space-y-2 transition-transform duration-300"
+								>
+									<div className="bg-secondary group-hover:bg-accent rounded-full p-6 text-center transition-transform duration-300">
+										<Icon
+											name={vendor.icon as IconName}
+											className="h-8 w-8 group-hover:fill-white"
+										/>
+									</div>
+									<p className="text-center">{vendor.title}</p>
+								</button>
+							</Form>
 						))}
 					</div>
 				</div>
@@ -334,19 +341,24 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 								key={index}
 								className="group relative basis-1/2 cursor-pointer overflow-hidden rounded-lg pl-0 transition-all duration-300 hover:shadow-lg md:basis-1/3 lg:basis-1/5"
 							>
-								<Image
-									width={260}
-									height={400}
-									loading="lazy"
-									src={location.image}
-									alt={location.name}
-									className="w-full rounded-lg object-cover brightness-75 duration-300 group-hover:scale-105 group-hover:brightness-50"
-								/>
-								<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
-									<h3 className="font-serif text-lg font-bold">
-										{location.name}
-									</h3>
-								</div>
+								<Form action="/vendors" method="GET" key={index}>
+									<input type="hidden" name="city" value={location.name} />
+									<button type="submit" className="cursor-pointer">
+										<Image
+											width={260}
+											height={400}
+											loading="lazy"
+											src={location.image}
+											alt={location.name}
+											className="w-full rounded-lg object-cover brightness-75 duration-300 group-hover:scale-105 group-hover:brightness-50"
+										/>
+										<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
+											<h3 className="font-serif text-lg font-bold">
+												{location.name}
+											</h3>
+										</div>
+									</button>
+								</Form>
 							</CarouselItem>
 						))}
 					</CarouselContent>
