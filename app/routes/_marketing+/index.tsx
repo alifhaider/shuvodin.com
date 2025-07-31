@@ -196,7 +196,6 @@ export async function loader() {
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-	const { vendorCategories } = loaderData
 	return (
 		<>
 			<section className="relative overflow-hidden py-20 lg:py-32">

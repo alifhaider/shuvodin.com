@@ -44,17 +44,25 @@ export function LocationCombobox() {
 	const locationFetcher = useFetcher<typeof loader>()
 	const id = useId()
 
+	const initialCity = searchParams.get('city')
+	const initialAddress = searchParams.get('address')
+
+	const initialItems = []
+	if (initialCity) initialItems.push({ type: 'city', value: initialCity })
+	if (initialAddress)
+		initialItems.push({ type: 'address', value: initialAddress })
+
 	const cities =
 		locationFetcher.data?.cities.map((city) => ({
 			type: 'city',
 			value: city,
-		})) ?? []
+		})) ?? initialItems.filter((item) => item.type === 'city')
 
 	const addresses =
 		locationFetcher.data?.addresses.map((address) => ({
 			type: 'address',
 			value: address,
-		})) ?? []
+		})) ?? initialItems.filter((item) => item.type === 'address')
 
 	const items = [...cities, ...addresses]
 
@@ -62,11 +70,7 @@ export function LocationCombobox() {
 		id,
 		items,
 		itemToString: (item) => (item ? item.value : ''),
-		initialSelectedItem: items.find(
-			(item) =>
-				item.value === searchParams.get('city') ||
-				item.value === searchParams.get('address'),
-		),
+		initialSelectedItem: initialItems[0] ?? null,
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				await locationFetcher.submit(
@@ -120,7 +124,6 @@ export function LocationCombobox() {
 						})}
 					/>
 					<div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center justify-center">
-						{/* TODO: spinner is not visible */}
 						<Spinner showSpinner={showSpinner} />
 					</div>
 				</div>
@@ -131,59 +134,55 @@ export function LocationCombobox() {
 					className: clsx(menuClassName, { hidden: !displayMenu }),
 				})}
 			>
-				{displayMenu && (
+				{displayMenu && cities.length > 0 && (
 					<>
-						{cities.length > 0 && (
-							<>
-								<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
-									Cities
-								</h5>
-								{cities.map((item, index) => (
-									<li
-										key={`city-${item.value}`}
-										{...cb.getItemProps({
-											item,
-											index,
-											className: cn(
-												'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
-												{
-													'bg-accent text-accent-foreground':
-														cb.selectedItem?.value === item.value,
-												},
-											),
-										})}
-									>
-										{item.value}
-									</li>
-								))}
-							</>
-						)}
+						<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
+							Cities
+						</h5>
+						{cities.map((item, index) => (
+							<li
+								key={`city-${item.value}`}
+								{...cb.getItemProps({
+									item,
+									index,
+									className: cn(
+										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
+										{
+											'bg-accent text-accent-foreground':
+												cb.selectedItem?.value === item.value,
+										},
+									),
+								})}
+							>
+								{item.value}
+							</li>
+						))}
+					</>
+				)}
 
-						{addresses.length > 0 && (
-							<>
-								<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
-									Addresses
-								</h5>
-								{addresses.map((item, index) => (
-									<li
-										key={`address-${item.value}`}
-										{...cb.getItemProps({
-											item,
-											index: cities.length + index, // Important for correct indexing
-											className: cn(
-												'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
-												{
-													'bg-accent text-accent-foreground':
-														cb.selectedItem?.value === item.value,
-												},
-											),
-										})}
-									>
-										{item.value}
-									</li>
-								))}
-							</>
-						)}
+				{addresses.length > 0 && (
+					<>
+						<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
+							Addresses
+						</h5>
+						{addresses.map((item, index) => (
+							<li
+								key={`address-${item.value}`}
+								{...cb.getItemProps({
+									item,
+									index: cities.length + index, // Important for correct indexing
+									className: cn(
+										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
+										{
+											'bg-accent text-accent-foreground':
+												cb.selectedItem?.value === item.value,
+										},
+									),
+								})}
+							>
+								{item.value}
+							</li>
+						))}
 					</>
 				)}
 			</ul>
