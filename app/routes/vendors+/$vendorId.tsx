@@ -2,22 +2,23 @@ import { Link } from 'react-router'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
-import { type Route } from './+types/$slug'
+import { type Route } from './+types/$vendorId'
 
 export async function loader({ params }: Route.LoaderArgs) {
-	const { slug } = params
-	// Here you can fetch data based on the slug if needed
-	return { slug }
+	const { vendorId } = params
+	// Here you can fetch data based on the vendorId if needed
+	const vendor = await prisma.vendor.findUnique({
+		where: { id: vendorId },
+		select: { category: true },
+	})
+	return { vendor }
 }
 
-export default function VendorsPage({ params }: Route.ComponentProps) {
-	const { slug } = params
-	const categoryName = slug
-		.replace(/-/g, ' ')
-		.replace(/\b\w/g, (char) => char.toUpperCase())
-
+export default function VendorsPage({ loaderData }: Route.ComponentProps) {
+	const categoryName = loaderData.vendor?.category.name
 	return (
 		<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
 			<div className="container space-y-6">
@@ -36,12 +37,6 @@ export default function VendorsPage({ params }: Route.ComponentProps) {
 					<h1 className="font-serif text-4xl font-bold lg:text-5xl">
 						Find <span className="text-primary">{categoryName}</span>
 					</h1>
-					<p className="text-muted-foreground max-w-3xl text-xl">
-						Discover the best {categoryName.toLowerCase()} in Bangladesh.
-						Explore top-rated vendors offering exceptional services in{' '}
-						{categoryName.toLowerCase()}. Find the perfect match for your needs
-						and enjoy a seamless experience with our curated list of
-					</p>
 				</div>
 
 				{/* Search Bar */}
@@ -52,7 +47,7 @@ export default function VendorsPage({ params }: Route.ComponentProps) {
 							className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform"
 						/>
 						<Input
-							placeholder={`Search ${categoryName.toLowerCase()}...`}
+							placeholder={`Search ${categoryName?.toLowerCase()}...`}
 							className="border-border/50 h-12 bg-white pl-12"
 						/>
 
