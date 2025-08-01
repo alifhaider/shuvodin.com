@@ -16,8 +16,32 @@ import {
 	SelectValue,
 } from '#app/components/ui/select.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
+import { prisma } from '#app/utils/db.server.ts'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
+import { type Route } from './+types/index.ts'
+
+export const meta = {
+	title: 'Vendors',
+	description: 'Find the best wedding vendors in Bangladesh',
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+	const searchParams = new URL(request.url).searchParams
+	const vendorType = searchParams.get('vendorType') ?? ''
+	const city = searchParams.get('city') ?? ''
+	const address = searchParams.get('address') ?? ''
+	const minPrice = searchParams.get('minPrice') ?? ''
+	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+
+	// const vendors = await prisma.$queryRawTyped(
+	// 	getVendors(vendorType, city, address, minPrice, maxPrice, sortOrder),
+	// )
+
+	const vendors = {}
+	return { vendors }
+}
 
 export default function VendorsPage() {
 	const [searchParams, setSearchParams] = useSearchParams()

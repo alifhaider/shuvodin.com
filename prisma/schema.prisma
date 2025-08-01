@@ -66,14 +66,32 @@ model Vendor {
   updatedAt DateTime @updatedAt
 
 
-  category   VendorCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  categoryId String
 
   owner     User   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId   String @unique
 
+  vendorType VendorType @relation(fields: [vendorTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorTypeId String 
+
+  venueDetails VenueDetails?
+  photographerDetails PhotographerDetails?
+  catererDetails CatererDetails?
+
   // non-unique foreign key
   @@index([ownerId])
+  @@index([vendorTypeId])
+  @@index([isFeatured])
+  @@index([rating])
+  @@index([businessName])
+}
+
+model VendorType {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Venue", "Photographer", "Caterer", etc.
+  description String?
+  vendors     Vendor[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model VendorLocation {
@@ -181,16 +199,6 @@ model Review {
   @@index([userId])
 }
 
-model VendorCategory {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendors Vendor[]
-}
 
 
 model UserImage {
@@ -313,4 +321,235 @@ model Passkey {
   transports     String? // Stored as comma-separated values
 
   @@index(userId)
+}
+
+
+
+// ======================
+// Venue-specific models
+// ======================
+
+model VenueDetails {
+  id                String      @id @default(cuid())
+  vendor            Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId          String      @unique
+  minPrice          Float?
+  maxPrice          Float?
+  minCapacity       Int?
+  maxCapacity       Int?
+  venueType         VenueType[]
+  indoor            Boolean?
+  outdoor           Boolean?
+  smokingAllowed    Boolean?
+  parkingAvailable  Boolean?
+  wheelchairAccess  Boolean?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations to other venue-specific models
+  amenities        VenueAmenity[]
+  eventTypes       VenueEventType[]
+  awards           VenueAward[]
+  availability     VenueAvailability[]
+}
+
+
+model VenueType {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Ballroom", "Garden", "Hotel", etc.
+  venues      VenueDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model VenueAmenity {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Dance Floor", "Stage", "Sound System", etc.
+  venues      VenueDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model VenueEventType {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Wedding", "Corporate", "Birthday", etc.
+  venues      VenueDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model VenueAward {
+  id          String    @id @default(cuid())
+  name        String
+  year        Int
+  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model VenueAvailability {
+  id          String    @id @default(cuid())
+  date        DateTime
+  available   Boolean   @default(true)
+  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ======================
+// Photographer-specific models
+// ======================
+model PhotographerDetails {
+  id                String      @id @default(cuid())
+  vendor            Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId          String      @unique
+  minPrice          Float?
+  maxPrice          Float?
+  additionalFee     Boolean?
+  additionalFeeRate Float?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations to other photography-specific models
+  styles           PhotographyStyle[]
+  services         PhotographyService[]
+  awards           PhotographyAward[]
+  servedCities     PhotographerServedCity[]
+
+  additionalInfo String? // Any additional information about the photographer
+}
+
+model PhotographerServedCity {
+  id          String      @id @default(cuid())
+  city        String
+  photographer PhotographerDetails @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+  photographerId String
+  isBaseCity  Boolean     @default(false) // Whether this is their base city
+  hasAdditionalFee Boolean @default(false) // Whether serving this city incurs additional fee
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([photographerId])
+}
+
+model PhotographyStyle {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Classic", "Editorial", "Fine Art", etc.
+  photographers PhotographerDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PhotographyService {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Bride-only session", "Drone photography", etc.
+  photographers PhotographerDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PhotographyAward {
+  id          String    @id @default(cuid())
+  name        String
+  year        Int
+  photographer PhotographerDetails @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+  photographerId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+
+// ======================
+// Caterer-specific models
+// ======================
+
+
+model CatererDetails {
+  id                String      @id @default(cuid())
+  vendor            Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId          String      @unique
+  minPricePerPerson Float?
+  maxPricePerPerson Float?
+  additionalFee     Boolean?
+  additionalFeeRate Float?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations to other caterer-specific models
+  mealServices     CatererMealService[]
+  cuisines         CatererCuisine[]
+  dietaryOptions   CatererDietaryOption[]
+  awards           CatererAward[]
+  beverageServices CatererBeverageService[]
+  menuItems        CatererMenuItem[]
+  catererServedCities CatererServedCity[]
+}
+
+model CatererServedCity {
+  id          String      @id @default(cuid())
+  city        String
+  caterer    CatererDetails @relation(fields: [catererId], references: [id], onDelete: Cascade)
+  catererId   String
+  isBaseCity  Boolean     @default(false) // Whether this is their base city
+  hasAdditionalFee Boolean @default(false) // Whether serving this city incurs additional fee
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([catererId])
+}
+
+model CatererMealService {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Buffet", "Plated", "Family Style", etc.
+  caterers    CatererDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CatererCuisine {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Italian", "Indian", "Mexican", etc.
+  caterers    CatererDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CatererDietaryOption {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Vegetarian", "Vegan", "Gluten-Free", etc.
+  caterers    CatererDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CatererAward {
+  id          String    @id @default(cuid())
+  name        String
+  year        Int
+  caterer     CatererDetails @relation(fields: [catererId], references: [id], onDelete: Cascade)
+  catererId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CatererBeverageService {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Full Bar", "Beer & Wine Only", etc.
+  caterers    CatererDetails[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CatererMenuItem {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  price       Float?
+  category    String?   // "Appetizer", "Main Course", "Dessert", etc.
+  caterer     CatererDetails @relation(fields: [catererId], references: [id], onDelete: Cascade)
+  catererId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

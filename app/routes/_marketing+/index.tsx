@@ -182,17 +182,15 @@ const popularLocations = [
 	},
 ]
 
-export async function loader() {
-	const vendorCategories = await prisma.vendorCategory.findMany({
-		select: {
-			name: true,
-			id: true,
-		},
-		orderBy: {
-			name: 'asc',
-		},
-	})
-	return { vendorCategories }
+export async function loader({ request }: Route.LoaderArgs) {
+	const searchParams = new URL(request.url).searchParams
+	const vendorType = searchParams.get('vendorType') ?? ''
+	const city = searchParams.get('city') ?? ''
+	const address = searchParams.get('address') ?? ''
+	const minPrice = searchParams.get('minPrice') ?? ''
+	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+	return {}
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
