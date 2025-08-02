@@ -246,16 +246,16 @@ export const photographerFilterInputs: FilterOption[] = [
 
 export const venueFilterInputs: FilterOption[] = [
 	...priceFilterInputs,
-	{
-		title: 'Availability',
-		value: 'availability',
-		inputs: [
-			{
-				name: 'calendar',
-				type: 'calendar',
-			},
-		],
-	},
+	// {
+	// 	title: 'Availability',
+	// 	value: 'availability',
+	// 	inputs: [
+	// 		{
+	// 			name: 'calendar',
+	// 			type: 'calendar',
+	// 		},
+	// 	],
+	// },
 	{
 		title: 'Capacity',
 		value: 'capacity',
