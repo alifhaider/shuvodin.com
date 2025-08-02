@@ -20,7 +20,10 @@ import { prisma } from '#app/utils/db.server.ts'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-import { photographerFilterInputs } from '#app/utils/filters.ts'
+import {
+	getFilterInputs,
+	photographerFilterInputs,
+} from '#app/utils/filters.ts'
 import clsx from 'clsx'
 import { Checkbox } from '#app/components/ui/checkbox.tsx'
 import { Label } from '#app/components/ui/label.tsx'
@@ -75,15 +78,16 @@ export default function VendorsPage() {
 		{ label: vendorType, to: `/vendors/${vendor?.slug}` },
 	]
 
-	const isPhotographer = vendorType === 'photography'
-	const isVenue = vendorType === 'venue'
-
 	const renderFilters = () => {
 		if (!vendorType) return null
 
+		const filterInputs = getFilterInputs(vendorType)
+
+		if (!filterInputs.length) return null
+
 		return (
 			<>
-				{photographerFilterInputs.map((option) => (
+				{filterInputs.map((option) => (
 					<AccordionItem key={option.title} value={option.value}>
 						<AccordionTrigger className="cursor-pointer text-lg font-bold">
 							{option.title}

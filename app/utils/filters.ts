@@ -224,3 +224,13 @@ export const photographerFilterInputs: FilterOption[] = [
 		],
 	},
 ]
+
+export function getFilterInputs(vendorType: string) {
+	switch (vendorType) {
+		case 'photography':
+			return photographerFilterInputs
+
+		default:
+			return commonFilterInputs
+	}
+}
