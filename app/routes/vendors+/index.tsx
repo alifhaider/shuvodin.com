@@ -20,11 +20,26 @@ import { prisma } from '#app/utils/db.server.ts'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
+import { photographerFilterInputs } from '#app/utils/filters.ts'
+import clsx from 'clsx'
+import { Checkbox } from '#app/components/ui/checkbox.tsx'
+import { Label } from '#app/components/ui/label.tsx'
+import { Input } from '#app/components/ui/input.tsx'
+import React from 'react'
 
-export const meta = {
-	title: 'Vendors',
-	description: 'Find the best wedding vendors in Bangladesh',
+export const meta: Route.MetaFunction = () => {
+	return [{ title: 'Vendors / ShuvoDin' }]
 }
+
+// Digital files
+// Digital rights
+// Online gallery
+// Photo box
+// Printed enlargements
+// Same/next-day sneak-peek images
+// Slideshow
+// Video
+// Wedding album
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const searchParams = new URL(request.url).searchParams
@@ -60,6 +75,92 @@ export default function VendorsPage() {
 		{ label: vendorType, to: `/vendors/${vendor?.slug}` },
 	]
 
+	const isPhotographer = vendorType === 'photography'
+	const isVenue = vendorType === 'venue'
+
+	const renderFilters = () => {
+		if (!vendorType) return null
+
+		return (
+			<>
+				{photographerFilterInputs.map((option) => (
+					<AccordionItem key={option.title} value={option.value}>
+						<AccordionTrigger className="cursor-pointer text-lg font-bold">
+							{option.title}
+						</AccordionTrigger>
+						<AccordionContent className="flex flex-col gap-4 px-2 text-balance">
+							{option.inputs.map((input) => {
+								const isChecked = searchParams.get(input.name) === 'true'
+								const defaultValue = searchParams.get(input.name) || ''
+								return (
+									<React.Fragment key={input.name}>
+										{input.type === 'checkbox' ? (
+											<div className="flex items-start gap-3">
+												<Checkbox
+													id={input.name}
+													defaultChecked={isChecked}
+													onCheckedChange={(value) => {
+														const newSearchParams = new URLSearchParams(
+															searchParams,
+														)
+														if (value) {
+															newSearchParams.set(input.name, 'true')
+														} else {
+															newSearchParams.delete(input.name)
+														}
+														setSearchParams(newSearchParams)
+													}}
+												/>
+												<div className="grid gap-2">
+													<Label htmlFor={input.name}>{input.label}</Label>
+													{input.description ? (
+														<p className="text-muted-foreground text-sm">
+															{input.description}
+														</p>
+													) : null}
+												</div>
+											</div>
+										) : input.type === 'text' || input.type === 'number' ? (
+											<div
+												className="grid w-full max-w-sm items-center gap-3"
+												key={input.name}
+											>
+												<Label htmlFor={input.name}>{input.label}</Label>
+												<Input
+													type={input.type}
+													id={input.name}
+													placeholder={input.placeholder}
+													defaultValue={defaultValue}
+													onChange={(e) => {
+														const newSearchParams = new URLSearchParams(
+															searchParams,
+														)
+														console.log("here's the input:", input, e.target)
+														if (e.target.value) {
+															newSearchParams.set(input.name, e.target.value)
+														} else {
+															newSearchParams.delete(input.name)
+														}
+														setSearchParams(newSearchParams)
+													}}
+												/>
+												{input.description ? (
+													<p className="text-muted-foreground text-sm">
+														{input.description}
+													</p>
+												) : null}
+											</div>
+										) : null}
+									</React.Fragment>
+								)
+							})}
+						</AccordionContent>
+					</AccordionItem>
+				))}
+			</>
+		)
+	}
+
 	const renderBreadcrumbs = () => (
 		<nav>
 			<ul className="flex space-x-1">
@@ -87,16 +188,14 @@ export default function VendorsPage() {
 			<section className="from-primary/10 via-accent/5 to-secondary/10 border-b bg-gradient-to-r py-12">
 				<div className="container space-y-6">
 					{renderBreadcrumbs()}
-					<div className="max-w-4xl space-y-2">
-						<h1 className="font-serif text-2xl font-bold capitalize md:text-4xl">
+					<div className="max-w-4xl space-y-3">
+						<h1 className="font-serif text-xl font-bold capitalize md:text-4xl">
 							The Best <span className="text-primary">{vendorType}</span>{' '}
 							Vendors in {location}
 						</h1>
-						<p className="text-muted-foreground max-w-3xl text-xl">
+						<p className="text-muted-foreground max-w-3xl text-base">
 							Discover the best wedding vendors in {location}. Explore top-rated
-							vendors offering exceptional services. Find the perfect match for
-							your needs and enjoy a seamless experience with our curated list
-							of vendors.
+							vendors offering exceptional services.
 						</p>
 					</div>
 
@@ -108,69 +207,12 @@ export default function VendorsPage() {
 				</div>
 			</section>
 			<section className="container flex items-start gap-6">
-				<div className="w-1/4">
-					<Form
-						method="get"
-						onChange={(e) => {
-							e.preventDefault()
-							const formData = new FormData(e.currentTarget)
-							// keep the existing search params
-							const newSearchParams = new URLSearchParams(searchParams)
-							// update the search params with the form data
-							for (const [key, value] of formData.entries()) {
-								if (typeof value === 'string' && value.trim() !== '') {
-									newSearchParams.set(key, value)
-								} else {
-									newSearchParams.delete(key)
-								}
-							}
-							setSearchParams(newSearchParams)
-						}}
-						className="space-y-4"
-					>
-						<h2 className="text-lg font-bold">Filter Options</h2>
+				<div className={clsx('w-1/4', vendor ? 'block' : 'hidden')}>
+					<Form method="get" className="space-y-4">
 						{/* Filter Options */}
 
-						<Accordion type="single" collapsible className="w-full">
-							<AccordionItem value="price">
-								<AccordionTrigger className="text-lg font-bold">
-									Price
-								</AccordionTrigger>
-								<AccordionContent className="flex flex-col gap-4 text-balance">
-									<label className="text-sm font-medium" htmlFor="minPrice">
-										Minimum Price
-									</label>
-									<input
-										id="minPrice"
-										type="number"
-										name="minPrice"
-										placeholder="0"
-										className="border-border/50 h-10 w-full rounded-md border px-3"
-									/>
-									<label className="text-sm font-medium" htmlFor="maxPrice">
-										Maximum Price
-									</label>
-									<input
-										id="maxPrice"
-										type="number"
-										name="maxPrice"
-										placeholder="10000"
-										className="border-border/50 h-10 w-full rounded-md border px-3"
-									/>
-								</AccordionContent>
-							</AccordionItem>
-							<AccordionItem value="location-fees">
-								<AccordionTrigger className="text-lg font-bold">
-									Location and Fees
-								</AccordionTrigger>
-								<AccordionContent className="flex flex-col gap-4 text-balance"></AccordionContent>
-							</AccordionItem>
-							<AccordionItem value="services">
-								<AccordionTrigger className="text-lg font-bold">
-									Services
-								</AccordionTrigger>
-								<AccordionContent className="flex flex-col gap-4 text-balance"></AccordionContent>
-							</AccordionItem>
+						<Accordion type="multiple" className="w-full">
+							{renderFilters()}
 						</Accordion>
 					</Form>
 				</div>

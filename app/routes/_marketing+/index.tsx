@@ -19,10 +19,11 @@ import {
 import { Icon, type IconName } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/index.ts'
 
-export const meta: Route.MetaFunction = () => [{ title: 'ShuvoDin' }]
+export const meta: Route.MetaFunction = () => {
+	return [{ title: 'Home / ShuvoDin' }]
+}
 
 const stats = [
 	{ number: '10,000+', label: 'Happy Couples', icon: 'heart' },
@@ -190,7 +191,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const minPrice = searchParams.get('minPrice') ?? ''
 	const maxPrice = searchParams.get('maxPrice') ?? ''
 	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
-	return {}
+	return { vendors: [], testimonials: [], popularLocations: [] } as const
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
