@@ -82,8 +82,20 @@ export default function VendorsPage() {
 		if (!vendorType) return null
 
 		const filterInputs = getFilterInputs(vendorType)
-
+		console.log('Filter Inputs:', filterInputs)
 		if (!filterInputs.length) return null
+
+		const handleCheckboxChange = (name: string, value: boolean) => {
+			const newSearchParams = new URLSearchParams(searchParams)
+			value ? newSearchParams.set(name, 'true') : newSearchParams.delete(name)
+			setSearchParams(newSearchParams)
+		}
+
+		const handleInputChange = (name: string, value: string) => {
+			const newSearchParams = new URLSearchParams(searchParams)
+			value ? newSearchParams.set(name, value) : newSearchParams.delete(name)
+			setSearchParams(newSearchParams)
+		}
 
 		return (
 			<>
@@ -124,7 +136,9 @@ export default function VendorsPage() {
 													) : null}
 												</div>
 											</div>
-										) : input.type === 'text' || input.type === 'number' ? (
+										) : input.type === 'calendar' ? (
+											<></>
+										) : (
 											<div
 												className="grid w-full max-w-sm items-center gap-3"
 												key={input.name}
@@ -154,7 +168,7 @@ export default function VendorsPage() {
 													</p>
 												) : null}
 											</div>
-										) : null}
+										)}
 									</React.Fragment>
 								)
 							})}

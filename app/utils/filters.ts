@@ -10,7 +10,7 @@ type FilterOption = {
 	}[]
 }
 
-const commonFilterInputs: FilterOption[] = [
+const priceFilterInputs: FilterOption[] = [
 	{
 		title: 'Price',
 		value: 'price',
@@ -31,8 +31,27 @@ const commonFilterInputs: FilterOption[] = [
 	},
 ]
 
+const awardFilterInputs: FilterOption[] = [
+	{
+		title: 'Award winners',
+		value: 'award-winners',
+		inputs: [
+			{
+				name: 'allBestOfShuvodinWinners',
+				type: 'checkbox',
+				label: 'All Best of ShuvoDin Winners',
+			},
+			{
+				name: 'bestOfShuvodin2025Winners',
+				type: 'checkbox',
+				label: 'Best of ShuvoDin 2025 Winners',
+			},
+		],
+	},
+]
+
 export const photographerFilterInputs: FilterOption[] = [
-	...commonFilterInputs,
+	...priceFilterInputs,
 	{
 		title: 'Location and Fees',
 		value: 'location-fees',
@@ -225,12 +244,247 @@ export const photographerFilterInputs: FilterOption[] = [
 	},
 ]
 
+export const venueFilterInputs: FilterOption[] = [
+	...priceFilterInputs,
+	{
+		title: 'Availability',
+		value: 'availability',
+		inputs: [
+			{
+				name: 'calendar',
+				type: 'calendar',
+			},
+		],
+	},
+	{
+		title: 'Capacity',
+		value: 'capacity',
+		inputs: [
+			{
+				name: '100-150',
+				type: 'checkbox',
+				label: '100-150',
+			},
+			{
+				name: '150-200',
+				type: 'checkbox',
+				label: '150-200',
+			},
+			{
+				name: '200-250',
+				type: 'checkbox',
+				label: '200-250',
+			},
+			{
+				name: '250-300',
+				type: 'checkbox',
+				label: '250-300',
+			},
+			{ name: '300+', type: 'checkbox', label: '300+' },
+			{
+				name: '50-100',
+				type: 'checkbox',
+				label: '50-100',
+			},
+			{
+				name: 'upTo50',
+				type: 'checkbox',
+				label: 'Up to 50',
+			},
+		],
+	},
+	{
+		title: 'Indoor/Outdoor',
+		value: 'indoor-outdoor',
+		inputs: [
+			{
+				name: 'indoor',
+				type: 'checkbox',
+				label: 'Indoor',
+			},
+			{
+				name: 'outdoor',
+				type: 'checkbox',
+				label: 'Outdoor',
+				description:
+					'Not Covered,but can often accommodate temporary options like tents and canopies.',
+			},
+			{
+				name: 'outdoorCovered',
+				type: 'checkbox',
+				label: 'Covered outdoor',
+			},
+		],
+	},
+	{
+		title: 'Venue Type',
+		value: 'venue-type',
+		inputs: [
+			{
+				name: 'convention Halls',
+				type: 'checkbox',
+				label: 'Convention Halls',
+			},
+			{
+				name: 'community-centers',
+				type: 'checkbox',
+				label: 'Community Centers',
+			},
+			{
+				name: 'hotel-ballrooms',
+				type: 'checkbox',
+				label: 'Hotel Ballrooms',
+			},
+			{
+				name: 'Resorts',
+				type: 'checkbox',
+				label: 'Resorts',
+			},
+			{
+				name: 'rooftop',
+				type: 'checkbox',
+				label: 'Rooftop',
+			},
+			{ name: 'garden-lawn', type: 'checkbox', label: 'Garden/Lawn Venue' },
+		],
+	},
+	{
+		title: 'Included',
+		value: 'included',
+		inputs: [
+			{
+				name: 'allInclusive',
+				type: 'checkbox',
+				label: 'All-inclusive',
+				description:
+					'The venue takes care of it all - food and beverage, rentals, the works!',
+			},
+			{
+				name: 'rawSpace',
+				type: 'checkbox',
+				label: 'Raw space',
+				description:
+					"The venue will provide just the space. You'll bring in your own caterer and vendors.",
+			},
+			{
+				name: 'selectServices',
+				type: 'checkbox',
+				label: 'Select services',
+				description:
+					'The venue will provide the space, plus a few extras. Check the venue for specifics.',
+			},
+		],
+	},
+	...awardFilterInputs,
+	{
+		title: 'Amenities',
+		value: 'amenities',
+		inputs: [
+			{
+				name: 'cateringServices',
+				type: 'checkbox',
+				label: 'Catering services',
+			},
+			{
+				name: 'serviceStaff',
+				type: 'checkbox',
+				label: 'Service staff',
+				description: 'Waiters, servers, and cleanup crew',
+			},
+			{
+				name: 'eventCoordinator',
+				type: 'checkbox',
+				label: 'Event coordinator',
+				description:
+					'Helps with timeline, vendor coordination, and troubleshooting',
+			},
+			{
+				name: 'bridalSuite',
+				type: 'checkbox',
+				label: 'Bridal suite',
+			},
+			{
+				name: 'danceFloor',
+				type: 'checkbox',
+				label: 'Dance floor',
+			},
+			{
+				name: 'lighting',
+				type: 'checkbox',
+				label: 'Lighting and sound system',
+			},
+			{
+				name: 'eventRentals',
+				type: 'checkbox',
+				label: 'Event rentals',
+				description: 'Chairs, tables, décor, stage setup etc.',
+			},
+			{
+				name: 'parking',
+				type: 'checkbox',
+				label: 'Parking',
+				description: 'On-site or nearby parking for guests',
+			},
+			{
+				name: 'wifi',
+				type: 'checkbox',
+				label: 'Wi-Fi',
+			},
+		],
+	},
+	{
+		title: 'Event Types',
+		value: 'event-types',
+		inputs: [
+			{
+				name: 'weddingCeremony',
+				type: 'checkbox',
+				label: 'Wedding ceremony',
+			},
+			{
+				name: 'reception',
+				type: 'checkbox',
+				label: 'Reception',
+			},
+			{
+				name: 'rehearsalDinner',
+				type: 'checkbox',
+				label: 'Rehearsal dinner',
+			},
+			{
+				name: 'weddingShower',
+				type: 'checkbox',
+				label: 'Wedding shower',
+			},
+			{
+				name: 'engagementParty',
+				type: 'checkbox',
+				label: 'Engagement party',
+			},
+			{
+				name: 'birthdayParty',
+				type: 'checkbox',
+				label: 'Birthday party',
+			},
+			{
+				name: 'other',
+				type: 'checkbox',
+				label: 'Other',
+				description: 'Check with the venue for specific event types',
+			},
+		],
+	},
+]
+
 export function getFilterInputs(vendorType: string) {
-	switch (vendorType) {
+	console.log('Vendor Type:', vendorType)
+	switch (vendorType.toLocaleLowerCase()) {
 		case 'photography':
 			return photographerFilterInputs
+		case 'venues':
+			return venueFilterInputs
 
 		default:
-			return commonFilterInputs
+			return priceFilterInputs
 	}
 }
