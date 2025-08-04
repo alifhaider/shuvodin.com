@@ -58,6 +58,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function VendorsPage() {
+	const capacityCheckboxRef = React.useRef<Record<string, boolean>>({})
 	const [searchParams, setSearchParams] = useSearchParams()
 
 	const vendor = vendorTypes.find(
@@ -86,50 +87,40 @@ export default function VendorsPage() {
 			value: boolean | string,
 		) => {
 			if (isCapacityFilter) {
+				capacityCheckboxRef.current[name] = value as boolean
 				setSearchParams((prev) => {
 					const newParams = new URLSearchParams(prev)
 
+					const checkedRanges = Object.entries(capacityCheckboxRef.current)
+						.filter(([, isChecked]) => isChecked)
+						.map(([name]) => {
+							if (name === '300+') return [300, Number.POSITIVE_INFINITY]
+							if (name === 'upTo50') return [0, 50]
+							return name.split('-').map(Number)
+						})
+
 					// Get current min/max values
-					const currentMin = parseInt(prev.get('minCapacity') || '')
-					const currentMax = parseInt(prev.get('maxCapacity') || '')
+					if (checkedRanges.length > 0) {
+						const newMin = Math.min(
+							...checkedRanges.map((range) => range[0] || 0),
+						)
+						const newMax = Math.max(
+							...checkedRanges.map((range) => range[1] || 0),
+						)
 
-					// Calculate the new range from the checkbox
-					let [newMin, newMax] = [0, 0]
-					if (name === '300+') {
-						newMin = 300
-						newMax = Infinity
-					} else if (name === 'upTo50') {
-						newMin = 0
-						newMax = 50
+						newParams.set('minCapacity', newMin.toString())
+						newParams.set(
+							'maxCapacity',
+							newMax === Number.POSITIVE_INFINITY ? '300+' : newMax.toString(),
+						)
 					} else {
-						const [min, max] = name.split('-').map(Number)
-						newMin = min ?? 0
-						newMax = max ?? 0
-					}
-
-					// Determine new overall min/max
-					let overallMin = isNaN(currentMin)
-						? newMin
-						: Math.min(currentMin, newMin)
-					let overallMax = isNaN(currentMax)
-						? newMax
-						: Math.max(currentMax, newMax)
-
-					// If unchecking, we need to recalculate from other checked boxes
-					if (!value) {
-						// This is more complex - we'd need to track checked states separately
-						// For now, we'll just remove the params if unchecking
+						// No capacity boxes checked - remove all related params
 						newParams.delete('minCapacity')
 						newParams.delete('maxCapacity')
-						return newParams
+						Object.keys(capacityCheckboxRef.current).forEach((name) => {
+							newParams.delete(name)
+						})
 					}
-
-					// Update the params
-					newParams.set('minCapacity', overallMin.toString())
-					newParams.set(
-						'maxCapacity',
-						overallMax === Infinity ? '300+' : overallMax.toString(),
-					)
 
 					return newParams
 				})
