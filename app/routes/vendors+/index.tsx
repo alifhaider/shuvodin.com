@@ -1,3 +1,5 @@
+import clsx from 'clsx'
+import React from 'react'
 import { Form, useSearchParams } from 'react-router'
 import {
 	Accordion,
@@ -5,7 +7,10 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '#app/components/ui/accordion.tsx'
+import { Checkbox } from '#app/components/ui/checkbox.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
+import { Label } from '#app/components/ui/label.tsx'
 import {
 	Select,
 	SelectContent,
@@ -16,19 +21,10 @@ import {
 	SelectValue,
 } from '#app/components/ui/select.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
-import { prisma } from '#app/utils/db.server.ts'
+import { getFilterInputs } from '#app/utils/filters.ts'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-import {
-	getFilterInputs,
-	photographerFilterInputs,
-} from '#app/utils/filters.ts'
-import clsx from 'clsx'
-import { Checkbox } from '#app/components/ui/checkbox.tsx'
-import { Label } from '#app/components/ui/label.tsx'
-import { Input } from '#app/components/ui/input.tsx'
-import React from 'react'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
@@ -82,10 +78,65 @@ export default function VendorsPage() {
 		if (!vendorType) return null
 
 		const filterInputs = getFilterInputs(vendorType)
-		console.log('Filter Inputs:', filterInputs)
 		if (!filterInputs.length) return null
 
-		const handleCheckboxChange = (name: string, value: boolean) => {
+		const handleCheckboxChange = (
+			name: string,
+			isCapacityFilter: boolean,
+			value: boolean | string,
+		) => {
+			if (isCapacityFilter) {
+				setSearchParams((prev) => {
+					const newParams = new URLSearchParams(prev)
+
+					// Get current min/max values
+					const currentMin = parseInt(prev.get('minCapacity') || '')
+					const currentMax = parseInt(prev.get('maxCapacity') || '')
+
+					// Calculate the new range from the checkbox
+					let [newMin, newMax] = [0, 0]
+					if (name === '300+') {
+						newMin = 300
+						newMax = Infinity
+					} else if (name === 'upTo50') {
+						newMin = 0
+						newMax = 50
+					} else {
+						const [min, max] = name.split('-').map(Number)
+						newMin = min ?? 0
+						newMax = max ?? 0
+					}
+
+					// Determine new overall min/max
+					let overallMin = isNaN(currentMin)
+						? newMin
+						: Math.min(currentMin, newMin)
+					let overallMax = isNaN(currentMax)
+						? newMax
+						: Math.max(currentMax, newMax)
+
+					// If unchecking, we need to recalculate from other checked boxes
+					if (!value) {
+						// This is more complex - we'd need to track checked states separately
+						// For now, we'll just remove the params if unchecking
+						newParams.delete('minCapacity')
+						newParams.delete('maxCapacity')
+						return newParams
+					}
+
+					// Update the params
+					newParams.set('minCapacity', overallMin.toString())
+					newParams.set(
+						'maxCapacity',
+						overallMax === Infinity ? '300+' : overallMax.toString(),
+					)
+
+					return newParams
+				})
+				return
+			}
+
+			// Handle non-capacity checkboxes
 			const newSearchParams = new URLSearchParams(searchParams)
 			value ? newSearchParams.set(name, 'true') : newSearchParams.delete(name)
 			setSearchParams(newSearchParams)
@@ -97,84 +148,91 @@ export default function VendorsPage() {
 			setSearchParams(newSearchParams)
 		}
 
+		const isCapacityChecked = (name: string) => {
+			const min = parseInt(searchParams.get('minCapacity') || '0')
+			const maxStr = searchParams.get('maxCapacity')
+			const max = maxStr === '300+' ? Infinity : parseInt(maxStr || '0')
+
+			if (name === '300+') return max === Infinity
+			if (name === 'upTo50') return min === 0 && max === 50
+
+			const [rangeMin, rangeMax] = name.split('-').map(Number)
+			return (
+				rangeMin !== undefined &&
+				rangeMax !== undefined &&
+				min <= rangeMin &&
+				max >= rangeMax
+			)
+		}
+
 		return (
 			<>
-				{filterInputs.map((option) => (
-					<AccordionItem key={option.title} value={option.value}>
-						<AccordionTrigger className="cursor-pointer text-lg font-bold">
-							{option.title}
-						</AccordionTrigger>
-						<AccordionContent className="flex flex-col gap-4 px-2 text-balance">
-							{option.inputs.map((input) => {
-								const isChecked = searchParams.get(input.name) === 'true'
-								const defaultValue = searchParams.get(input.name) || ''
-								return (
-									<React.Fragment key={input.name}>
-										{input.type === 'checkbox' ? (
-											<div className="flex items-start gap-3">
-												<Checkbox
-													id={input.name}
-													defaultChecked={isChecked}
-													onCheckedChange={(value) => {
-														const newSearchParams = new URLSearchParams(
-															searchParams,
-														)
-														if (value) {
-															newSearchParams.set(input.name, 'true')
-														} else {
-															newSearchParams.delete(input.name)
+				{filterInputs.map((option) => {
+					const isCapacityFilter = option.title === 'Capacity'
+					return (
+						<AccordionItem key={option.title} value={option.value}>
+							<AccordionTrigger className="cursor-pointer text-lg font-bold">
+								{option.title}
+							</AccordionTrigger>
+							<AccordionContent className="flex flex-col gap-4 px-2 text-balance">
+								{option.inputs.map((input) => {
+									const isChecked = isCapacityFilter
+										? isCapacityChecked(input.name)
+										: searchParams.get(input.name) === 'true'
+									const defaultValue = searchParams.get(input.name) || ''
+									return (
+										<React.Fragment key={input.name}>
+											{input.type === 'checkbox' ? (
+												<div className="flex items-start gap-3">
+													<Checkbox
+														id={input.name}
+														defaultChecked={isChecked}
+														onCheckedChange={(value) =>
+															handleCheckboxChange(
+																input.name,
+																isCapacityFilter,
+																value,
+															)
 														}
-														setSearchParams(newSearchParams)
-													}}
-												/>
-												<div className="grid gap-2">
+													/>
+													<div className="grid gap-2">
+														<Label htmlFor={input.name}>{input.label}</Label>
+														{input.description ? (
+															<p className="text-muted-foreground text-sm">
+																{input.description}
+															</p>
+														) : null}
+													</div>
+												</div>
+											) : (
+												<div
+													className="grid w-full max-w-sm items-center gap-3"
+													key={input.name}
+												>
 													<Label htmlFor={input.name}>{input.label}</Label>
+													<Input
+														type={input.type}
+														id={input.name}
+														placeholder={input.placeholder}
+														defaultValue={defaultValue}
+														onChange={(e) =>
+															handleInputChange(input.name, e.target.value)
+														}
+													/>
 													{input.description ? (
 														<p className="text-muted-foreground text-sm">
 															{input.description}
 														</p>
 													) : null}
 												</div>
-											</div>
-										) : input.type === 'calendar' ? (
-											<></>
-										) : (
-											<div
-												className="grid w-full max-w-sm items-center gap-3"
-												key={input.name}
-											>
-												<Label htmlFor={input.name}>{input.label}</Label>
-												<Input
-													type={input.type}
-													id={input.name}
-													placeholder={input.placeholder}
-													defaultValue={defaultValue}
-													onChange={(e) => {
-														const newSearchParams = new URLSearchParams(
-															searchParams,
-														)
-														console.log("here's the input:", input, e.target)
-														if (e.target.value) {
-															newSearchParams.set(input.name, e.target.value)
-														} else {
-															newSearchParams.delete(input.name)
-														}
-														setSearchParams(newSearchParams)
-													}}
-												/>
-												{input.description ? (
-													<p className="text-muted-foreground text-sm">
-														{input.description}
-													</p>
-												) : null}
-											</div>
-										)}
-									</React.Fragment>
-								)
-							})}
-						</AccordionContent>
-					</AccordionItem>
-				))}
+											)}
+										</React.Fragment>
+									)
+								})}
+							</AccordionContent>
+						</AccordionItem>
+					)
+				})}
 			</>
 		)
 	}
@@ -199,6 +257,13 @@ export default function VendorsPage() {
 				))}
 			</ul>
 		</nav>
+	)
+
+	const selectedFilters = Object.fromEntries(
+		Array.from(searchParams.entries()).filter(
+			([key, value]) =>
+				value && key !== 'vendorType' && key !== 'city' && key !== 'address',
+		),
 	)
 
 	return (
@@ -227,15 +292,23 @@ export default function VendorsPage() {
 			<section className="container flex items-start gap-6">
 				<div className={clsx('w-1/4', vendor ? 'block' : 'hidden')}>
 					<Form method="get" className="space-y-4">
-						{/* Filter Options */}
-
 						<Accordion type="multiple" className="w-full">
 							{renderFilters()}
 						</Accordion>
 					</Form>
 				</div>
-				<div className="flex flex-1 items-center justify-between border-b py-4">
-					<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
+				<div className="flex flex-1 items-start justify-between border-b py-4">
+					<div>
+						<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
+						{Object.keys(selectedFilters).length > 0 && (
+							<p className="text-sm md:text-base">
+								Selected Filters:{' '}
+								{Object.keys(selectedFilters)
+									.map((key) => `${key}`)
+									.join(', ')}
+							</p>
+						)}
+					</div>
 					<div className="flex items-center gap-2">
 						<span className="text-sm md:text-base">Sort by:</span>
 						<Select>
