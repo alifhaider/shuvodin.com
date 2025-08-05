@@ -93,8 +93,6 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 							return name.split('-').map(Number)
 						})
 
-					console.log('Checked Ranges:', checkedRanges)
-
 					if (checkedRanges.length > 0) {
 						const newMin = Math.min(
 							...checkedRanges.map((range) => range[0] || 0),
@@ -102,7 +100,6 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						const newMax = Math.max(
 							...checkedRanges.map((range) => range[1] || 0),
 						)
-						console.log('Capacity Range:', newMin, newMax)
 						// if 300+ is checked, remove maxCapacity and make minCapacity 300
 						if (checkedRanges.some((range) => range[0] === 300)) {
 							newParams.set('minCapacity', '300')
