@@ -25,6 +25,7 @@ import { getFilterInputs } from '#app/utils/filters.server.ts'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
+import { FilterChips } from '#app/components/filter-chips.tsx'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
@@ -258,12 +259,12 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 		</nav>
 	)
 
-	const selectedFilters = Object.fromEntries(
-		Array.from(searchParams.entries()).filter(
-			([key, value]) =>
-				value && key !== 'vendorType' && key !== 'city' && key !== 'address',
-		),
-	)
+	const selectedFilters: Record<string, string> = {}
+	searchParams.forEach((value, key) => {
+		if (key !== 'vendorType' && key !== 'city' && key !== 'address') {
+			selectedFilters[key] = value
+		}
+	})
 
 	console.log('Selected Filters:', selectedFilters)
 
@@ -301,13 +302,8 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 				<div className="flex flex-1 items-start justify-between border-b py-4">
 					<div>
 						<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
-						{Object.keys(selectedFilters).length > 0 && (
-							<p className="text-sm md:text-base">
-								{Object.keys(selectedFilters)
-									.map((key) => `${key}: ${selectedFilters[key]}`)
-									.join(', ')}
-							</p>
-						)}
+
+						<FilterChips />
 					</div>
 					<div className="flex items-center gap-2">
 						<span className="text-sm md:text-base">Sort by:</span>
