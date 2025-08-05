@@ -23,10 +23,10 @@ import {
 } from '#app/components/ui/select.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
+import { useDebounce } from '#app/utils/misc.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-import { useDebounce } from '#app/utils/misc.tsx'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
