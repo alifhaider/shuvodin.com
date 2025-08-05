@@ -89,7 +89,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						.filter(([, isChecked]) => isChecked)
 						.map(([name]) => {
 							if (name === '300+') return [300]
-							if (name === 'upTo50') return [0, 50]
+							if (name === 'up-to-50') return [0, 50]
 							return name.split('-').map(Number)
 						})
 
@@ -149,7 +149,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 				const max = maxStr === '300+' ? Infinity : parseInt(maxStr || '0')
 
 				if (filterName === '300+') return max === Infinity
-				if (filterName === 'upTo50') return min === 0 && max === 50
+				if (filterName === 'up-to-50') return min === 0 && max === 50
 
 				const [rangeMin, rangeMax] = filterName.split('-').map(Number)
 				return (
@@ -264,6 +264,8 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 				value && key !== 'vendorType' && key !== 'city' && key !== 'address',
 		),
 	)
+
+	console.log('Selected Filters:', selectedFilters)
 
 	return (
 		<>

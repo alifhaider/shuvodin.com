@@ -57,20 +57,20 @@ const photographerFilterInputs: FilterOption[] = [
 		value: 'location-fees',
 		inputs: [
 			{
-				name: 'basedInCity',
+				name: 'based-in-city',
 				type: 'checkbox',
 				label: 'Based in City',
 				description:
 					'Based in the wedding location itself, these photographers might know all the best local spots.',
 			},
 			{
-				name: 'servesThisCity',
+				name: 'serves-this-city',
 				type: 'checkbox',
 				label: 'Serves this city',
 				description: 'Not local but serves your location at no extra cost.',
 			},
 			{
-				name: 'servesThisCityForAdditionalFees',
+				name: 'serves-this-city-for-additional-fees',
 				type: 'checkbox',
 				label: 'Serves this city for additional fees',
 				description:
@@ -102,47 +102,47 @@ const photographerFilterInputs: FilterOption[] = [
 		value: 'services',
 		inputs: [
 			{
-				name: 'brideOnlySession',
+				name: 'bride-only-session',
 				type: 'checkbox',
 				label: 'Bride-only session',
 			},
 			{
-				name: 'dronePhotography',
+				name: 'drone-photography',
 				type: 'checkbox',
 				label: 'Drone photography',
 			},
 			{
-				name: 'engagementSession',
+				name: 'engagement-session',
 				type: 'checkbox',
 				label: 'Engagement session',
 			},
 			{
-				name: 'extraHours',
+				name: 'extra-hours',
 				type: 'checkbox',
 				label: 'Extra hours',
 			},
 			{
-				name: 'imageEditing',
+				name: 'image-editing',
 				type: 'checkbox',
 				label: 'Image editing',
 			},
 			{
-				name: 'onlineProofing',
+				name: 'online-proofing',
 				type: 'checkbox',
 				label: 'Online proofing',
 			},
 			{
-				name: 'printingRights',
+				name: 'printing-rights',
 				type: 'checkbox',
 				label: 'Printing rights',
 			},
 			{
-				name: 'sameDayEdits',
+				name: 'same-day-edits',
 				type: 'checkbox',
 				label: 'Same-day edits',
 			},
 			{
-				name: 'secondPhotographer',
+				name: 'second-photographer',
 				type: 'checkbox',
 				label: 'Second photographer',
 			},
@@ -153,12 +153,12 @@ const photographerFilterInputs: FilterOption[] = [
 		value: 'award-winners',
 		inputs: [
 			{
-				name: 'allBestOfShuvodinWinners',
+				name: 'all-best-of-shuvodin-winners',
 				type: 'checkbox',
 				label: 'All Best of ShuvoDin Winners',
 			},
 			{
-				name: 'bestOfShuvodin2025Winners',
+				name: 'best-of-shuvodin-2025-winners',
 				type: 'checkbox',
 				label: 'Best of ShuvoDin 2025 Winners',
 			},
@@ -169,7 +169,7 @@ const photographerFilterInputs: FilterOption[] = [
 		value: 'photo-format',
 		inputs: [
 			{
-				name: 'digitalOnly',
+				name: 'digital-only',
 				type: 'checkbox',
 				label: 'Digital only',
 				description:
@@ -196,32 +196,32 @@ const photographerFilterInputs: FilterOption[] = [
 		value: 'what-you-get',
 		inputs: [
 			{
-				name: 'digitalFiles',
+				name: 'digital-files',
 				type: 'checkbox',
 				label: 'Digital files',
 			},
 			{
-				name: 'digitalRights',
+				name: 'digital-rights',
 				type: 'checkbox',
 				label: 'Digital rights',
 			},
 			{
-				name: 'onlineGallery',
+				name: 'online-gallery',
 				type: 'checkbox',
 				label: 'Online gallery',
 			},
 			{
-				name: 'photoBox',
+				name: 'photo-box',
 				type: 'checkbox',
 				label: 'Photo box',
 			},
 			{
-				name: 'printedEnlargements',
+				name: 'printed-enlargements',
 				type: 'checkbox',
 				label: 'Printed enlargements',
 			},
 			{
-				name: 'sneakPeekImages',
+				name: 'sneak-peek-images',
 				type: 'checkbox',
 				label: 'Same/next-day sneak-peek images',
 			},
@@ -236,7 +236,7 @@ const photographerFilterInputs: FilterOption[] = [
 				label: 'Video',
 			},
 			{
-				name: 'weddingAlbum',
+				name: 'wedding-album',
 				type: 'checkbox',
 				label: 'Wedding album',
 			},
@@ -287,7 +287,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 				label: '50-100',
 			},
 			{
-				name: 'upTo50',
+				name: 'up-to-50',
 				type: 'checkbox',
 				label: 'Up to 50',
 			},
@@ -310,7 +310,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 					'Not Covered,but can often accommodate temporary options like tents and canopies.',
 			},
 			{
-				name: 'outdoorCovered',
+				name: 'outdoor-covered',
 				type: 'checkbox',
 				label: 'Covered outdoor',
 			},
@@ -321,7 +321,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 		value: 'venue-type',
 		inputs: [
 			{
-				name: 'convention Halls',
+				name: 'convention-halls',
 				type: 'checkbox',
 				label: 'Convention Halls',
 			},
@@ -353,7 +353,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 		value: 'included',
 		inputs: [
 			{
-				name: 'allInclusive',
+				name: 'all-inclusive',
 				type: 'checkbox',
 				label: 'All-inclusive',
 				description:
@@ -367,7 +367,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 					"The venue will provide just the space. You'll bring in your own caterer and vendors.",
 			},
 			{
-				name: 'selectServices',
+				name: 'select-services',
 				type: 'checkbox',
 				label: 'Select services',
 				description:
@@ -381,30 +381,30 @@ const venueFilterInputsSchema: FilterOption[] = [
 		value: 'amenities',
 		inputs: [
 			{
-				name: 'cateringServices',
+				name: 'catering-services',
 				type: 'checkbox',
 				label: 'Catering services',
 			},
 			{
-				name: 'serviceStaff',
+				name: 'service-staff',
 				type: 'checkbox',
 				label: 'Service staff',
 				description: 'Waiters, servers, and cleanup crew',
 			},
 			{
-				name: 'eventCoordinator',
+				name: 'event-coordinator',
 				type: 'checkbox',
 				label: 'Event coordinator',
 				description:
 					'Helps with timeline, vendor coordination, and troubleshooting',
 			},
 			{
-				name: 'bridalSuite',
+				name: 'bridal-suite',
 				type: 'checkbox',
 				label: 'Bridal suite',
 			},
 			{
-				name: 'danceFloor',
+				name: 'dance-floor',
 				type: 'checkbox',
 				label: 'Dance floor',
 			},
@@ -414,7 +414,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 				label: 'Lighting and sound system',
 			},
 			{
-				name: 'eventRentals',
+				name: 'event-rentals',
 				type: 'checkbox',
 				label: 'Event rentals',
 				description: 'Chairs, tables, décor, stage setup etc.',
@@ -437,7 +437,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 		value: 'event-types',
 		inputs: [
 			{
-				name: 'weddingCeremony',
+				name: 'wedding-ceremony',
 				type: 'checkbox',
 				label: 'Wedding ceremony',
 			},
@@ -447,22 +447,22 @@ const venueFilterInputsSchema: FilterOption[] = [
 				label: 'Reception',
 			},
 			{
-				name: 'rehearsalDinner',
+				name: 'rehearsal-dinner',
 				type: 'checkbox',
 				label: 'Rehearsal dinner',
 			},
 			{
-				name: 'weddingShower',
+				name: 'wedding-shower',
 				type: 'checkbox',
 				label: 'Wedding shower',
 			},
 			{
-				name: 'engagementParty',
+				name: 'engagement-party',
 				type: 'checkbox',
 				label: 'Engagement party',
 			},
 			{
-				name: 'birthdayParty',
+				name: 'birthday-party',
 				type: 'checkbox',
 				label: 'Birthday party',
 			},
@@ -470,7 +470,7 @@ const venueFilterInputsSchema: FilterOption[] = [
 				name: 'other',
 				type: 'checkbox',
 				label: 'Other',
-				description: 'Check with the venue for specific event types',
+				description: 'Leave a note in the booking form',
 			},
 		],
 	},
