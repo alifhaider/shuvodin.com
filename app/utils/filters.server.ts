@@ -50,7 +50,7 @@ const awardFilterInputs: FilterOption[] = [
 	},
 ]
 
-export const photographerFilterInputs: FilterOption[] = [
+const photographerFilterInputs: FilterOption[] = [
 	...priceFilterInputs,
 	{
 		title: 'Location and Fees',
@@ -244,7 +244,7 @@ export const photographerFilterInputs: FilterOption[] = [
 	},
 ]
 
-export const venueFilterInputs: FilterOption[] = [
+const venueFilterInputsSchema: FilterOption[] = [
 	...priceFilterInputs,
 	// {
 	// 	title: 'Availability',
@@ -482,7 +482,7 @@ export function getFilterInputs(vendorType: string) {
 		case 'photography':
 			return photographerFilterInputs
 		case 'venues':
-			return venueFilterInputs
+			return venueFilterInputsSchema
 
 		default:
 			return priceFilterInputs
