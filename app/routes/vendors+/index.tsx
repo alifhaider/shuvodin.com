@@ -52,7 +52,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
-	const capacityCheckboxRef = React.useRef<Record<string, boolean>>({})
+	const capacityRangesRef = React.useRef<Record<string, boolean>>({})
 	const [searchParams, setSearchParams] = useSearchParams()
 
 	const vendor = vendorTypes.find(
@@ -108,9 +108,9 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 			// Special case for capacity filters
 			if (filterCategory === 'capacity') {
-				capacityCheckboxRef.current[filterName] = value as boolean
+				capacityRangesRef.current[filterName] = value as boolean
 
-				const checkedRanges = Object.entries(capacityCheckboxRef.current)
+				const checkedRanges = Object.entries(capacityRangesRef.current)
 					.filter(([, isChecked]) => isChecked)
 					.map(([name]) => {
 						if (name === '300+') return [300]
@@ -305,7 +305,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					<div>
 						<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
 
-						<FilterChips capacityRanges={capacityCheckboxRef.current} />
+						<FilterChips capacityRangesRef={capacityRangesRef} />
 					</div>
 					<div className="flex items-center gap-2">
 						<span className="text-sm md:text-base">Sort by:</span>

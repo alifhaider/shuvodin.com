@@ -1,43 +1,78 @@
+import React from 'react'
 import { useSearchParams } from 'react-router'
 import { Icon } from './ui/icon'
 
-export function FilterChips({
-	capacityRanges,
-}: {
-	capacityRanges: Record<string, boolean>
-}) {
-	const [searchParams, setSearchParams] = useSearchParams()
+type FilterType = 'venue-type' | 'price-range' | 'capacity-range' | string
 
-	// Get all active filters
-	const activeFilters = getActiveFilters(searchParams, capacityRanges)
-	console.log('activeFilters', activeFilters)
+interface ActiveFilter {
+	type: FilterType
+	value: string
+	label: string
+}
+
+interface FilterChipsProps {
+	capacityRangesRef: React.MutableRefObject<Record<string, boolean>>
+}
+
+export function FilterChips({ capacityRangesRef }: FilterChipsProps) {
+	const [searchParams, setSearchParams] = useSearchParams()
+	const activeFilters = useActiveFilters(
+		searchParams,
+		capacityRangesRef.current,
+	)
+
+	const handleStandardFilterRemove = (
+		filterType: string,
+		filterValue: string,
+		params: URLSearchParams,
+	) => {
+		const currentValues = params.getAll(filterType)
+
+		if (currentValues.length > 1) {
+			// Remove just this value from multi-value params
+			const updatedValues = currentValues.filter((v) => v !== filterValue)
+			params.delete(filterType)
+			updatedValues.forEach((v) => params.append(filterType, v))
+		} else {
+			// Remove single-value param completely
+			params.delete(filterType)
+		}
+	}
 
 	const handleRemoveFilter = (filter: ActiveFilter) => {
 		const newParams = new URLSearchParams(searchParams)
 
-		if (filter.type === 'price-range') {
-			// Remove price range
-			newParams.delete('minPrice')
-			newParams.delete('maxPrice')
+		switch (filter.type) {
+			case 'capacity-range':
+				handleCapacityRangeRemove(filter.value, newParams)
+				break
+			case 'price-range':
+				newParams.delete('minPrice')
+				newParams.delete('maxPrice')
+				break
+			default:
+				handleStandardFilterRemove(filter.type, filter.value, newParams)
 		}
 
-		const filterkeys = Object.keys(searchParams)
-		console.log('filterkeys', filterkeys)
-
-		// if (filter.type === 'venue-type') {
-		// 	// Remove specific venue type
-		// 	const venueTypes = newParams.getAll('venue-type')
-		// 	newParams.delete('venue-type')
-		// 	venueTypes.forEach((vt) => {
-		// 		if (vt !== filter.value) newParams.append('venue-type', vt)
-		// 	})
-		// } else else if (filter.type === 'capacity-range') {
-		// 	// Remove capacity range
-		// 	newParams.delete('minCapacity')
-		// 	newParams.delete('maxCapacity')
-		// }
-
 		setSearchParams(newParams)
+	}
+
+	const handleCapacityRangeRemove = (
+		value: string,
+		params: URLSearchParams,
+	) => {
+		capacityRangesRef.current[value] = false
+
+		const checkedRanges = getCheckedRanges(capacityRangesRef.current)
+		updateCapacityParams(checkedRanges, params)
+	}
+
+	const handleClearAll = () => {
+		setSearchParams(new URLSearchParams())
+		// Clear all capacity ranges in the ref
+		Object.keys(capacityRangesRef.current).forEach((key) => {
+			capacityRangesRef.current[key] = false
+		})
 	}
 
 	if (activeFilters.length === 0) return null
@@ -45,113 +80,155 @@ export function FilterChips({
 	return (
 		<div className="flex flex-wrap gap-2">
 			{activeFilters.map((filter) => (
-				<button
+				<FilterChip
 					key={`${filter.type}-${filter.value}`}
-					onClick={() => handleRemoveFilter(filter)}
-					className="border-secondary group hover:border-primary/80 flex items-center gap-2 rounded-xl border px-3 py-1 text-sm font-semibold transition-all"
-				>
-					{filter.label}
-					<Icon
-						name="cross-2"
-						className="group-hover:text-primary/80 h-3 w-3 stroke-3"
-					/>
-				</button>
+					filter={filter}
+					onRemove={handleRemoveFilter}
+				/>
 			))}
-			{activeFilters.length > 0 && (
-				<button
-					onClick={() => setSearchParams(new URLSearchParams())}
-					className="border-destructive group hover:bg-destructive hover:text-destructive-foreground flex items-center gap-2 rounded-xl border px-3 py-1 text-sm font-semibold transition-all"
-				>
-					Clear All
-					<Icon
-						name="cross-2"
-						className="group-hover:text-destructive-foreground/80 h-3 w-3 stroke-3"
-					/>
-				</button>
-			)}
+			<ClearAllButton onClear={handleClearAll} />
 		</div>
 	)
 }
 
-type ActiveFilter = {
-	type: 'venue-type' | 'price-range' | 'capacity-range'
-	value: string
-	label: string
-}
+// Helper Components
+const FilterChip = ({
+	filter,
+	onRemove,
+}: {
+	filter: ActiveFilter
+	onRemove: (f: ActiveFilter) => void
+}) => (
+	<button
+		onClick={() => onRemove(filter)}
+		className="border-secondary group hover:border-primary/80 flex items-center gap-2 rounded-xl border px-3 py-1 text-sm font-semibold transition-all"
+	>
+		{filter.label}
+		<Icon
+			name="cross-2"
+			className="group-hover:text-primary/80 h-3 w-3 stroke-3"
+		/>
+	</button>
+)
 
-function getActiveFilters(
+const ClearAllButton = ({ onClear }: { onClear: () => void }) => (
+	<button
+		onClick={onClear}
+		className="border-destructive group hover:bg-destructive hover:text-destructive-foreground flex items-center gap-2 rounded-xl border px-3 py-1 text-sm font-semibold transition-all"
+	>
+		Clear All
+		<Icon
+			name="cross-2"
+			className="group-hover:text-destructive-foreground/80 h-3 w-3 stroke-3"
+		/>
+	</button>
+)
+
+// Custom Hook for Active Filters
+function useActiveFilters(
 	searchParams: URLSearchParams,
 	capacityRanges: Record<string, boolean>,
-): ActiveFilter[] {
-	const filters: ActiveFilter[] = []
-	const seenKeys = new Set<string>()
+) {
+	return React.useMemo(() => {
+		const filters: ActiveFilter[] = []
+		const seenKeys = new Set<string>()
 
-	// Process price range first
-	const minPrice = searchParams.get('minPrice')
-	const maxPrice = searchParams.get('maxPrice')
-	if (minPrice && maxPrice) {
-		filters.push({
-			type: 'price-range',
-			value: `${minPrice}-${maxPrice}`,
-			label: `Tk: ${minPrice} - ${maxPrice}`,
-		})
-		seenKeys.add('minPrice')
-		seenKeys.add('maxPrice')
-	}
+		// Price range
+		const minPrice = searchParams.get('minPrice')
+		const maxPrice = searchParams.get('maxPrice')
+		if (minPrice && maxPrice) {
+			filters.push({
+				type: 'price-range',
+				value: `${minPrice}-${maxPrice}`,
+				label: `Tk: ${minPrice} - ${maxPrice}`,
+			})
+			seenKeys.add('minPrice')
+			seenKeys.add('maxPrice')
+		}
 
-	// Process capacity filters
-	const hasCapacityRange = Object.values(capacityRanges).some(Boolean)
-	if (hasCapacityRange) {
-		// Only show checkbox-based capacity ranges
-		for (const [key, isActive] of Object.entries(capacityRanges)) {
-			if (isActive) {
+		// Capacity ranges
+		const activeCapacityRanges = Object.entries(capacityRanges)
+			.filter(([, isActive]) => isActive)
+			.map(([key]) => key)
+
+		if (activeCapacityRanges.length > 0) {
+			activeCapacityRanges.forEach((key) => {
 				filters.push({
 					type: 'capacity-range',
 					value: key,
-					label:
-						key === 'up-to-50'
-							? `${formatLabel(key)} Guests`
-							: key === '300+'
-								? '300+ Guests'
-								: `${key} Guests`,
+					label: getCapacityLabel(key),
+				})
+			})
+		} else {
+			const minCapacity = searchParams.get('minCapacity')
+			const maxCapacity = searchParams.get('maxCapacity')
+			if (minCapacity && maxCapacity) {
+				filters.push({
+					type: 'capacity-range',
+					value: `${minCapacity}-${maxCapacity}`,
+					label: `${minCapacity}-${maxCapacity} Guests`,
 				})
 			}
 		}
 		seenKeys.add('minCapacity')
 		seenKeys.add('maxCapacity')
-	} else {
-		// Fallback to min/max capacity if no checkboxes are checked
-		const minCapacity = searchParams.get('minCapacity')
-		const maxCapacity = searchParams.get('maxCapacity')
-		if (minCapacity && maxCapacity) {
+
+		// Other filters
+		for (const [key, value] of searchParams.entries()) {
+			if (key === 'vendorType' || seenKeys.has(key)) continue
 			filters.push({
-				type: 'capacity-range',
-				value: `${minCapacity}-${maxCapacity}`,
-				label: `${minCapacity}-${maxCapacity} Guests`,
+				type: key,
+				value,
+				label: formatLabel(value),
 			})
-			seenKeys.add('minCapacity')
-			seenKeys.add('maxCapacity')
 		}
+
+		return filters
+	}, [searchParams, capacityRanges])
+}
+
+// Helper Functions
+function getCheckedRanges(ranges: Record<string, boolean>) {
+	return Object.entries(ranges)
+		.filter(([, isChecked]) => isChecked)
+		.map(([name]) => {
+			if (name === '300+') return [300]
+			if (name === 'up-to-50') return [0, 50]
+			return name.split('-').map(Number)
+		})
+}
+
+function updateCapacityParams(
+	checkedRanges: number[][],
+	params: URLSearchParams,
+) {
+	if (checkedRanges.length === 0) {
+		params.delete('minCapacity')
+		params.delete('maxCapacity')
+		return
 	}
 
-	// Process other filters
-	for (const key of searchParams.keys()) {
-		if (key === 'vendorType' || seenKeys.has(key)) continue
+	const newMin = Math.min(...checkedRanges.map((range) => range[0] || 0))
+	const newMax = Math.max(...checkedRanges.map((range) => range[1] || 0))
 
-		const allValues = searchParams.getAll(key)
-		if (allValues.length > 0) {
-			for (const val of allValues) {
-				filters.push({
-					type: key as ActiveFilter['type'],
-					value: val,
-					label: formatLabel(val),
-				})
-			}
-			seenKeys.add(key)
-		}
+	if (checkedRanges.some((range) => range[0] === 300)) {
+		params.set('minCapacity', '300')
+		params.delete('maxCapacity')
+	} else {
+		params.set('minCapacity', newMin.toString())
+		params.set('maxCapacity', newMax.toString())
 	}
+}
 
-	return filters
+function getCapacityLabel(key: string): string {
+	switch (key) {
+		case 'up-to-50':
+			return 'Up To 50 Guests'
+		case '300+':
+			return '300+ Guests'
+		default:
+			return `${key} Guests`
+	}
 }
 
 function formatLabel(value: string): string {
