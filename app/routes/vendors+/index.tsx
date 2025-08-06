@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import React from 'react'
-import { Form, useSearchParams } from 'react-router'
+import { Form, Link, useSearchParams } from 'react-router'
 import { FilterChips } from '#app/components/filter-chips.tsx'
 import {
 	Accordion,
@@ -23,10 +23,13 @@ import {
 } from '#app/components/ui/select.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
+import { useDebounce } from '#app/utils/misc.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-import { useDebounce } from '#app/utils/misc.tsx'
+import { Image } from 'openimg/react'
+
+// TODO: clearing filter chips not updating form inputs
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
@@ -301,27 +304,67 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						</Accordion>
 					</Form>
 				</div>
-				<div className="flex flex-1 items-start justify-between border-b py-4">
-					<div>
-						<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
+				<div className="flex-1">
+					<div className="flex w-full items-start justify-between border-b py-4">
+						<div className="space-y-2">
+							<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
 
-						<FilterChips capacityRangesRef={capacityRangesRef} />
+							<FilterChips capacityRangesRef={capacityRangesRef} />
+						</div>
+						<div className="flex items-center gap-2">
+							<span className="text-sm md:text-base">Sort by:</span>
+							<Select>
+								<SelectTrigger className="w-[180px]">
+									<SelectValue placeholder="Sort By" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectLabel>Sort Options</SelectLabel>
+										<SelectItem value="relevance">Relevance</SelectItem>
+										<SelectItem value="price">Price</SelectItem>
+										<SelectItem value="rating">Rating</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<span className="text-sm md:text-base">Sort by:</span>
-						<Select>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue placeholder="Sort By" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									<SelectLabel>Sort Options</SelectLabel>
-									<SelectItem value="relevance">Relevance</SelectItem>
-									<SelectItem value="price">Price</SelectItem>
-									<SelectItem value="rating">Rating</SelectItem>
-								</SelectGroup>
-							</SelectContent>
-						</Select>
+
+					<div className="divide-y">
+						<Link to="/vendors/1" className="my-4 flex gap-4 md:gap-6">
+							<Image
+								src="/img/placeholder.png"
+								alt="Vendor 1"
+								width={412}
+								height={240}
+								className="h-60 w-full object-cover"
+							/>
+							<div>
+								<div className="flex items-center">
+									<h4 className="text-xl font-extrabold">
+										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
+									</h4>
+									<Form method="post" className="hover:text-primary ml-4">
+										<Checkbox
+											id="favorite"
+											name="favorite"
+											defaultChecked={false}
+											className="sr-only"
+											onCheckedChange={(checked) => {
+												// Handle favorite toggle logic here
+												console.log('Favorite toggled:', checked)
+											}}
+										/>
+										<Label htmlFor="favorite" className="ml-2">
+											<span className="sr-only">Favorite</span>
+											<Icon name="heart" className="h-4 w-4" />
+										</Label>
+									</Form>
+								</div>
+							</div>
+						</Link>
+						<Link to="/vendors/2">
+							<p>Vendor 2</p>
+						</Link>
 					</div>
 				</div>
 			</section>

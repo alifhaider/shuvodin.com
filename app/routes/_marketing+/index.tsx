@@ -37,42 +37,42 @@ const venueStyles = [
 		title: 'Convention Halls',
 		description: 'Grand spaces for large celebrations',
 		count: '120+ venues',
-		image: '/placeholder.svg?height=250&width=400&text=Convention+Hall',
+		image: '/img/placeholder.png?height=250&width=400&text=Convention+Hall',
 		priceRange: '৳80,000 - ৳300,000',
 	},
 	{
 		title: 'Restaurants',
 		description: 'Intimate dining experiences',
 		count: '200+ venues',
-		image: '/placeholder.svg?height=250&width=400&text=Restaurant',
+		image: '/img/placeholder.png?height=250&width=400&text=Restaurant',
 		priceRange: '৳30,000 - ৳150,000',
 	},
 	{
 		title: 'Community Centers',
 		description: 'Affordable community spaces',
 		count: '85+ venues',
-		image: '/placeholder.svg?height=250&width=400&text=Community+Center',
+		image: '/img/placeholder.png?height=250&width=400&text=Community+Center',
 		priceRange: '৳15,000 - ৳60,000',
 	},
 	{
 		title: 'Outdoor Gardens',
 		description: 'Beautiful natural settings',
 		count: '65+ venues',
-		image: '/placeholder.svg?height=250&width=400&text=Garden+Venue',
+		image: '/img/placeholder.png?height=250&width=400&text=Garden+Venue',
 		priceRange: '৳40,000 - ৳200,000',
 	},
 	{
 		title: 'Rooftop Venues',
 		description: 'Sky-high celebrations',
 		count: '45+ venues',
-		image: '/placeholder.svg?height=250&width=400&text=Rooftop+Venue',
+		image: '/img/placeholder.png?height=250&width=400&text=Rooftop+Venue',
 		priceRange: '৳50,000 - ৳250,000',
 	},
 	{
 		title: 'Heritage Venues',
 		description: 'Historic and cultural spaces',
 		count: '25+ venues',
-		image: '/placeholder.svg?height=250&width=400&text=Heritage+Venue',
+		image: '/img/placeholder.png?height=250&width=400&text=Heritage+Venue',
 		priceRange: '৳100,000 - ৳500,000',
 	},
 ]
@@ -85,7 +85,7 @@ const featuredVendors = [
 		rating: 4.9,
 		reviews: 247,
 		price: '৳35,000',
-		image: '/placeholder.svg?height=300&width=400&text=Royal+Moments',
+		image: '/img/placeholder.png?height=300&width=400&text=Royal+Moments',
 		badge: 'Premium',
 		verified: true,
 	},
@@ -96,7 +96,7 @@ const featuredVendors = [
 		rating: 4.8,
 		reviews: 189,
 		price: '৳180,000',
-		image: '/placeholder.svg?height=300&width=400&text=Golden+Palace',
+		image: '/img/placeholder.png?height=300&width=400&text=Golden+Palace',
 		badge: 'Popular',
 		verified: true,
 	},
@@ -107,7 +107,7 @@ const featuredVendors = [
 		rating: 4.7,
 		reviews: 312,
 		price: '৳1,200/person',
-		image: '/placeholder.svg?height=300&width=400&text=Spice+Garden',
+		image: '/img/placeholder.png?height=300&width=400&text=Spice+Garden',
 		badge: 'Top Rated',
 		verified: true,
 	},
@@ -118,7 +118,7 @@ const featuredVendors = [
 		rating: 4.9,
 		reviews: 156,
 		price: '৳45,000',
-		image: '/placeholder.svg?height=300&width=400&text=Elegant+Decorations',
+		image: '/img/placeholder.png?height=300&width=400&text=Elegant+Decorations',
 		badge: 'Premium',
 		verified: true,
 	},
@@ -130,21 +130,21 @@ const testimonials = [
 		location: 'Dhaka',
 		text: 'ShuvoDin made our wedding planning so much easier. We found amazing vendors and saved both time and money!',
 		rating: 5,
-		image: '/placeholder.svg?height=60&width=60&text=FR',
+		image: '/img/placeholder.png?height=60&width=60&text=FR',
 	},
 	{
 		name: 'Ahmed Hassan',
 		location: 'Chittagong',
 		text: 'The quality of vendors on ShuvoDin is exceptional. Our photographer was absolutely perfect for our special day.',
 		rating: 5,
-		image: '/placeholder.svg?height=60&width=60&text=AH',
+		image: '/img/placeholder.png?height=60&width=60&text=AH',
 	},
 	{
 		name: 'Rashida Begum',
 		location: 'Sylhet',
 		text: 'From venue to catering, everything was seamlessly coordinated through ShuvoDin. Highly recommended!',
 		rating: 5,
-		image: '/placeholder.svg?height=60&width=60&text=RB',
+		image: '/img/placeholder.png?height=60&width=60&text=RB',
 	},
 ]
 
@@ -389,7 +389,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 										width={400}
 										height={250}
 										loading="lazy"
-										src={venue.image || '/placeholder.svg'}
+										src={venue.image || '/img/placeholder.png'}
 										alt={venue.title}
 										className="object-cover transition-transform duration-300 group-hover:scale-105"
 									/>
@@ -445,7 +445,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 										width={400}
 										height={300}
 										loading="lazy"
-										src={vendor.image || '/placeholder.svg'}
+										src={vendor.image || '/img/placeholder.png'}
 										alt={vendor.name}
 										className="object-cover transition-transform duration-300 group-hover:scale-105"
 									/>
@@ -535,7 +535,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 									/>
 									<div className="flex items-center gap-4">
 										<Image
-											src={testimonial.image || '/placeholder.svg'}
+											src={testimonial.image || '/img/placeholder.png'}
 											alt={testimonial.name}
 											width={60}
 											height={60}
@@ -576,7 +576,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 						width={1600}
 						height={800}
 						loading="eager"
-						src="/placeholder.svg?height=600&width=1600&text=Wedding+Celebration"
+						src="/img/placeholder.png?height=600&width=1600&text=Wedding+Celebration"
 						alt="Wedding Celebration"
 						className="object-cover"
 					/>
