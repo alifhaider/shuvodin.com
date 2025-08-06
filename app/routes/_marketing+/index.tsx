@@ -1,4 +1,5 @@
 import { Image } from 'openimg/react'
+import { Form } from 'react-router'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -8,10 +9,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from '#app/components/ui/card.tsx'
-import { Icon, type IconName } from '#app/components/ui/icon.tsx'
-import { Input } from '#app/components/ui/input.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { type Route } from './+types/index.ts'
 import {
 	Carousel,
 	CarouselContent,
@@ -19,67 +16,20 @@ import {
 	CarouselNext,
 	CarouselPrevious,
 } from '#app/components/ui/carousel.tsx'
+import { Icon, type IconName } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
+import { vendorTypes } from '#app/utils/constants.ts'
+import { type Route } from './+types/index.ts'
 
-export const meta: Route.MetaFunction = () => [{ title: 'ShuvoDin' }]
+export const meta: Route.MetaFunction = () => {
+	return [{ title: 'Home / ShuvoDin' }]
+}
 
 const stats = [
 	{ number: '10,000+', label: 'Happy Couples', icon: 'heart' },
 	{ number: '1,500+', label: 'Verified Vendors', icon: 'shield' },
 	{ number: '50+', label: 'Cities Covered', icon: 'map-pin' },
 	{ number: '98%', label: 'Satisfaction Rate', icon: 'star' },
-]
-
-const serviceCategories = [
-	{
-		icon: 'camera',
-		title: 'Photography',
-		color: 'bg-blue-50 text-blue-600',
-	},
-	{
-		icon: 'building-2',
-		title: 'Venues',
-		color: 'bg-purple-50 text-purple-600',
-	},
-	{
-		icon: 'utensils',
-		title: 'Catering',
-		color: 'bg-green-50 text-green-600',
-	},
-	{
-		icon: 'palette',
-		title: 'Decoration',
-		color: 'bg-pink-50 text-pink-600',
-	},
-	{
-		icon: 'users',
-		title: 'Event Planning',
-		color: 'bg-orange-50 text-orange-600',
-	},
-	{
-		icon: 'music',
-		title: 'Entertainment',
-		color: 'bg-indigo-50 text-indigo-600',
-	},
-	{
-		icon: 'car',
-		title: 'Transportation',
-		color: 'bg-red-50 text-red-600',
-	},
-	{
-		icon: 'flower-2',
-		title: 'Floristry',
-		color: 'bg-emerald-50 text-emerald-600',
-	},
-	{
-		icon: 'cake',
-		title: 'Wedding Cakes',
-		color: 'bg-yellow-50 text-yellow-600',
-	},
-	{
-		icon: 'shirt',
-		title: 'Bridal Wear',
-		color: 'bg-teal-50 text-teal-600',
-	},
 ]
 
 const venueStyles = [
@@ -233,21 +183,18 @@ const popularLocations = [
 	},
 ]
 
-export async function loader() {
-	const vendorCategories = await prisma.vendorCategory.findMany({
-		select: {
-			name: true,
-			id: true,
-		},
-		orderBy: {
-			name: 'asc',
-		},
-	})
-	return { vendorCategories }
+export async function loader({ request }: Route.LoaderArgs) {
+	const searchParams = new URL(request.url).searchParams
+	const vendorType = searchParams.get('vendorType') ?? ''
+	const city = searchParams.get('city') ?? ''
+	const address = searchParams.get('address') ?? ''
+	const minPrice = searchParams.get('minPrice') ?? ''
+	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+	return { vendors: [], testimonials: [], popularLocations: [] } as const
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
-	const { vendorCategories } = loaderData
 	return (
 		<>
 			<section className="relative overflow-hidden py-20 lg:py-32">
@@ -348,19 +295,27 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 					</h2>
 
 					<div className="mt-10 grid gap-6 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
-						{serviceCategories.map((service, index) => (
-							<div
-								key={index}
-								className="group flex cursor-pointer flex-col items-center space-y-2 transition-transform duration-300"
+						{vendorTypes.map((vendor) => (
+							<Form
+								action="/vendors"
+								method="GET"
+								className="h-full w-full"
+								key={`vendor-type-${vendor.slug}`}
 							>
-								<div className="bg-secondary group-hover:bg-accent rounded-full p-6 text-center transition-transform duration-300">
-									<Icon
-										name={service.icon as IconName}
-										className="h-8 w-8 group-hover:fill-white"
-									/>
-								</div>
-								<p className="text-center">{service.title}</p>
-							</div>
+								<input type="hidden" name="vendorType" value={vendor.slug} />
+								<button
+									type="submit"
+									className="group flex cursor-pointer flex-col items-center space-y-2 transition-transform duration-300"
+								>
+									<div className="bg-secondary group-hover:bg-accent rounded-full p-6 text-center transition-transform duration-300">
+										<Icon
+											name={vendor.icon as IconName}
+											className="h-8 w-8 group-hover:fill-white"
+										/>
+									</div>
+									<p className="text-center">{vendor.title}</p>
+								</button>
+							</Form>
 						))}
 					</div>
 				</div>
@@ -384,19 +339,24 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 								key={index}
 								className="group relative basis-1/2 cursor-pointer overflow-hidden rounded-lg pl-0 transition-all duration-300 hover:shadow-lg md:basis-1/3 lg:basis-1/5"
 							>
-								<Image
-									width={260}
-									height={400}
-									loading="lazy"
-									src={location.image}
-									alt={location.name}
-									className="w-full rounded-lg object-cover brightness-75 duration-300 group-hover:scale-105 group-hover:brightness-50"
-								/>
-								<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
-									<h3 className="font-serif text-lg font-bold">
-										{location.name}
-									</h3>
-								</div>
+								<Form action="/vendors" method="GET" key={index}>
+									<input type="hidden" name="city" value={location.name} />
+									<button type="submit" className="cursor-pointer">
+										<Image
+											width={260}
+											height={400}
+											loading="lazy"
+											src={location.image}
+											alt={location.name}
+											className="w-full rounded-lg object-cover brightness-75 duration-300 group-hover:scale-105 group-hover:brightness-50"
+										/>
+										<div className="bg-primary absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-3xl px-4 py-1.5 text-white">
+											<h3 className="font-serif text-lg font-bold">
+												{location.name}
+											</h3>
+										</div>
+									</button>
+								</Form>
 							</CarouselItem>
 						))}
 					</CarouselContent>
