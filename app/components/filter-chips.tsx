@@ -101,7 +101,7 @@ const FilterChip = ({
 }) => (
 	<button
 		onClick={() => onRemove(filter)}
-		className="border-secondary group hover:border-primary/80 flex items-center gap-2 rounded-xl border px-3 py-1 text-sm font-semibold transition-all"
+		className="border-secondary group hover:border-primary/80 flex items-center gap-2 rounded-lg border px-3 py-1 text-sm font-semibold transition-all"
 	>
 		{filter.label}
 		<Icon
@@ -114,12 +114,12 @@ const FilterChip = ({
 const ClearAllButton = ({ onClear }: { onClear: () => void }) => (
 	<button
 		onClick={onClear}
-		className="border-destructive group hover:bg-destructive hover:text-destructive-foreground flex items-center gap-2 rounded-xl border px-3 py-1 text-sm font-semibold transition-all"
+		className="border-secondary-foreground group hover:border-destructive hover:text-destructive flex items-center gap-2 rounded-lg border px-3 py-1 text-sm font-semibold transition-all"
 	>
 		Clear All
 		<Icon
 			name="cross-2"
-			className="group-hover:text-destructive-foreground/80 h-3 w-3 stroke-3"
+			className="group-hover:text-destructive/80 h-3 w-3 stroke-3"
 		/>
 	</button>
 )
@@ -136,6 +136,7 @@ function useActiveFilters(
 		// Price range
 		const minPrice = searchParams.get('minPrice')
 		const maxPrice = searchParams.get('maxPrice')
+
 		if (minPrice && maxPrice) {
 			filters.push({
 				type: 'price-range',
