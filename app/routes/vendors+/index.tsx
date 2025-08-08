@@ -1,6 +1,7 @@
 import clsx from 'clsx'
+import { Image } from 'openimg/react'
 import React from 'react'
-import { Form, Link, useSearchParams } from 'react-router'
+import { Form, Link, useNavigation, useSearchParams } from 'react-router'
 import { FilterChips } from '#app/components/filter-chips.tsx'
 import {
 	Accordion,
@@ -27,7 +28,6 @@ import { useDebounce } from '#app/utils/misc.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-import { Image } from 'openimg/react'
 
 // TODO: clearing filter chips not updating form inputs
 
@@ -51,11 +51,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// )
 
 	const vendors = {}
-	return { vendors, filterSchema }
+	return { vendors, filterSchema, ok: true }
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
-	const capacityRangesRef = React.useRef<Record<string, boolean>>({})
+	let navigation = useNavigation()
+	const $capacityRanges = React.useRef<Record<string, boolean>>({})
+	const $form = React.useRef<HTMLFormElement>(null)
 	const [searchParams, setSearchParams] = useSearchParams()
 
 	const vendor = vendorTypes.find(
@@ -111,9 +113,9 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 			// Special case for capacity filters
 			if (filterCategory === 'capacity') {
-				capacityRangesRef.current[filterName] = value as boolean
+				$capacityRanges.current[filterName] = value as boolean
 
-				const checkedRanges = Object.entries(capacityRangesRef.current)
+				const checkedRanges = Object.entries($capacityRanges.current)
 					.filter(([, isChecked]) => isChecked)
 					.map(([name]) => {
 						if (name === '300+') return [300]
@@ -160,6 +162,18 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 				updatedValues.forEach((v) => newParams.append(paramName, v))
 			}
 
+			return newParams
+		})
+	}
+
+	const handleSortChange = (value: string) => {
+		setSearchParams((prev) => {
+			const newParams = new URLSearchParams(prev)
+			if (value === 'relevance') {
+				newParams.delete('sortOrder')
+			} else {
+				newParams.set('sortOrder', value)
+			}
 			return newParams
 		})
 	}
@@ -298,7 +312,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			</section>
 			<section className="container flex items-start gap-6">
 				<div className={clsx('w-1/4', vendor ? 'block' : 'hidden')}>
-					<Form method="get" className="space-y-4">
+					<Form method="get" className="space-y-4" ref={$form} reloadDocument>
 						<Accordion type="multiple" className="w-full">
 							{renderFilters()}
 						</Accordion>
@@ -309,7 +323,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						<div className="space-y-2">
 							<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
 
-							<FilterChips capacityRangesRef={capacityRangesRef} />
+							<FilterChips $capacityRanges={$capacityRanges} $form={$form} />
 						</div>
 						<div className="flex items-center gap-2">
 							<span className="text-sm md:text-base">Sort by:</span>
@@ -339,11 +353,15 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 								className="h-60 w-full object-cover"
 							/>
 							<div>
-								<div className="flex items-center">
-									<h4 className="text-xl font-extrabold">
+								<div className="mb-1.5 flex items-center">
+									<h4 className="line-clamp-1 text-xl font-extrabold">
 										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
 									</h4>
-									<Form method="post" className="hover:text-primary ml-4">
+
+									<Form
+										method="post"
+										className="hover:text-primary ml-4 flex items-center"
+									>
 										<Checkbox
 											id="favorite"
 											name="favorite"
@@ -359,6 +377,37 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 											<Icon name="heart" className="h-4 w-4" />
 										</Label>
 									</Form>
+								</div>
+								<div className="flex items-center">
+									{Array.from({ length: 5 }, (_, index) => (
+										<Icon
+											key={index}
+											name="star"
+											className={clsx(
+												'h-4 w-4',
+												index < 4
+													? 'fill-yellow-500 text-yellow-500'
+													: 'text-gray-300',
+											)}
+										/>
+									))}
+									<span className="ml-1 text-base">{4.5}</span>
+
+									<span className="ml-3 text-sm font-medium">
+										<Icon name="map-pin" className="h-4 w-4" />
+										Dhaka, Main Street 1
+									</span>
+								</div>
+
+								<div className="flex items-center gap-3">
+									<div className="flex items-center gap-1">
+										<Icon name="users" className="h-4 w-4" />
+										<span className="text-sm">100+ Guests</span>
+									</div>
+									<div className="flex items-center gap-1">
+										<Icon name="clock" className="h-4 w-4" />
+										<span className="text-sm">2 Years Experience</span>
+									</div>
 								</div>
 							</div>
 						</Link>
