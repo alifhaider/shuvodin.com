@@ -1,7 +1,8 @@
 import clsx from 'clsx'
 import { Image } from 'openimg/react'
 import React from 'react'
-import { Form, Link, useNavigation, useSearchParams } from 'react-router'
+import { Form, Link, useSearchParams } from 'react-router'
+import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { FilterChips } from '#app/components/filter-chips.tsx'
 import {
 	Accordion,
@@ -36,13 +37,82 @@ export const meta: Route.MetaFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const mockVendors = [
+		{
+			id: '1',
+			name: 'Vendor One',
+			type: 'Catering',
+			city: 'Dhaka',
+			address: '123 Main St',
+			badges: ['Most Popular'],
+			startingPrice: 10000,
+			capacity: 100,
+			rating: 4.5,
+			image: '/img/placeholder.png',
+			description: 'A top-rated catering service in Dhaka.',
+			reviews: [
+				{
+					id: '1',
+					content: 'Great service and delicious food!',
+					rating: 5,
+					createdAt: '2023-10-01',
+					author: 'John Doe',
+				},
+			],
+		},
+		{
+			id: '2',
+			name: 'Vendor Two',
+			type: 'Catering',
+			city: 'Dhaka',
+			address: '456 Elm St',
+			badges: ['Best Value'],
+			startingPrice: 15000,
+			capacity: 50,
+			rating: 4.0,
+			image: '/img/placeholder.png',
+			description: 'Affordable catering services in Dhaka.',
+			reviews: [
+				{
+					id: '2',
+					content: 'Good value for money!',
+					rating: 4,
+					createdAt: '2023-09-15',
+					author: 'John Doe',
+				},
+			],
+		},
+		{
+			id: '3',
+			name: 'Vendor Three',
+			type: 'Catering',
+			city: 'Dhaka',
+			badges: ['Top Rated'],
+			address: '789 Oak St',
+			startingPrice: 20000,
+			capacity: 75,
+			rating: 4.2,
+			image: '/img/placeholder.png',
+			description: 'Quality catering services with a variety of options.',
+			reviews: [
+				{
+					id: '3',
+					author: 'Jane Doe',
+					content: 'Excellent food and service!',
+					rating: 5,
+					createdAt: '2023-10-01',
+				},
+			],
+		},
+	]
+
 	const searchParams = new URL(request.url).searchParams
 	const vendorType = searchParams.get('vendorType') ?? ''
-	const city = searchParams.get('city') ?? ''
-	const address = searchParams.get('address') ?? ''
-	const minPrice = searchParams.get('minPrice') ?? ''
-	const maxPrice = searchParams.get('maxPrice') ?? ''
-	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+	// const city = searchParams.get('city') ?? ''
+	// const address = searchParams.get('address') ?? ''
+	// const minPrice = searchParams.get('minPrice') ?? ''
+	// const maxPrice = searchParams.get('maxPrice') ?? ''
+	// const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
 
 	const filterSchema = getFilterInputs(vendorType)
 
@@ -50,12 +120,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// 	getVendors(vendorType, city, address, minPrice, maxPrice, sortOrder),
 	// )
 
-	const vendors = {}
-	return { vendors, filterSchema, ok: true }
+	return { vendors: mockVendors, filterSchema, ok: true }
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
-	let navigation = useNavigation()
 	const $capacityRanges = React.useRef<Record<string, boolean>>({})
 	const $form = React.useRef<HTMLFormElement>(null)
 	const [searchParams, setSearchParams] = useSearchParams()
@@ -256,28 +324,6 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 		)
 	}
 
-	const renderBreadcrumbs = () => (
-		<nav>
-			<ul className="flex space-x-1">
-				{breadcrumbs.map((breadcrumb, index) => (
-					<li key={index}>
-						<Link
-							to={breadcrumb.to}
-							className="text-primary text-base hover:underline"
-						>
-							{breadcrumb.label}
-						</Link>
-						{index < breadcrumbs.length - 1 && breadcrumbs[index + 1]?.label ? (
-							<span>
-								<Icon name="chevron-right" className="mx-1 h-4 w-4" />
-							</span>
-						) : null}
-					</li>
-				))}
-			</ul>
-		</nav>
-	)
-
 	const selectedFilters: Record<string, string> = {}
 	searchParams.forEach((value, key) => {
 		if (key !== 'vendorType' && key !== 'city' && key !== 'address') {
@@ -291,7 +337,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 		<>
 			<section className="from-primary/10 via-accent/5 to-secondary/10 border-b bg-gradient-to-r py-12">
 				<div className="container space-y-6">
-					{renderBreadcrumbs()}
+					<Breadcrumb items={breadcrumbs} />
 					<div className="max-w-4xl space-y-3">
 						<h1 className="font-serif text-xl font-bold capitalize md:text-4xl">
 							The Best <span className="text-primary">{vendorType}</span>{' '}
@@ -327,326 +373,139 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						</div>
 						<div className="flex items-center gap-2">
 							<span className="text-sm md:text-base">Sort by:</span>
-							<Select>
-								<SelectTrigger className="w-[180px]">
-									<SelectValue placeholder="Sort By" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										<SelectLabel>Sort Options</SelectLabel>
-										<SelectItem value="relevance">Relevance</SelectItem>
-										<SelectItem value="price">Price</SelectItem>
-										<SelectItem value="rating">Rating</SelectItem>
-									</SelectGroup>
-								</SelectContent>
-							</Select>
+							<Form method="get" className="w-40">
+								<Select
+									name="sortOrder"
+									defaultValue={searchParams.get('sortOrder') || 'relevance'}
+									onValueChange={handleSortChange}
+								>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue placeholder="Sort By" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											<SelectLabel>Sort Options</SelectLabel>
+											<SelectItem value="relevance">Relevance</SelectItem>
+											<SelectItem value="price">Price</SelectItem>
+											<SelectItem value="rating">Rating</SelectItem>
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</Form>
 						</div>
 					</div>
 
 					<div className="divide-accent-foreground/10 divide-y">
-						<Link to="/vendors/1" className="flex gap-4 py-4 md:gap-6">
-							<div className="relative">
-								<Image
-									src="/img/placeholder.png"
-									alt="Vendor 1"
-									width={412}
-									height={240}
-									className="h-60 w-full rounded-lg object-cover"
-								/>
+						{loaderData.vendors.map((vendor) => (
+							<Link
+								key={vendor.id}
+								to={`/vendors/${vendor.id}`}
+								className="group flex gap-4 py-4 md:gap-6"
+							>
+								<div className="relative h-60 min-w-103">
+									<Image
+										src={vendor.image || '/img/placeholder.png'}
+										alt={`Vendor ${vendor.id}`}
+										width={412}
+										height={240}
+										className="h-60 w-full rounded-lg object-cover"
+									/>
 
-								<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
-									Most Popular
-								</div>
-							</div>
-							<div className="space-y-2">
-								<div className="flex items-center">
-									<h4 className="line-clamp-1 text-xl font-extrabold">
-										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
-									</h4>
-
-									<Form
-										method="post"
-										className="hover:text-primary ml-4 flex items-center"
-									>
-										<Checkbox
-											id="favorite"
-											name="favorite"
-											defaultChecked={false}
-											className="sr-only"
-											onCheckedChange={(checked) => {
-												// Handle favorite toggle logic here
-												console.log('Favorite toggled:', checked)
-											}}
-										/>
-										<Label htmlFor="favorite" className="ml-2">
-											<span className="sr-only">Favorite</span>
-											<Icon name="heart" className="h-4 w-4" />
-										</Label>
-									</Form>
-								</div>
-								<div className="flex items-center">
-									{Array.from({ length: 5 }, (_, index) => (
-										<Icon
-											key={index}
-											name="star"
-											className={clsx(
-												'h-3.5 w-3.5',
-												index < 4
-													? 'fill-yellow-500 text-yellow-500'
-													: 'text-gray-300',
-											)}
-										/>
-									))}
-									<span className="ml-1 text-base">{4.5}</span>
-
-									<span className="ml-3 text-sm font-medium">
-										<Icon name="map-pin" className="h-4 w-4" />
-										Dhaka, Main Street 1
-									</span>
-								</div>
-
-								<div className="flex items-center gap-4 font-bold">
-									<div className="flex items-center gap-1">
-										<Icon name="coins" className="h-4 w-4" />
-										<span className="text-sm">Starts at 20,000 tk</span>
-									</div>
-									<div className="flex items-center gap-1">
-										<Icon name="users" className="h-4 w-4" />
-										<span className="text-sm">100+ Guests</span>
+									<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
+										{vendor.badges?.[0]}
 									</div>
 								</div>
+								<div className="w-full space-y-2">
+									<div className="flex items-center">
+										<h4 className="line-clamp-1 text-xl font-extrabold group-hover:underline">
+											{vendor.name}
+										</h4>
 
-								<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-									<p className="text-secondary-foreground pb-10 text-sm">
-										Vendor 1 is a top-rated wedding vendor offering exceptional
-										services in Dhaka. With a focus on quality and customer
-										satisfaction, Vendor 1 has become a favorite among couples
-										planning their weddings.
-										<br />
-										<br />
-										Services include photography, catering, and event planning.
-										Whether you're looking for a photographer, caterer, or event
-										planner, Vendor 1 has you covered. Their team of experts is
-										dedicated to making your wedding day unforgettable.
-									</p>
-								</div>
-
-								<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
-									<p>
-										Review Card
-										<button className="text-primary ml-4 font-semibold">
-											Read More
-										</button>
-									</p>
-
-									<span className="text-muted-foreground text-xs font-medium">
-										Reviewed by John Doe on 2023-10-01
-									</span>
-								</div>
-							</div>
-						</Link>
-						<Link to="/vendors/1" className="flex gap-4 py-4 md:gap-6">
-							<div className="relative">
-								<Image
-									src="/img/placeholder.png"
-									alt="Vendor 1"
-									width={412}
-									height={240}
-									className="h-60 w-full rounded-lg object-cover"
-								/>
-
-								<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
-									Most Popular
-								</div>
-							</div>
-							<div className="space-y-2">
-								<div className="flex items-center">
-									<h4 className="line-clamp-1 text-xl font-extrabold">
-										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
-									</h4>
-
-									<Form
-										method="post"
-										className="hover:text-primary ml-4 flex items-center"
-									>
-										<Checkbox
-											id="favorite"
-											name="favorite"
-											defaultChecked={false}
-											className="sr-only"
-											onCheckedChange={(checked) => {
-												// Handle favorite toggle logic here
-												console.log('Favorite toggled:', checked)
-											}}
-										/>
-										<Label htmlFor="favorite" className="ml-2">
-											<span className="sr-only">Favorite</span>
-											<Icon name="heart" className="h-4 w-4" />
-										</Label>
-									</Form>
-								</div>
-								<div className="flex items-center">
-									{Array.from({ length: 5 }, (_, index) => (
-										<Icon
-											key={index}
-											name="star"
-											className={clsx(
-												'h-3.5 w-3.5',
-												index < 4
-													? 'fill-yellow-500 text-yellow-500'
-													: 'text-gray-300',
-											)}
-										/>
-									))}
-									<span className="ml-1 text-base">{4.5}</span>
-
-									<span className="ml-3 text-sm font-medium">
-										<Icon name="map-pin" className="h-4 w-4" />
-										Dhaka, Main Street 1
-									</span>
-								</div>
-
-								<div className="flex items-center gap-4 font-bold">
-									<div className="flex items-center gap-1">
-										<Icon name="coins" className="h-4 w-4" />
-										<span className="text-sm">Starts at 20,000 tk</span>
+										<Form
+											method="post"
+											className="hover:text-primary ml-4 flex items-center"
+										>
+											<Checkbox
+												id="favorite"
+												name="favorite"
+												defaultChecked={false}
+												className="sr-only"
+												onCheckedChange={(checked) => {
+													// Handle favorite toggle logic here
+													console.log('Favorite toggled:', checked)
+												}}
+											/>
+											<Label htmlFor="favorite" className="ml-2">
+												<span className="sr-only">Favorite</span>
+												<Icon name="heart" className="h-4 w-4" />
+											</Label>
+										</Form>
 									</div>
-									<div className="flex items-center gap-1">
-										<Icon name="users" className="h-4 w-4" />
-										<span className="text-sm">100+ Guests</span>
+									<div className="flex items-center">
+										{Array.from({ length: 5 }, (_, index) => (
+											<Icon
+												key={index}
+												name="star"
+												className={clsx(
+													'h-3.5 w-3.5',
+													index < vendor.rating
+														? 'fill-yellow-500 text-yellow-500'
+														: 'text-gray-300',
+												)}
+											/>
+										))}
+										<span className="ml-1 text-base">{vendor.rating}</span>
+
+										<span className="ml-3 text-sm font-medium">
+											<Icon name="map-pin" className="h-4 w-4" />
+											{vendor.city}- {vendor?.address}
+										</span>
 									</div>
-								</div>
 
-								<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-									<p className="text-secondary-foreground pb-10 text-sm">
-										Vendor 1 is a top-rated wedding vendor offering exceptional
-										services in Dhaka. With a focus on quality and customer
-										satisfaction, Vendor 1 has become a favorite among couples
-										planning their weddings.
-										<br />
-										<br />
-										Services include photography, catering, and event planning.
-										Whether you're looking for a photographer, caterer, or event
-										planner, Vendor 1 has you covered. Their team of experts is
-										dedicated to making your wedding day unforgettable.
-									</p>
-								</div>
-
-								<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
-									<p>
-										Review Card
-										<button className="text-primary ml-4 font-semibold">
-											Read More
-										</button>
-									</p>
-
-									<span className="text-muted-foreground text-xs font-medium">
-										Reviewed by John Doe on 2023-10-01
-									</span>
-								</div>
-							</div>
-						</Link>
-						<Link to="/vendors/1" className="flex gap-4 py-4 md:gap-6">
-							<div className="relative">
-								<Image
-									src="/img/placeholder.png"
-									alt="Vendor 1"
-									width={412}
-									height={240}
-									className="h-60 w-full rounded-lg object-cover"
-								/>
-
-								<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
-									Most Popular
-								</div>
-							</div>
-							<div className="space-y-2">
-								<div className="flex items-center">
-									<h4 className="line-clamp-1 text-xl font-extrabold">
-										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
-									</h4>
-
-									<Form
-										method="post"
-										className="hover:text-primary ml-4 flex items-center"
-									>
-										<Checkbox
-											id="favorite"
-											name="favorite"
-											defaultChecked={false}
-											className="sr-only"
-											onCheckedChange={(checked) => {
-												// Handle favorite toggle logic here
-												console.log('Favorite toggled:', checked)
-											}}
-										/>
-										<Label htmlFor="favorite" className="ml-2">
-											<span className="sr-only">Favorite</span>
-											<Icon name="heart" className="h-4 w-4" />
-										</Label>
-									</Form>
-								</div>
-								<div className="flex items-center">
-									{Array.from({ length: 5 }, (_, index) => (
-										<Icon
-											key={index}
-											name="star"
-											className={clsx(
-												'h-3.5 w-3.5',
-												index < 4
-													? 'fill-yellow-500 text-yellow-500'
-													: 'text-gray-300',
-											)}
-										/>
-									))}
-									<span className="ml-1 text-base">{4.5}</span>
-
-									<span className="ml-3 text-sm font-medium">
-										<Icon name="map-pin" className="h-4 w-4" />
-										Dhaka, Main Street 1
-									</span>
-								</div>
-
-								<div className="flex items-center gap-4 font-bold">
-									<div className="flex items-center gap-1">
-										<Icon name="coins" className="h-4 w-4" />
-										<span className="text-sm">Starts at 20,000 tk</span>
+									<div className="flex items-center gap-4 font-bold">
+										<div className="flex items-center gap-1">
+											<Icon name="coins" className="h-4 w-4" />
+											<span className="text-sm">
+												Starts at {vendor.startingPrice} tk
+											</span>
+										</div>
+										<div className="flex items-center gap-1">
+											<Icon name="users" className="h-4 w-4" />
+											<span className="text-sm">{vendor.capacity} Guests</span>
+										</div>
 									</div>
-									<div className="flex items-center gap-1">
-										<Icon name="users" className="h-4 w-4" />
-										<span className="text-sm">100+ Guests</span>
+
+									<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+										<p className="text-secondary-foreground pb-10 text-sm">
+											{vendor.description}
+										</p>
 									</div>
-								</div>
+									{vendor.reviews.length > 0 && (
+										<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
+											<p>
+												{vendor.reviews[0]?.content}
+												{vendor.reviews[0] &&
+													vendor.reviews[0]?.content?.length > 100 &&
+													'...'}
+												{/* Show "Read More" button if content is truncated */}
+												{vendor.reviews[0] &&
+													vendor.reviews[0]?.content?.length > 100 && (
+														<button className="text-primary ml-4 font-semibold">
+															Read More
+														</button>
+													)}
+											</p>
 
-								<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-									<p className="text-secondary-foreground pb-10 text-sm">
-										Vendor 1 is a top-rated wedding vendor offering exceptional
-										services in Dhaka. With a focus on quality and customer
-										satisfaction, Vendor 1 has become a favorite among couples
-										planning their weddings.
-										<br />
-										<br />
-										Services include photography, catering, and event planning.
-										Whether you're looking for a photographer, caterer, or event
-										planner, Vendor 1 has you covered. Their team of experts is
-										dedicated to making your wedding day unforgettable.
-									</p>
+											<span className="text-muted-foreground text-xs font-medium">
+												Reviewed by{' '}
+												<strong>{vendor.reviews[0]?.author} </strong>on{' '}
+												<strong>{vendor.reviews[0]?.createdAt}</strong>
+											</span>
+										</div>
+									)}
 								</div>
-
-								<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
-									<p>
-										Review Card
-										<button className="text-primary ml-4 font-semibold">
-											Read More
-										</button>
-									</p>
-
-									<span className="text-muted-foreground text-xs font-medium">
-										Reviewed by John Doe on 2023-10-01
-									</span>
-								</div>
-							</div>
-						</Link>
+							</Link>
+						))}
 					</div>
 				</div>
 			</section>
