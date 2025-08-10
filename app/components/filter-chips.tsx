@@ -112,7 +112,7 @@ const FilterChip = ({
 const ClearAllButton = ({ onClear }: { onClear: () => void }) => (
 	<button
 		onClick={onClear}
-		className="border-secondary-foreground group hover:border-destructive hover:text-destructive flex items-center gap-2 rounded-lg border px-3 py-1 text-sm font-semibold transition-all"
+		className="border-secondary-foreground group hover:border-destructive hover:text-destructive flex items-center gap-2 rounded-lg border px-3 py-[3px] text-sm font-semibold transition-all"
 	>
 		Clear All
 		<Icon
