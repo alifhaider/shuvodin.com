@@ -71,7 +71,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 	const breadcrumbs = [
 		{ label: 'Home', to: '/' },
 		{ label: 'Vendors', to: '/vendors' },
-		{ label: vendorType, to: `/vendors/${vendor?.slug}` },
+		{ label: vendor?.title, to: `/vendors?vendorType=${vendor?.slug}` },
 	]
 
 	const isFilterChecked = (filterCategory: string, filterName: string) => {
@@ -261,17 +261,17 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			<ul className="flex space-x-1">
 				{breadcrumbs.map((breadcrumb, index) => (
 					<li key={index}>
-						<a
-							href={breadcrumb.to}
+						<Link
+							to={breadcrumb.to}
 							className="text-primary text-base hover:underline"
 						>
 							{breadcrumb.label}
-						</a>
-						{index < breadcrumbs.length - 1 && (
+						</Link>
+						{index < breadcrumbs.length - 1 && breadcrumbs[index + 1]?.label ? (
 							<span>
 								<Icon name="chevron-right" className="mx-1 h-4 w-4" />
 							</span>
-						)}
+						) : null}
 					</li>
 				))}
 			</ul>
@@ -343,17 +343,23 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						</div>
 					</div>
 
-					<div className="divide-y">
-						<Link to="/vendors/1" className="my-4 flex gap-4 md:gap-6">
-							<Image
-								src="/img/placeholder.png"
-								alt="Vendor 1"
-								width={412}
-								height={240}
-								className="h-60 w-full object-cover"
-							/>
-							<div>
-								<div className="mb-1.5 flex items-center">
+					<div className="divide-accent-foreground/10 divide-y">
+						<Link to="/vendors/1" className="flex gap-4 py-4 md:gap-6">
+							<div className="relative">
+								<Image
+									src="/img/placeholder.png"
+									alt="Vendor 1"
+									width={412}
+									height={240}
+									className="h-60 w-full rounded-lg object-cover"
+								/>
+
+								<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
+									Most Popular
+								</div>
+							</div>
+							<div className="space-y-2">
+								<div className="flex items-center">
 									<h4 className="line-clamp-1 text-xl font-extrabold">
 										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
 									</h4>
@@ -384,7 +390,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 											key={index}
 											name="star"
 											className={clsx(
-												'h-4 w-4',
+												'h-3.5 w-3.5',
 												index < 4
 													? 'fill-yellow-500 text-yellow-500'
 													: 'text-gray-300',
@@ -399,20 +405,247 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 									</span>
 								</div>
 
-								<div className="flex items-center gap-3">
+								<div className="flex items-center gap-4 font-bold">
+									<div className="flex items-center gap-1">
+										<Icon name="coins" className="h-4 w-4" />
+										<span className="text-sm">Starts at 20,000 tk</span>
+									</div>
 									<div className="flex items-center gap-1">
 										<Icon name="users" className="h-4 w-4" />
 										<span className="text-sm">100+ Guests</span>
 									</div>
-									<div className="flex items-center gap-1">
-										<Icon name="clock" className="h-4 w-4" />
-										<span className="text-sm">2 Years Experience</span>
-									</div>
+								</div>
+
+								<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+									<p className="text-secondary-foreground pb-10 text-sm">
+										Vendor 1 is a top-rated wedding vendor offering exceptional
+										services in Dhaka. With a focus on quality and customer
+										satisfaction, Vendor 1 has become a favorite among couples
+										planning their weddings.
+										<br />
+										<br />
+										Services include photography, catering, and event planning.
+										Whether you're looking for a photographer, caterer, or event
+										planner, Vendor 1 has you covered. Their team of experts is
+										dedicated to making your wedding day unforgettable.
+									</p>
+								</div>
+
+								<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
+									<p>
+										Review Card
+										<button className="text-primary ml-4 font-semibold">
+											Read More
+										</button>
+									</p>
+
+									<span className="text-muted-foreground text-xs font-medium">
+										Reviewed by John Doe on 2023-10-01
+									</span>
 								</div>
 							</div>
 						</Link>
-						<Link to="/vendors/2">
-							<p>Vendor 2</p>
+						<Link to="/vendors/1" className="flex gap-4 py-4 md:gap-6">
+							<div className="relative">
+								<Image
+									src="/img/placeholder.png"
+									alt="Vendor 1"
+									width={412}
+									height={240}
+									className="h-60 w-full rounded-lg object-cover"
+								/>
+
+								<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
+									Most Popular
+								</div>
+							</div>
+							<div className="space-y-2">
+								<div className="flex items-center">
+									<h4 className="line-clamp-1 text-xl font-extrabold">
+										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
+									</h4>
+
+									<Form
+										method="post"
+										className="hover:text-primary ml-4 flex items-center"
+									>
+										<Checkbox
+											id="favorite"
+											name="favorite"
+											defaultChecked={false}
+											className="sr-only"
+											onCheckedChange={(checked) => {
+												// Handle favorite toggle logic here
+												console.log('Favorite toggled:', checked)
+											}}
+										/>
+										<Label htmlFor="favorite" className="ml-2">
+											<span className="sr-only">Favorite</span>
+											<Icon name="heart" className="h-4 w-4" />
+										</Label>
+									</Form>
+								</div>
+								<div className="flex items-center">
+									{Array.from({ length: 5 }, (_, index) => (
+										<Icon
+											key={index}
+											name="star"
+											className={clsx(
+												'h-3.5 w-3.5',
+												index < 4
+													? 'fill-yellow-500 text-yellow-500'
+													: 'text-gray-300',
+											)}
+										/>
+									))}
+									<span className="ml-1 text-base">{4.5}</span>
+
+									<span className="ml-3 text-sm font-medium">
+										<Icon name="map-pin" className="h-4 w-4" />
+										Dhaka, Main Street 1
+									</span>
+								</div>
+
+								<div className="flex items-center gap-4 font-bold">
+									<div className="flex items-center gap-1">
+										<Icon name="coins" className="h-4 w-4" />
+										<span className="text-sm">Starts at 20,000 tk</span>
+									</div>
+									<div className="flex items-center gap-1">
+										<Icon name="users" className="h-4 w-4" />
+										<span className="text-sm">100+ Guests</span>
+									</div>
+								</div>
+
+								<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+									<p className="text-secondary-foreground pb-10 text-sm">
+										Vendor 1 is a top-rated wedding vendor offering exceptional
+										services in Dhaka. With a focus on quality and customer
+										satisfaction, Vendor 1 has become a favorite among couples
+										planning their weddings.
+										<br />
+										<br />
+										Services include photography, catering, and event planning.
+										Whether you're looking for a photographer, caterer, or event
+										planner, Vendor 1 has you covered. Their team of experts is
+										dedicated to making your wedding day unforgettable.
+									</p>
+								</div>
+
+								<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
+									<p>
+										Review Card
+										<button className="text-primary ml-4 font-semibold">
+											Read More
+										</button>
+									</p>
+
+									<span className="text-muted-foreground text-xs font-medium">
+										Reviewed by John Doe on 2023-10-01
+									</span>
+								</div>
+							</div>
+						</Link>
+						<Link to="/vendors/1" className="flex gap-4 py-4 md:gap-6">
+							<div className="relative">
+								<Image
+									src="/img/placeholder.png"
+									alt="Vendor 1"
+									width={412}
+									height={240}
+									className="h-60 w-full rounded-lg object-cover"
+								/>
+
+								<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
+									Most Popular
+								</div>
+							</div>
+							<div className="space-y-2">
+								<div className="flex items-center">
+									<h4 className="line-clamp-1 text-xl font-extrabold">
+										Vendor 1 NameVendor 1 NameVendor 1 NameVendor 1 NameVendor 1
+									</h4>
+
+									<Form
+										method="post"
+										className="hover:text-primary ml-4 flex items-center"
+									>
+										<Checkbox
+											id="favorite"
+											name="favorite"
+											defaultChecked={false}
+											className="sr-only"
+											onCheckedChange={(checked) => {
+												// Handle favorite toggle logic here
+												console.log('Favorite toggled:', checked)
+											}}
+										/>
+										<Label htmlFor="favorite" className="ml-2">
+											<span className="sr-only">Favorite</span>
+											<Icon name="heart" className="h-4 w-4" />
+										</Label>
+									</Form>
+								</div>
+								<div className="flex items-center">
+									{Array.from({ length: 5 }, (_, index) => (
+										<Icon
+											key={index}
+											name="star"
+											className={clsx(
+												'h-3.5 w-3.5',
+												index < 4
+													? 'fill-yellow-500 text-yellow-500'
+													: 'text-gray-300',
+											)}
+										/>
+									))}
+									<span className="ml-1 text-base">{4.5}</span>
+
+									<span className="ml-3 text-sm font-medium">
+										<Icon name="map-pin" className="h-4 w-4" />
+										Dhaka, Main Street 1
+									</span>
+								</div>
+
+								<div className="flex items-center gap-4 font-bold">
+									<div className="flex items-center gap-1">
+										<Icon name="coins" className="h-4 w-4" />
+										<span className="text-sm">Starts at 20,000 tk</span>
+									</div>
+									<div className="flex items-center gap-1">
+										<Icon name="users" className="h-4 w-4" />
+										<span className="text-sm">100+ Guests</span>
+									</div>
+								</div>
+
+								<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+									<p className="text-secondary-foreground pb-10 text-sm">
+										Vendor 1 is a top-rated wedding vendor offering exceptional
+										services in Dhaka. With a focus on quality and customer
+										satisfaction, Vendor 1 has become a favorite among couples
+										planning their weddings.
+										<br />
+										<br />
+										Services include photography, catering, and event planning.
+										Whether you're looking for a photographer, caterer, or event
+										planner, Vendor 1 has you covered. Their team of experts is
+										dedicated to making your wedding day unforgettable.
+									</p>
+								</div>
+
+								<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
+									<p>
+										Review Card
+										<button className="text-primary ml-4 font-semibold">
+											Read More
+										</button>
+									</p>
+
+									<span className="text-muted-foreground text-xs font-medium">
+										Reviewed by John Doe on 2023-10-01
+									</span>
+								</div>
+							</div>
 						</Link>
 					</div>
 				</div>
