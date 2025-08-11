@@ -40,6 +40,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const mockVendors = [
 		{
 			id: '1',
+			uniqueName: 'vendor-one',
 			name: 'Vendor One',
 			type: 'Catering',
 			city: 'Dhaka',
@@ -62,6 +63,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 		{
 			id: '2',
+			uniqueName: 'vendor-two',
 			name: 'Vendor Two',
 			type: 'Catering',
 			city: 'Dhaka',
@@ -84,6 +86,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		},
 		{
 			id: '3',
+			uniqueName: 'vendor-three',
 			name: 'Vendor Three',
 			type: 'Catering',
 			city: 'Dhaka',
@@ -397,9 +400,11 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 					<div className="divide-accent-foreground/10 divide-y">
 						{loaderData.vendors.map((vendor) => (
-							<Link
+							<a
 								key={vendor.id}
-								to={`/vendors/${vendor.id}`}
+								href={`/vendors/${vendor.uniqueName}`}
+								target="_blank"
+								rel="noopener noreferrer"
 								className="group flex gap-4 py-4 md:gap-6"
 							>
 								<div className="relative h-60 min-w-103">
@@ -504,7 +509,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 										</div>
 									)}
 								</div>
-							</Link>
+							</a>
 						))}
 					</div>
 				</div>
