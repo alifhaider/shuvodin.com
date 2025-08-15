@@ -141,8 +141,12 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 	const breadcrumbs = [
 		{ label: 'Home', to: '/' },
-		{ label: 'Vendors', to: '/vendors' },
-		{ label: vendor?.title, to: `/vendors?vendorType=${vendor?.slug}` },
+		{ label: 'Vendors', to: '/vendors', isCurrent: Boolean(!vendor?.slug) },
+		{
+			label: vendor?.title,
+			to: `/vendors?vendorType=${vendor?.slug}`,
+			isCurrent: Boolean(vendor?.slug),
+		},
 	]
 
 	const isFilterChecked = (filterCategory: string, filterName: string) => {
@@ -276,7 +280,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 												<div className="flex items-start gap-3">
 													<Checkbox
 														id={input.name}
-														defaultChecked={isChecked}
+														checked={isChecked}
 														onCheckedChange={(value) =>
 															handleCheckboxChange(
 																option.value,
@@ -304,7 +308,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 														type={input.type}
 														id={input.name}
 														placeholder={input.placeholder}
-														defaultValue={defaultValue}
+														value={defaultValue}
 														onChange={(e) =>
 															handleInputChange(input.name, e.target.value)
 														}
@@ -338,7 +342,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<>
-			<section className="from-primary/10 via-accent/5 to-secondary/10 border-b bg-gradient-to-r py-12">
+			<section className="from-primary/10 via-accent/5 to-secondary/10 border-secondary border-b bg-gradient-to-r py-12">
 				<div className="container space-y-6">
 					<Breadcrumb items={breadcrumbs} />
 					<div className="max-w-4xl space-y-3">
@@ -368,7 +372,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					</Form>
 				</div>
 				<div className="flex-1">
-					<div className="flex w-full items-start justify-between border-b py-4">
+					<div className="border-secondary flex w-full items-start justify-between border-b py-4">
 						<div className="space-y-2">
 							<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
 

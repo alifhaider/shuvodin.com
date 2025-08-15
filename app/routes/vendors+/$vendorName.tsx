@@ -8,6 +8,7 @@ import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/$vendorName'
 import { Link } from 'react-router'
+import { Separator } from '#app/components/ui/separator.tsx'
 
 export const meta: Route.MetaFunction = ({ data }) => {
 	return [
@@ -50,56 +51,83 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 	const { vendor } = loaderData
 	return (
-		<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
-			<div className="container">
-				<Breadcrumb
-					items={[
-						{ to: '/', label: 'Home' },
-						{ to: '/vendors', label: 'Vendors' },
-						{
-							to: `/vendors?vendorType=${vendor.vendorType}`,
-							label: vendor.vendorType,
-						},
-						{
-							to: `/vendors/${vendor.id}`,
-							label: vendor.name,
-							isCurrent: true,
-						},
-					]}
-				/>
-				<Gallery images={vendor.images} uniqueName={vendor.uniqueName} />
-				<h1 className="mt-6 font-serif text-4xl font-bold lg:text-5xl">
-					{vendor.name}
-				</h1>
+		<>
+			<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
+				<div className="container py-6">
+					<Breadcrumb
+						items={[
+							{ to: '/', label: 'Home' },
+							{ to: '/vendors', label: 'Vendors' },
+							{
+								to: `/vendors?vendorType=${vendor.vendorType}`,
+								label: vendor.vendorType,
+							},
+							{
+								to: `/vendors/${vendor.id}`,
+								label: vendor.name,
+								isCurrent: true,
+							},
+						]}
+					/>
+					<Gallery images={vendor.images} uniqueName={vendor.uniqueName} />
+					<div className="mt-6 flex gap-12">
+						<div className="flex-1">
+							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
+								{vendor.name}
+							</h1>
 
-				<p className="mt-4 flex items-center gap-2 text-base font-semibold">
-					<Icon name="map-pin" className="inline h-4 w-4" />
-					{vendor.address}, {vendor.city}
-				</p>
+							<p className="mt-4 flex items-center gap-2 text-base font-semibold">
+								<Icon name="map-pin" className="inline h-4 w-4" />
+								{vendor.address}, {vendor.city}
+							</p>
 
-				<div className="flex items-center gap-0.5">
-					{Array.from({ length: 5 }, (_, index) => (
-						<Icon
-							key={index}
-							name="star"
-							className={clsx(
-								'h-4 w-4',
-								index < vendor.avgRating
-									? 'fill-yellow-500 text-yellow-500'
-									: 'text-gray-300',
-							)}
-						/>
-					))}
-					<span className="ml-1 text-base font-medium">
-						{vendor.avgRating.toFixed(1)}
-					</span>
-					<span className="text-muted-foreground ml-1 text-sm">
-						{' '}
-						({vendor.totalReviews} reviews)
-					</span>
+							<div className="flex items-center">
+								{Array.from({ length: 5 }, (_, index) => (
+									<Icon
+										key={index}
+										name="star"
+										className={clsx(
+											'h-4 w-4',
+											index < vendor.avgRating
+												? 'fill-yellow-500 text-yellow-500'
+												: 'text-gray-300',
+										)}
+									/>
+								))}
+								<span className="ml-1 text-base font-medium">
+									{vendor.avgRating.toFixed(1)}
+								</span>
+								<span className="text-muted-foreground ml-1 text-sm">
+									{' '}
+									({vendor.totalReviews} reviews)
+								</span>
+							</div>
+						</div>
+
+						<div className="border-accent-foreground mt-6 w-1/4 rounded-2xl border p-6">
+							<h4 className="font-semibold">Want them for your wedding?</h4>
+
+							<div className="mt-4 flex gap-4">
+								<Button variant="secondary" className="w-full">
+									Get Quote
+								</Button>
+
+								<button className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+									<Icon name="share" className="h-5 w-5" />
+									<span className="sr-only">Share</span>
+								</button>
+
+								<button className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+									<Icon name="heart" className="h-5 w-5" />
+									<span className="sr-only">Favorite</span>
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-		</section>
+			</section>
+			<section className="container py-12"></section>
+		</>
 	)
 }
 
