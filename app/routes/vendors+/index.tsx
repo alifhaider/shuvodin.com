@@ -247,7 +247,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 												<div className="flex items-start gap-3">
 													<Checkbox
 														id={input.name}
-														checked={isChecked}
+														defaultChecked={isChecked}
 														onCheckedChange={(value) =>
 															handleCheckboxChange(
 																option.value,
@@ -275,7 +275,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 														type={input.type}
 														id={input.name}
 														placeholder={input.placeholder}
-														value={defaultValue}
+														defaultValue={defaultValue}
 														onChange={(e) =>
 															handleInputChange(input.name, e.target.value)
 														}

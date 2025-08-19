@@ -80,7 +80,7 @@ const venueStyles = [
 const featuredVendors = [
 	{
 		name: 'Royal Moments Photography',
-		category: 'Photography',
+		category: 'Photographer',
 		location: 'Gulshan, Dhaka',
 		rating: 4.9,
 		reviews: 247,

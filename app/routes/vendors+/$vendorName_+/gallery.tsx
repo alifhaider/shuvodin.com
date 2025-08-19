@@ -16,7 +16,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 	const mockVendorImageResponse = {
 		vendorName,
 		name: 'Sample Vendor',
-		type: 'photography',
+		type: 'photographer',
 		images: [
 			{ src: '/img/gallery1.jpg', alt: 'Gallery Image 1' },
 			{ src: '/img/gallery2.jpg', alt: 'Gallery Image 2' },

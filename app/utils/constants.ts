@@ -1,9 +1,9 @@
 export const vendorTypes = [
 	{
 		icon: 'camera',
-		title: 'Photography',
+		title: 'Photographer',
 		color: 'bg-blue-50 text-blue-600',
-		slug: 'photography',
+		slug: 'photographer',
 	},
 	{
 		icon: 'building-2',

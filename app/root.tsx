@@ -284,7 +284,7 @@ function App() {
 								to="#"
 								className="hover:text-primary block transition-colors"
 							>
-								Photography
+								Photographer
 							</Link>
 							<Link
 								to="#"

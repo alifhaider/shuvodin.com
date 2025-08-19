@@ -132,7 +132,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 								{vendor.location?.address}, {vendor.location?.city}
 							</p>
 
-							<div className="mt-3 flex items-end">
+							<div className="mt-3 flex items-end gap-[1px]">
 								{Array.from({ length: 5 }, (_, index) => (
 									<Icon
 										key={index}
@@ -145,7 +145,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 										)}
 									/>
 								))}
-								<span className="ml-1 text-xl font-medium">
+								<span className="ml-1 text-xl font-bold">
 									{vendor.rating.toFixed(1)}
 								</span>
 								<span className="text-muted-foreground mb-0.5 ml-1 text-sm">
