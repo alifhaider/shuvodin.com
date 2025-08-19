@@ -388,7 +388,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 									/>
 
 									{vendor.isFeatured && (
-										<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
+										<div className="text-primary absolute top-2 left-2 rounded-md bg-gray-700/60 px-2 py-1 text-xs font-bold">
 											Featured
 										</div>
 									)}
