@@ -11,6 +11,12 @@ export function getUserImgSrc(objectKey?: string | null) {
 		: '/img/user.png'
 }
 
+export function getVendorImgSrc(objectKey?: string | null) {
+	return objectKey
+		? `/resources/images?objectKey=${encodeURIComponent(objectKey)}`
+		: '/img/vendor.png'
+}
+
 export function getNoteImgSrc(objectKey: string) {
 	return `/resources/images?objectKey=${encodeURIComponent(objectKey)}`
 }

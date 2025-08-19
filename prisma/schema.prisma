@@ -39,6 +39,7 @@ model Vendor {
   id         String   @id @default(cuid())
 
   businessName String
+  slug       String @unique
   description String?
 
   location   VendorLocation?

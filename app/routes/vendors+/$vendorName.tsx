@@ -2,50 +2,101 @@ import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
-import { cn } from '#app/utils/misc.tsx'
+import { cn, getVendorImgSrc } from '#app/utils/misc.tsx'
 import clsx from 'clsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/$vendorName'
 import { Link } from 'react-router'
 import { Separator } from '#app/components/ui/separator.tsx'
+import { Vendor } from '@prisma/client'
+import { invariantResponse } from '@epic-web/invariant'
+import { prisma } from '#app/utils/db.server.ts'
+import { Image, Img } from 'openimg/react'
 
 export const meta: Route.MetaFunction = ({ data }) => {
 	return [
 		{
-			title: data?.vendor.name
-				? `${data?.vendor.name} / ShuvoDin`
+			title: data?.vendor?.businessName
+				? `${data?.vendor.businessName} / ShuvoDin`
 				: 'Vendor / ShuvoDin',
 		},
 	]
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-	const mockVendorDetails = {
-		id: '123',
-		name: 'Sample Vendor',
-		uniqueName: 'sample-vendor',
-		description: 'This is a sample vendor description.',
-		vendorType: 'photography',
-		avgRating: 4.5,
-		totalReviews: 120,
-		images: [
-			{ src: '/img/placeholder.png', alt: 'Sample Image' },
-			{ src: '/img/placeholder.png', alt: 'Another Sample Image' },
-			{ src: '/img/placeholder.png', alt: 'Third Sample Image' },
-			{ src: '/img/placeholder.png', alt: 'Fourth Sample Image' },
-			{ src: '/img/placeholder.png', alt: 'Fifth Sample Image' },
-		],
-		city: 'Dhaka',
-		address: '123 Sample Street',
-		// Add other necessary fields as needed
-	}
-	// const { vendorId } = params
-	// // Here you can fetch data based on the vendorId if needed
-	// const vendor = await prisma.vendor.findUnique({
-	// 	where: { id: vendorId },
-	// })
-	return { vendor: mockVendorDetails }
+	const { vendorName } = params
+	const vendor = await prisma.vendor.findUnique({
+		where: { slug: vendorName },
+		include: {
+			coverImage: {
+				select: {
+					objectKey: true,
+					altText: true,
+				},
+			},
+			profileImage: {
+				select: {
+					objectKey: true,
+					altText: true,
+				},
+			},
+			vendorType: {
+				select: {
+					name: true,
+				},
+			},
+			gallery: {
+				take: 4,
+				select: {
+					objectKey: true,
+					altText: true,
+				},
+			},
+			owner: {
+				select: {
+					name: true,
+					image: {
+						select: {
+							objectKey: true,
+							altText: true,
+						},
+					},
+				},
+			},
+			packages: {
+				select: {
+					title: true,
+					description: true,
+					price: true,
+				},
+			},
+			_count: {
+				select: {
+					favorites: true,
+					gallery: true,
+					bookings: true,
+					reviews: true,
+				},
+			},
+			reviews: {
+				select: { rating: true, comment: true },
+				take: 5,
+				orderBy: { createdAt: 'desc' },
+			},
+
+			location: {
+				select: {
+					city: true,
+					address: true,
+				},
+			},
+		},
+	})
+
+	invariantResponse(vendor, 'Vendor not found', { status: 404 })
+
+	return { vendor }
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
@@ -60,65 +111,91 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 							{ to: '/vendors', label: 'Vendors' },
 							{
 								to: `/vendors?vendorType=${vendor.vendorType}`,
-								label: vendor.vendorType,
+								label: vendor.vendorType.name,
 							},
 							{
 								to: `/vendors/${vendor.id}`,
-								label: vendor.name,
+								label: vendor.businessName,
 								isCurrent: true,
 							},
 						]}
 					/>
-					<Gallery images={vendor.images} uniqueName={vendor.uniqueName} />
+					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
 					<div className="mt-6 flex gap-12">
 						<div className="flex-1">
 							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
-								{vendor.name}
+								{vendor.businessName}
 							</h1>
 
 							<p className="mt-4 flex items-center gap-2 text-base font-semibold">
 								<Icon name="map-pin" className="inline h-4 w-4" />
-								{vendor.address}, {vendor.city}
+								{vendor.location?.address}, {vendor.location?.city}
 							</p>
 
-							<div className="flex items-center">
+							<div className="mt-3 flex items-end">
 								{Array.from({ length: 5 }, (_, index) => (
 									<Icon
 										key={index}
 										name="star"
 										className={clsx(
-											'h-4 w-4',
-											index < vendor.avgRating
+											'h-6 w-6',
+											index < vendor.rating
 												? 'fill-yellow-500 text-yellow-500'
 												: 'text-gray-300',
 										)}
 									/>
 								))}
-								<span className="ml-1 text-base font-medium">
-									{vendor.avgRating.toFixed(1)}
+								<span className="ml-1 text-xl font-medium">
+									{vendor.rating.toFixed(1)}
 								</span>
-								<span className="text-muted-foreground ml-1 text-sm">
+								<span className="text-muted-foreground mb-0.5 ml-1 text-sm">
 									{' '}
-									({vendor.totalReviews} reviews)
+									({vendor._count.reviews} reviews)
 								</span>
 							</div>
+
+							<Separator className="my-6" />
+
+							<h5 className="text-secondary-foreground mb-2 text-xl font-bold">
+								Services Offered
+							</h5>
+							<ul>
+								{vendor.packages.map((p, index) => (
+									<li
+										key={index}
+										className="flex items-center gap-2 text-sm font-medium"
+									>
+										<Icon name="check" className="h-4 w-4 text-green-500" />
+										{p.title}
+										<span className="text-muted-foreground">
+											- {p.description} (${p.price})
+										</span>
+									</li>
+								))}
+							</ul>
+
+							<p className="text-muted-foreground text-base">
+								{vendor.description}
+							</p>
 						</div>
 
-						<div className="border-accent-foreground mt-6 w-1/4 rounded-2xl border p-6">
-							<h4 className="font-semibold">Want them for your wedding?</h4>
+						<div className="border-accent sticky mt-6 h-max w-1/4 rounded-2xl border p-6 shadow-sm">
+							<h4 className="text-2xl font-extrabold">
+								Want them for your wedding?
+							</h4>
 
-							<div className="mt-4 flex gap-4">
-								<Button variant="secondary" className="w-full">
+							<div className="mt-4 flex items-center gap-4 font-medium">
+								<Button className="h-14 w-full rounded-full text-xl">
 									Get Quote
 								</Button>
 
-								<button className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+								<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
 									<Icon name="share" className="h-5 w-5" />
 									<span className="sr-only">Share</span>
 								</button>
 
-								<button className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
-									<Icon name="heart" className="h-5 w-5" />
+								<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
+									<Icon name="heart" fill="red" className="h-5 w-5" />
 									<span className="sr-only">Favorite</span>
 								</button>
 							</div>
@@ -126,23 +203,25 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					</div>
 				</div>
 			</section>
-			<section className="container py-12"></section>
+			<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
+				<div className="container">Information</div>
+			</section>
 		</>
 	)
 }
 
 const Gallery = ({
-	images,
+	gallery,
 	uniqueName,
 }: {
-	images: { src: string; alt: string }[]
+	gallery: { objectKey: string; altText: string | null }[]
 	uniqueName: string
 }) => {
-	if (!images || images.length === 0) {
+	if (!gallery || gallery.length === 0) {
 		return <p>No images available</p>
 	}
-	const slicedImages = images.slice(0, 4)
-	const hasMoreImages = images.length > 4
+	const slicedImages = gallery.slice(0, 4)
+	const hasMoreImages = gallery.length > 4
 	if (slicedImages.length === 0) return <p>No images available</p>
 	return (
 		<Link
@@ -157,16 +236,20 @@ const Gallery = ({
 					})}
 					key={index}
 				>
-					<img
-						src={image.src}
-						alt={image.alt}
+					<Img
+						loading="lazy"
+						placeholder="blur"
+						height={index === 0 || index === 2 ? 400 : 200}
+						width={index === 0 || index === 2 ? 600 : 300}
+						src={getVendorImgSrc(image.objectKey)}
+						alt={image.altText || `${uniqueName} Gallery Image ${index + 1}`}
 						className="h-full w-full rounded-lg object-cover"
 					/>
 					{hasMoreImages && index === 2 && (
 						<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/20 px-2 py-1 text-white">
 							<span className="rounded-lg bg-black/50 px-4 py-2">
 								View All{' '}
-								<span className="text-sm">({images.length - 4} More)</span>
+								<span className="text-sm">({gallery.length - 4} More)</span>
 							</span>
 						</div>
 					)}

@@ -160,15 +160,17 @@ async function seed() {
 			if (!user) {
 				throw new Error(`User not found for index ${index}`)
 			}
+			const companyName = faker.company.name()
 			const vendor = await prisma.vendor.create({
 				data: {
-					businessName: faker.company.name(),
+					businessName: companyName,
+					slug: faker.helpers.slugify(companyName),
 					description: faker.lorem.paragraph(),
 					ownerId: user.id,
 					vendorTypeId: faker.helpers.arrayElement(vendorTypes)?.id,
 					phone: faker.phone.number(),
 					website: faker.internet.url(),
-
+					rating: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
 					location: { create: faker.helpers.arrayElement(mockVendorLocations) },
 					isFeatured: faker.datatype.boolean(),
 					profileImage: {
