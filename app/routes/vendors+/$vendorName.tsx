@@ -1,8 +1,7 @@
 import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { Input } from '#app/components/ui/input.tsx'
-import { cn, getVendorImgSrc } from '#app/utils/misc.tsx'
+import { getVendorImgSrc } from '#app/utils/misc.tsx'
 import clsx from 'clsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
@@ -43,6 +42,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 			},
 			vendorType: {
 				select: {
+					slug: true,
 					name: true,
 				},
 			},
@@ -110,7 +110,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 							{ to: '/', label: 'Home' },
 							{ to: '/vendors', label: 'Vendors' },
 							{
-								to: `/vendors?vendorType=${vendor.vendorType}`,
+								to: `/vendors?vendorType=${vendor.vendorType.slug}`,
 								label: vendor.vendorType.name,
 							},
 							{

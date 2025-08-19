@@ -59,13 +59,19 @@ async function seed() {
 		data: [
 			{
 				name: 'Photographer',
+				slug: 'photographer',
 				description: 'Professional photography services',
 			},
 			{
 				name: 'Beauty Professional',
+				slug: 'beauty-professional',
 				description: 'Makeup and beauty services',
 			},
-			{ name: 'Venue', description: 'Event venues and locations' },
+			{
+				name: 'Venue',
+				slug: 'venue',
+				description: 'Event venues and locations',
+			},
 		],
 	})
 	console.timeEnd('📦 Creating vendor types...')
