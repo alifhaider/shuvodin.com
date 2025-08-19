@@ -114,7 +114,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 								label: vendor.vendorType.name,
 							},
 							{
-								to: `/vendors/${vendor.id}`,
+								to: `/vendors/${vendor.slug}`,
 								label: vendor.businessName,
 								isCurrent: true,
 							},
@@ -156,25 +156,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 							<Separator className="my-6" />
 
-							<h5 className="text-secondary-foreground mb-2 text-xl font-bold">
-								Services Offered
-							</h5>
-							<ul>
-								{vendor.packages.map((p, index) => (
-									<li
-										key={index}
-										className="flex items-center gap-2 text-sm font-medium"
-									>
-										<Icon name="check" className="h-4 w-4 text-green-500" />
-										{p.title}
-										<span className="text-muted-foreground">
-											- {p.description} (${p.price})
-										</span>
-									</li>
-								))}
-							</ul>
-
-							<p className="text-muted-foreground text-base">
+							<p className='text-muted-foreground text-base'>
 								{vendor.description}
 							</p>
 						</div>
