@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { format } from 'date-fns'
 import { Img } from 'openimg/react'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Form, useSearchParams } from 'react-router'
 import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { FilterChips } from '#app/components/filter-chips.tsx'
@@ -31,8 +31,6 @@ import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-
-// TODO: clearing filter chips not updating form inputs
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
@@ -94,7 +92,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
-	const $capacityRanges = React.useRef<Record<string, boolean>>({})
 	const $form = React.useRef<HTMLFormElement>(null)
 	const [searchParams, setSearchParams] = useSearchParams()
 
@@ -115,36 +112,8 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			isCurrent: Boolean(vendor?.slug),
 		},
 	]
-	const parseCapacityParams = () => {
-		const min = parseInt(searchParams.get('minCapacity') || '0')
-		const maxStr = searchParams.get('maxCapacity')
-		const max = maxStr === '300+' ? Infinity : parseInt(maxStr || '0')
-		return { min, max }
-	}
-
-	const isCapacityFilterChecked = (
-		filterName: string,
-		min: number,
-		max: number,
-	) => {
-		if (filterName === '300+') return max === Infinity
-		if (filterName === 'up-to-50') return min === 0 && max === 50
-
-		const [rangeMin, rangeMax] = filterName.split('-').map(Number)
-		return (
-			rangeMin !== undefined &&
-			rangeMax !== undefined &&
-			min <= rangeMin &&
-			max >= rangeMax
-		)
-	}
 
 	const isFilterChecked = (filterCategory: string, filterName: string) => {
-		if (filterCategory === 'Capacity') {
-			const { min, max } = parseCapacityParams()
-			return isCapacityFilterChecked(filterName, min, max)
-		}
-
 		const paramName = filterCategory.toLowerCase()
 		return searchParams.getAll(paramName).includes(filterName)
 	}
@@ -163,79 +132,21 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 		setSearchParams((prev) => {
 			const newParams = new URLSearchParams(prev)
 
-			if (filterCategory.toLowerCase() === 'capacity') {
-				return handleCapacityCheckboxChange(
-					filterName,
-					value as boolean,
-					newParams,
-				)
+			// For capacity, use multi-value params
+			const currentValues = newParams.getAll(filterCategory)
+
+			if (value) {
+				if (!currentValues.includes(filterName)) {
+					newParams.append(filterCategory, filterName)
+				}
+			} else {
+				const updated = currentValues.filter((v) => v !== filterName)
+				newParams.delete(filterCategory)
+				updated.forEach((v) => newParams.append(filterCategory, v))
 			}
 
-			return handleStandardCheckboxChange(
-				filterCategory,
-				filterName,
-				value,
-				newParams,
-			)
-		})
-	}
-
-	const handleCapacityCheckboxChange = (
-		filterName: string,
-		value: boolean,
-		newParams: URLSearchParams,
-	) => {
-		$capacityRanges.current[filterName] = value
-
-		const checkedRanges = Object.entries($capacityRanges.current)
-			.filter(([, isChecked]) => isChecked)
-			.map(([name]) => {
-				if (name === '300+') return [300]
-				if (name === 'up-to-50') return [0, 50]
-				return name.split('-').map(Number)
-			})
-
-		if (checkedRanges.length === 0) {
-			newParams.delete('minCapacity')
-			newParams.delete('maxCapacity')
 			return newParams
-		}
-
-		const newMin = Math.min(...checkedRanges.map((range) => range[0] || 0))
-		const newMax = Math.max(...checkedRanges.map((range) => range[1] || 0))
-
-		if (checkedRanges.some((range) => range[0] === 300)) {
-			newParams.set('minCapacity', '300')
-			newParams.delete('maxCapacity')
-		} else {
-			newParams.set('minCapacity', newMin.toString())
-			newParams.set('maxCapacity', newMax.toString())
-		}
-
-		return newParams
-	}
-
-	const handleStandardCheckboxChange = (
-		filterCategory: string,
-		filterName: string,
-		value: boolean | string,
-		newParams: URLSearchParams,
-	) => {
-		const paramName = filterCategory.toLowerCase()
-		const currentValues = newParams.getAll(paramName)
-
-		if (value) {
-			if (!currentValues.includes(filterName)) {
-				newParams.append(paramName, filterName)
-			}
-		} else {
-			// More efficient removal using set/delete pattern
-			const updatedValues = currentValues.filter((v) => v !== filterName)
-			newParams.delete(paramName)
-			updatedValues.forEach((v) => newParams.append(paramName, v))
-		}
-
-		return newParams
+		})
 	}
 
 	const handleSortChange = (value: string) => {
@@ -269,13 +180,14 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 									const defaultValue = searchParams.get(input.name) || ''
 									const isChecked =
 										input.type === 'checkbox'
-											? isFilterChecked(option.title, input.name)
+											? isFilterChecked(option.value, input.name)
 											: undefined
 									return (
 										<React.Fragment key={input.name}>
 											{input.type === 'checkbox' ? (
 												<div className="flex items-start gap-3">
 													<Checkbox
+														key={`${input.name}-${isChecked}`}
 														id={input.name}
 														defaultChecked={isChecked}
 														onCheckedChange={(value) =>
@@ -303,6 +215,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 													<Label htmlFor={input.name}>{input.label}</Label>
 													<Input
 														type={input.type}
+														key={input.name + defaultValue}
 														id={input.name}
 														placeholder={input.placeholder}
 														defaultValue={defaultValue}
@@ -327,21 +240,6 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			</>
 		)
 	}
-
-	const selectedFilters = useMemo(() => {
-		const filters: Record<string, string> = {}
-		const excludedKeys = new Set(['vendorType', 'city', 'address'])
-
-		searchParams.forEach((value, key) => {
-			if (!excludedKeys.has(key)) {
-				filters[key] = value
-			}
-		})
-
-		return filters
-	}, [searchParams])
-
-	console.log('Selected Filters:', selectedFilters)
 
 	return (
 		<>
@@ -379,7 +277,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						<div className="space-y-2">
 							<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
 
-							<FilterChips $capacityRanges={$capacityRanges} $form={$form} />
+							<FilterChips />
 						</div>
 						<div className="flex items-center gap-2">
 							<span className="text-sm md:text-base">Sort by:</span>

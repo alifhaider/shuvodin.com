@@ -477,9 +477,8 @@ const venueFilterInputsSchema: FilterOption[] = [
 ]
 
 export function getFilterInputs(vendorType: string) {
-	console.log('Vendor Type:', vendorType)
 	switch (vendorType.toLocaleLowerCase()) {
-		case 'photography':
+		case 'photographer':
 			return photographerFilterInputs
 		case 'venues':
 			return venueFilterInputsSchema

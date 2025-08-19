@@ -1,17 +1,14 @@
+import { invariantResponse } from '@epic-web/invariant'
+import clsx from 'clsx'
+import { Img } from 'openimg/react'
+import { Link } from 'react-router'
 import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { getVendorImgSrc } from '#app/utils/misc.tsx'
-import clsx from 'clsx'
-import { LocationCombobox } from '../resources+/location-combobox'
-import { VendorCombobox } from '../resources+/vendor-combobox'
-import { type Route } from './+types/$vendorName'
-import { Link } from 'react-router'
 import { Separator } from '#app/components/ui/separator.tsx'
-import { Vendor } from '@prisma/client'
-import { invariantResponse } from '@epic-web/invariant'
 import { prisma } from '#app/utils/db.server.ts'
-import { Image, Img } from 'openimg/react'
+import { getVendorImgSrc } from '#app/utils/misc.tsx'
+import { type Route } from './+types/$vendorName'
 
 export const meta: Route.MetaFunction = ({ data }) => {
 	return [
@@ -156,7 +153,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 							<Separator className="my-6" />
 
-							<p className='text-muted-foreground text-base'>
+							<p className="text-muted-foreground text-base">
 								{vendor.description}
 							</p>
 						</div>
