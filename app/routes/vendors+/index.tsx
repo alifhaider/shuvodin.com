@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Image } from 'openimg/react'
+import { Image, Img } from 'openimg/react'
 import React from 'react'
 import { Form, Link, useSearchParams } from 'react-router'
 import Breadcrumb from '#app/components/breadcrumb.tsx'
@@ -25,10 +25,12 @@ import {
 } from '#app/components/ui/select.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
-import { useDebounce } from '#app/utils/misc.tsx'
+import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
+import { prisma } from '#app/utils/db.server.ts'
+import { format } from 'date-fns'
 
 // TODO: clearing filter chips not updating form inputs
 
@@ -37,77 +39,42 @@ export const meta: Route.MetaFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const mockVendors = [
-		{
-			id: '1',
-			uniqueName: 'vendor-one',
-			name: 'Vendor One',
-			type: 'Catering',
-			city: 'Dhaka',
-			address: '123 Main St',
-			badges: ['Most Popular'],
-			startingPrice: 10000,
-			capacity: 100,
-			rating: 4.5,
-			image: '/img/placeholder.png',
-			description: 'A top-rated catering service in Dhaka.',
-			reviews: [
-				{
-					id: '1',
-					content: 'Great service and delicious food!',
-					rating: 5,
-					createdAt: '2023-10-01',
-					author: 'John Doe',
+	const vendors = await prisma.vendor.findMany({
+		select: {
+			id: true,
+			businessName: true,
+			slug: true,
+			description: true,
+			location: {
+				select: {
+					city: true,
+					address: true,
 				},
-			],
-		},
-		{
-			id: '2',
-			uniqueName: 'vendor-two',
-			name: 'Vendor Two',
-			type: 'Catering',
-			city: 'Dhaka',
-			address: '456 Elm St',
-			badges: ['Best Value'],
-			startingPrice: 15000,
-			capacity: 50,
-			rating: 4.0,
-			image: '/img/placeholder.png',
-			description: 'Affordable catering services in Dhaka.',
-			reviews: [
-				{
-					id: '2',
-					content: 'Good value for money!',
-					rating: 4,
-					createdAt: '2023-09-15',
-					author: 'John Doe',
+			},
+			isFeatured: true,
+			rating: true,
+			gallery: {
+				take: 4,
+				select: {
+					objectKey: true,
+					altText: true,
 				},
-			],
-		},
-		{
-			id: '3',
-			uniqueName: 'vendor-three',
-			name: 'Vendor Three',
-			type: 'Catering',
-			city: 'Dhaka',
-			badges: ['Top Rated'],
-			address: '789 Oak St',
-			startingPrice: 20000,
-			capacity: 75,
-			rating: 4.2,
-			image: '/img/placeholder.png',
-			description: 'Quality catering services with a variety of options.',
-			reviews: [
-				{
-					id: '3',
-					author: 'Jane Doe',
-					content: 'Excellent food and service!',
-					rating: 5,
-					createdAt: '2023-10-01',
+			},
+			reviews: {
+				take: 1,
+				select: {
+					user: {
+						select: {
+							name: true,
+							username: true,
+						},
+					},
+					createdAt: true,
+					comment: true,
 				},
-			],
+			},
 		},
-	]
+	})
 
 	const searchParams = new URL(request.url).searchParams
 	const vendorType = searchParams.get('vendorType') ?? ''
@@ -123,7 +90,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// 	getVendors(vendorType, city, address, minPrice, maxPrice, sortOrder),
 	// )
 
-	return { vendors: mockVendors, filterSchema, ok: true }
+	return { vendors, filterSchema, ok: true }
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
@@ -406,28 +373,30 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						{loaderData.vendors.map((vendor) => (
 							<a
 								key={vendor.id}
-								href={`/vendors/${vendor.uniqueName}`}
+								href={`/vendors/${vendor.slug}`}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="group flex gap-4 py-4 md:gap-6"
 							>
 								<div className="relative h-60 min-w-103">
-									<Image
-										src={vendor.image || '/img/placeholder.png'}
+									<Img
+										src={getVendorImgSrc(vendor.gallery[0]?.objectKey)}
 										alt={`Vendor ${vendor.id}`}
 										width={412}
 										height={240}
 										className="h-60 w-full rounded-lg object-cover"
 									/>
 
-									<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
-										{vendor.badges?.[0]}
-									</div>
+									{vendor.isFeatured && (
+										<div className="absolute top-2 left-2 rounded-md bg-gray-200/60 px-2 py-1 text-xs dark:bg-gray-700/60">
+											Featured
+										</div>
+									)}
 								</div>
 								<div className="w-full space-y-2">
 									<div className="flex items-center">
 										<h4 className="line-clamp-1 text-xl font-extrabold group-hover:underline">
-											{vendor.name}
+											{vendor.businessName}
 										</h4>
 
 										<Form
@@ -467,20 +436,18 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 										<span className="ml-3 text-sm font-medium">
 											<Icon name="map-pin" className="h-4 w-4" />
-											{vendor.city}- {vendor?.address}
+											{vendor.location?.city}- {vendor?.location?.address}
 										</span>
 									</div>
 
 									<div className="flex items-center gap-4 font-bold">
 										<div className="flex items-center gap-1">
 											<Icon name="coins" className="h-4 w-4" />
-											<span className="text-sm">
-												Starts at {vendor.startingPrice} tk
-											</span>
+											<span className="text-sm">Starts at 20000 tk</span>
 										</div>
 										<div className="flex items-center gap-1">
 											<Icon name="users" className="h-4 w-4" />
-											<span className="text-sm">{vendor.capacity} Guests</span>
+											<span className="text-sm">3000 Guests</span>
 										</div>
 									</div>
 
@@ -492,13 +459,15 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 									{vendor.reviews.length > 0 && (
 										<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
 											<p>
-												{vendor.reviews[0]?.content}
+												{vendor.reviews[0]?.comment}
 												{vendor.reviews[0] &&
-													vendor.reviews[0]?.content?.length > 100 &&
+													vendor.reviews[0]?.comment &&
+													vendor.reviews[0]?.comment?.length > 100 &&
 													'...'}
 												{/* Show "Read More" button if content is truncated */}
 												{vendor.reviews[0] &&
-													vendor.reviews[0]?.content?.length > 100 && (
+													vendor.reviews[0]?.comment &&
+													vendor.reviews[0]?.comment?.length > 100 && (
 														<button className="text-primary ml-4 font-semibold">
 															Read More
 														</button>
@@ -507,8 +476,19 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 											<span className="text-muted-foreground text-xs font-medium">
 												Reviewed by{' '}
-												<strong>{vendor.reviews[0]?.author} </strong>on{' '}
-												<strong>{vendor.reviews[0]?.createdAt}</strong>
+												<strong>
+													{vendor.reviews[0]?.user.name ??
+														vendor.reviews[0]?.user.username}{' '}
+												</strong>
+												on{' '}
+												{vendor.reviews[0]?.createdAt ? (
+													<strong>
+														{format(
+															vendor.reviews[0]?.createdAt,
+															'MMM dd, yyyy',
+														)}
+													</strong>
+												) : null}
 											</span>
 										</div>
 									)}

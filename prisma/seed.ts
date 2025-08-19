@@ -163,6 +163,7 @@ async function seed() {
 			const vendor = await prisma.vendor.create({
 				data: {
 					businessName: faker.company.name(),
+					slug: faker.helpers.slugify(faker.company.name()),
 					description: faker.lorem.paragraph(),
 					ownerId: user.id,
 					vendorTypeId: faker.helpers.arrayElement(vendorTypes)?.id,
