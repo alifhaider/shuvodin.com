@@ -25,18 +25,6 @@ export async function loader({ params }: Route.LoaderArgs) {
 	const vendor = await prisma.vendor.findUnique({
 		where: { slug: vendorName },
 		include: {
-			coverImage: {
-				select: {
-					objectKey: true,
-					altText: true,
-				},
-			},
-			profileImage: {
-				select: {
-					objectKey: true,
-					altText: true,
-				},
-			},
 			vendorType: {
 				select: {
 					slug: true,
