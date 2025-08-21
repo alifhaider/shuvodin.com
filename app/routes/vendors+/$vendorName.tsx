@@ -49,6 +49,26 @@ export async function loader({ params }: Route.LoaderArgs) {
 					},
 				},
 			},
+			venueDetails: {
+				select: {
+					spaces: {
+						select: {
+							id: true,
+							name: true,
+							sittingCapacity: true,
+							standingCapacity: true,
+							price: true,
+							description: true,
+							image: {
+								select: {
+									objectKey: true,
+									altText: true,
+								},
+							},
+						},
+					},
+				},
+			},
 			packages: {
 				select: {
 					title: true,
@@ -177,7 +197,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			</section>
 			<section className="container py-12">
 				{vendor.vendorType.name === 'venues' ? (
-					<VenueDetails vendor={vendor} />
+					<VenueDetails venue={vendor.venueDetails} />
 				) : null}
 			</section>
 		</>
@@ -233,14 +253,34 @@ const Gallery = ({
 	)
 }
 
-const VenueDetails = ({
-	vendor,
-}: {
-	vendor: Route.ComponentProps['loaderData']['vendor']
-}) => {
+type VenueDetailsProps = {
+	venue: Route.ComponentProps['loaderData']['vendor']['venueDetails']
+}
+
+const VenueDetails = ({ venue }: VenueDetailsProps) => {
+	console.log('Venue Details:', venue)
 	return (
 		<>
 			<h4 className="text-lg font-medium md:text-2xl">Event Spaces</h4>
+			{venue?.spaces.map((space) => {
+				return (
+					<div key={space.id} className="mb-4">
+						<h5 className="text-md font-semibold">{space.name}</h5>
+						<p className="text-muted-foreground text-sm">
+							Sitting Capacity: {space.sittingCapacity}
+						</p>
+						<p className="text-muted-foreground text-sm">
+							Standing Capacity: {space.standingCapacity}
+						</p>
+						<p className="text-muted-foreground text-sm">
+							Price: {space.price}
+						</p>
+						<p className="text-muted-foreground text-sm">
+							Description: {space.description}
+						</p>
+					</div>
+				)
+			})}
 		</>
 	)
 }
