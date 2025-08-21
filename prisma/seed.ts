@@ -8,6 +8,7 @@ import {
 	getUserImages,
 } from '#tests/db-utils.ts'
 import { insertGitHubUser } from '#tests/mocks/github.ts'
+import { VendorType } from '#app/utils/misc.tsx'
 
 const mockVendorLocations = [
 	{
@@ -31,13 +32,18 @@ async function seed() {
 	await prisma.photographyStyle.deleteMany({})
 	await prisma.photographyService.deleteMany({})
 	await prisma.photographerDetails.deleteMany({})
-	await prisma.venueDetails.deleteMany({})
 	await prisma.catererDetails.deleteMany({})
 	await prisma.catererMealService.deleteMany({})
 	await prisma.catererBeverageService.deleteMany({})
 	await prisma.catererMenuItem.deleteMany({})
-	await prisma.catererAward.deleteMany({})
 	await prisma.catererServedCity.deleteMany({})
+
+	await prisma.venueEventType.deleteMany({})
+	await prisma.venueAmenity.deleteMany({})
+	await prisma.venueType.deleteMany({})
+	await prisma.venueSpace.deleteMany({})
+	await prisma.venueDetails.deleteMany({})
+
 	await prisma.booking.deleteMany({})
 	await prisma.package.deleteMany({})
 	await prisma.review.deleteMany({})
@@ -58,17 +64,7 @@ async function seed() {
 	await prisma.vendorType.createMany({
 		data: [
 			{
-				name: 'Photographer',
-				slug: 'photographer',
-				description: 'Professional photography services',
-			},
-			{
-				name: 'Beauty Professional',
-				slug: 'beauty-professional',
-				description: 'Makeup and beauty services',
-			},
-			{
-				name: 'Venue',
+				name: VendorType.VENUE,
 				slug: 'venue',
 				description: 'Event venues and locations',
 			},
@@ -78,7 +74,6 @@ async function seed() {
 
 	const vendorTypes = await prisma.vendorType.findMany()
 
-	console.time('📷 Creating photographer vendors...')
 	const photographyStyles = [
 		'Classic',
 		'Editorial',
@@ -99,12 +94,6 @@ async function seed() {
 		'Printing rights',
 		'Same-day edits',
 		'Second photographer',
-	]
-
-	const photographerAwards = [
-		'Best Wedding Photographer 2025',
-		'Top 10 Photographers in the City',
-		'Excellence in Photography Award',
 	]
 
 	await prisma.role.createMany({
@@ -140,26 +129,27 @@ async function seed() {
 	)
 	console.timeEnd(`👤 Created ${totalUsers} users...`)
 
-	const totalPhotographyStyles = photographyStyles.length
-	console.time(`📷 Creating ${totalPhotographyStyles} photography styles...`)
-	await prisma.photographyStyle.createMany({
-		data: photographyStyles.map((style) => ({ name: style })),
-	})
-	console.timeEnd(`📷 Created ${totalPhotographyStyles} photography styles...`)
+	// const totalPhotographyStyles = photographyStyles.length
+	// console.time(`📷 Created ${totalPhotographyStyles} photography styles...`)
+	// await prisma.photographyStyle.createMany({
+	// 	data: photographyStyles.map((style) => ({ name: style })),
+	// })
+	// console.timeEnd(`📷 Created ${totalPhotographyStyles} photography styles...`)
 
-	const totalPhotographyServices = photographyServices.length
-	console.time(
-		`📷 Creating ${totalPhotographyServices} photography services...`,
-	)
-	await prisma.photographyService.createMany({
-		data: photographyServices.map((service) => ({ name: service })),
-	})
-	console.timeEnd(
-		`📷 Created ${totalPhotographyServices} photography services...`,
-	)
+	// const totalPhotographyServices = photographyServices.length
+	// console.time(
+	// 	`📷 Created ${totalPhotographyServices} photography services...`,
+	// )
+	// await prisma.photographyService.createMany({
+	// 	data: photographyServices.map((service) => ({ name: service })),
+	// })
+	// console.timeEnd(
+	// 	`📷 Created ${totalPhotographyServices} photography services...`,
+	// )
 
 	const totalVendors = 10
-	console.time(`📷 Creating ${totalVendors} vendors...`)
+	console.time(`📷 Created ${totalVendors} vendors...`)
+
 	const vendors = await Promise.all(
 		Array.from({ length: totalVendors }, async (_, index) => {
 			const user = users[index % users.length]
@@ -179,19 +169,16 @@ async function seed() {
 					rating: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
 					location: { create: faker.helpers.arrayElement(mockVendorLocations) },
 					isFeatured: faker.datatype.boolean(),
-					profileImage: {
-						create: {
-							objectKey:
-								userImages[index % userImages.length]?.objectKey ??
-								'default-profile-image.png',
-							altText: faker.lorem.sentence(),
-						},
-					},
-					coverImage: {
-						create: {
-							objectKey: 'default-cover-image.png',
-							altText: faker.lorem.sentence(),
-						},
+					awards: {
+						create: faker.helpers
+							.arrayElements(['Best Vendor 2025', 'Top Rated Vendor'], {
+								min: 1,
+								max: 2,
+							})
+							.map((name) => ({
+								name,
+								year: faker.number.int({ min: 2020, max: 2025 }),
+							})),
 					},
 					socialLinks: {
 						facebook: faker.internet.url(),
@@ -230,85 +217,108 @@ async function seed() {
 	)
 	console.timeEnd(`📷 Created ${totalVendors} vendors...`)
 
-	const totalPhotographers = 5
-	console.time(`📷 Created ${totalPhotographers} photographers...`)
-	const photographers = await Promise.all(
-		Array.from({ length: totalPhotographers }, async (_, index) => {
-			if (index >= vendors.length) {
-				throw new Error(
-					`Not enough vendors to create ${totalPhotographers} photographers`,
-				)
-			}
-			const vendor = vendors[index]
-			if (!vendor) {
-				throw new Error(`Vendor not found for index ${index}`)
-			}
-			const photographer = await prisma.photographerDetails.create({
-				data: {
-					vendorId: vendor.id,
-					styles: {
-						connect: faker.helpers
-							.arrayElements(await prisma.photographyStyle.findMany(), {
-								min: 1,
-								max: 3,
-							})
-							.map((style) => ({ name: style.name })),
-					},
-					services: {
-						connect: faker.helpers
-							.arrayElements(await prisma.photographyService.findMany(), {
-								min: 1,
-								max: 3,
-							})
-							.map((service) => ({ name: service.name })),
-					},
-					additionalFee: faker.datatype.boolean(),
-					additionalFeeRate: faker.number.int({ min: 50, max: 500 }),
-					additionalInfo: faker.lorem.paragraph(),
-					minPrice: faker.number.int({ min: 1000, max: 5000 }),
-					maxPrice: faker.number.int({ min: 5000, max: 20000 }),
-					servedCities: {
-						create: faker.helpers
-							.arrayElements(mockVendorLocations, { min: 1, max: 3 })
-							.map((location) => ({
-								city: location.city,
-								isBaseCity: location.city === 'Dhaka',
-								hasAdditionalFee: faker.datatype.boolean(),
-							})),
-					},
+	// const totalPhotographers = 5
+	// console.time(`📷 Created ${totalPhotographers} photographers...`)
+	// const photographers = await Promise.all(
+	// 	Array.from({ length: totalPhotographers }, async (_, index) => {
+	// 		if (index >= vendors.length) {
+	// 			throw new Error(
+	// 				`Not enough vendors to create ${totalPhotographers} photographers`,
+	// 			)
+	// 		}
+	// 		const vendor = vendors[index]
+	// 		if (!vendor) {
+	// 			throw new Error(`Vendor not found for index ${index}`)
+	// 		}
+	// 		const photographer = await prisma.photographerDetails.create({
+	// 			data: {
+	// 				vendorId: vendor.id,
+	// 				styles: {
+	// 					connect: faker.helpers
+	// 						.arrayElements(await prisma.photographyStyle.findMany(), {
+	// 							min: 1,
+	// 							max: 3,
+	// 						})
+	// 						.map((style) => ({ name: style.name })),
+	// 				},
+	// 				services: {
+	// 					connect: faker.helpers
+	// 						.arrayElements(await prisma.photographyService.findMany(), {
+	// 							min: 1,
+	// 							max: 3,
+	// 						})
+	// 						.map((service) => ({ name: service.name })),
+	// 				},
+	// 				additionalFee: faker.datatype.boolean(),
+	// 				additionalFeeRate: faker.number.int({ min: 50, max: 500 }),
+	// 				additionalInfo: faker.lorem.paragraph(),
+	// 				minPrice: faker.number.int({ min: 1000, max: 5000 }),
+	// 				maxPrice: faker.number.int({ min: 5000, max: 20000 }),
+	// 				servedCities: {
+	// 					create: faker.helpers
+	// 						.arrayElements(mockVendorLocations, { min: 1, max: 3 })
+	// 						.map((location) => ({
+	// 							city: location.city,
+	// 							isBaseCity: location.city === 'Dhaka',
+	// 							hasAdditionalFee: faker.datatype.boolean(),
+	// 						})),
+	// 				},
+	// 			},
+	// 		})
 
-					awards: {
-						create: faker.helpers
-							.arrayElements(photographerAwards, { min: 1, max: 2 })
-							.map((award) => ({
-								name: award,
-								year: faker.date.past().getFullYear(),
-							})),
-					},
-				},
-			})
+	// 		return photographer
+	// 	}),
+	// )
 
-			return photographer
-		}),
-	)
-
-	console.timeEnd(`📷 Created ${totalPhotographers} photographers...`)
+	// console.timeEnd(`📷 Created ${totalPhotographers} photographers...`)
 
 	const totalVenues = 5
 	console.time(`🏛️ Created ${totalVenues} venues...`)
-	const venueTypes = [
-		'Ballroom',
-		'Garden',
-		'Hotel',
-		'Barn',
-		'Vineyard',
-		'Beach',
-		'Rooftop',
-		'Warehouse',
-		'Mansion',
-		'Restaurant',
+
+	const mockVenueTypes = [
+		'Convention Center',
+		'Banquet Hall',
+		'Community Center',
+		'Community Hall',
 	]
-	const amenities = [
+
+	const mockVenueSpaces = [
+		{
+			name: 'Main Hall',
+			sittingCapacity: 200,
+			standingCapacity: 300,
+			price: 25000,
+			description: faker.lorem.sentence({ max: 20, min: 10 }),
+		},
+		{
+			name: 'Garden',
+			sittingCapacity: 100,
+			standingCapacity: 150,
+			price: 15000,
+			description: 'Beautiful outdoor garden for weddings and events',
+		},
+		{
+			name: 'Rooftop',
+			sittingCapacity: 80,
+			standingCapacity: 120,
+			price: 20000,
+			description: faker.lorem.sentence({ max: 20, min: 10 }),
+		},
+		{
+			name: 'Conference Room',
+			sittingCapacity: 50,
+			standingCapacity: 70,
+			price: 10000,
+		},
+		{
+			name: 'Ballroom',
+			sittingCapacity: 300,
+			standingCapacity: 400,
+			price: 30000,
+		},
+	]
+
+	const mockVenueAmenities = [
 		'Dance Floor',
 		'Stage',
 		'Sound System',
@@ -320,7 +330,33 @@ async function seed() {
 		'Outdoor Space',
 		'Kitchen Facilities',
 	]
-	const eventTypes = [
+
+	const mockVenueServices = [
+		{
+			name: 'Catering',
+			price: 1000,
+			description: 'Rice, lentils, vegetables, and salad',
+			isVeg: true,
+		},
+		{
+			name: 'Catering',
+			price: 1500,
+			description: 'Chicken, beef, and fish dishes',
+			isVeg: false,
+		},
+		{
+			name: 'Decoration',
+			price: 500,
+			description: 'Basic decoration with flowers and lights',
+		},
+		{
+			name: 'Decoration',
+			price: 1000,
+			description: 'Premium decoration with themes and custom designs',
+		},
+	]
+
+	const mockVenueEventTypes = [
 		'Wedding',
 		'Corporate',
 		'Birthday',
@@ -331,59 +367,72 @@ async function seed() {
 		'Graduation',
 	]
 
-	await Promise.all(
-		venueTypes.map((name) =>
-			prisma.venueType.upsert({
-				where: { name },
-				create: { name },
-				update: {},
-			}),
-		),
-	)
+	console.time(`🏛️ Created ${mockVenueEventTypes.length} event types...`)
+	await prisma.venueEventType.createMany({
+		data: mockVenueEventTypes.map((name) => ({ name })),
+	})
+	console.timeEnd(`🏛️ Created ${mockVenueEventTypes.length} event types...`)
 
-	await Promise.all(
-		amenities.map((name) =>
-			prisma.venueAmenity.upsert({
-				where: { name },
-				create: { name },
-				update: {},
-			}),
-		),
-	)
+	console.time(`🏛️ Created ${mockVenueTypes.length} venue types...`)
+	await prisma.venueType.createMany({
+		data: mockVenueTypes.map((name) => ({ name })),
+	})
+	console.timeEnd(`🏛️ Created ${mockVenueTypes.length} venue types...`)
 
-	await Promise.all(
-		eventTypes.map((name) =>
-			prisma.venueEventType.upsert({
-				where: { name },
-				create: { name },
-				update: {},
-			}),
-		),
-	)
+	console.time(`🏛️ Created ${mockVenueAmenities.length} venue amenities...`)
+	await prisma.venueAmenity.createMany({
+		data: mockVenueAmenities.map((name) => ({ name })),
+	})
+	console.timeEnd(`🏛️ Created ${mockVenueAmenities.length} venue amenities...`)
 
-	await Promise.all(
-		Array.from({ length: totalVenues }, async (_, index) => {
-			const vendor = vendors[index % vendors.length]
-			if (!vendor) {
-				throw new Error(`Vendor not found for index ${index}`)
-			}
+	if (vendors.length < totalVenues) {
+		throw new Error(
+			`Need at least ${totalVenues} vendors, but found ${vendors.length}`,
+		)
+	}
+	for (let index = 0; index < totalVenues; index++) {
+		const vendor = vendors[index]
+		if (!vendor) continue
 
-			const selectedVenueType = faker.helpers.arrayElement(venueTypes)
-			const selectedAmenities = faker.helpers.arrayElements(amenities, {
-				min: 1,
-				max: 3,
-			})
-			const selectedEventTypes = faker.helpers.arrayElements(eventTypes, {
-				min: 1,
-				max: 3,
-			})
-			const awards = faker.helpers.arrayElements(
-				['Best Venue 2025', 'Top Rated Venue'],
-				{ min: 1, max: 2 },
-			)
+		console.log(`Creating venue for vendor ${vendor.businessName}...`)
+
+		try {
+			const venueTypes = await prisma.venueType.findMany()
+			const eventTypes = await prisma.venueEventType.findMany()
+
+			// Generate a unique identifier for this vendor's venue
+			const venueUniqueId = vendor.id.slice(0, 8)
+
 			const venue = await prisma.venueDetails.create({
 				data: {
 					vendorId: vendor.id,
+					venueTypeId: faker.helpers.arrayElement(venueTypes)?.id,
+
+					// Make ALL names unique by including vendor/venue identifier
+					spaces: {
+						create: faker.helpers
+							.arrayElements(mockVenueSpaces, { min: 1, max: 3 })
+							.map((space, i) => ({
+								name: `${space.name} - ${vendor.businessName} ${i + 1} - ${venueUniqueId}`,
+								sittingCapacity: space.sittingCapacity,
+								standingCapacity: space.standingCapacity,
+								price: space.price,
+								description: `${space.description || faker.lorem.sentence()} - ${vendor.businessName}`,
+							})),
+					},
+
+					services: {
+						create: faker.helpers
+							.arrayElements(mockVenueServices, { min: 1, max: 3 })
+							.map((service, i) => ({
+								name: `${service.name} - ${vendor.businessName} ${i + 1} - ${venueUniqueId}`,
+								price:
+									service.price || faker.number.int({ min: 100, max: 1000 }),
+								description: `${service.description || faker.lorem.sentence()} - ${vendor.businessName}`,
+								isVeg: service.isVeg ?? faker.datatype.boolean(),
+							})),
+					},
+
 					availability: {
 						create: {
 							date: faker.date.future(),
@@ -391,39 +440,57 @@ async function seed() {
 						},
 					},
 
-					minCapacity: faker.number.int({ min: 50, max: 200 }),
-					maxCapacity: faker.number.int({ min: 200, max: 1000 }),
-					venueType: {
-						connect: { name: selectedVenueType },
-					},
+					// For amenities, use connect to existing ones only (don't create new ones)
 					amenities: {
-						connect: selectedAmenities.map((name) => ({ name })),
+						connect: faker.helpers
+							.arrayElements(mockVenueAmenities, { min: 1, max: 8 })
+							.map((name) => ({ name }))
+							.filter((amenity) => amenity.name) // Filter out undefined
+							.slice(0, 3), // Limit to 3 to avoid constraint issues
 					},
+
 					eventTypes: {
-						connect: selectedEventTypes.map((name) => ({ name })),
+						connect: faker.helpers
+							.arrayElements(eventTypes, { min: 1, max: 3 })
+							.map((type) => ({ id: type.id })),
 					},
-					awards: {
-						create: awards.map((name) => ({
-							name,
-							year: faker.date.past().getFullYear(),
-						})),
-					},
-					minPrice: faker.number.int({ min: 1000, max: 5000 }),
-					maxPrice: faker.number.int({ min: 5000, max: 20000 }),
-					indoor: faker.datatype.boolean(),
-					outdoor: faker.datatype.boolean(),
-					parkingAvailable: faker.datatype.boolean(),
-					smokingAllowed: faker.datatype.boolean(),
-					wheelchairAccess: faker.datatype.boolean(),
 				},
 			})
-			return venue
-		}),
-	)
+
+			console.log(`✅ Created venue for ${vendor.businessName}`)
+		} catch (error) {
+			console.error(
+				`❌ Failed to create venue for ${vendor.businessName}:`,
+				error,
+			)
+
+			// If creation fails, try to at least connect the vendor to existing amenities
+			try {
+				await prisma.venueDetails.upsert({
+					where: { vendorId: vendor.id },
+					update: {},
+					create: {
+						vendorId: vendor.id,
+						venueTypeId: faker.helpers.arrayElement(
+							await prisma.venueType.findMany(),
+						)?.id,
+						// Minimal data to avoid constraints
+					},
+				})
+				console.log(`✅ Created basic venue record for ${vendor.businessName}`)
+			} catch (fallbackError) {
+				console.error(
+					`❌ Even basic venue creation failed for ${vendor.businessName}:`,
+					fallbackError,
+				)
+			}
+		}
+	}
+
 	console.timeEnd(`🏛️ Created ${totalVenues} venues...`)
 
 	const totalBookings = 5
-	console.time(`📅 Creating ${totalBookings} bookings...`)
+	console.time(`📅 Created ${totalBookings} bookings...`)
 	const bookings = await Promise.all(
 		Array.from({ length: totalBookings }, async (_, index) => {
 			const user = users[index % users.length]
@@ -448,7 +515,7 @@ async function seed() {
 	)
 	console.timeEnd(`📅 Created ${totalBookings} bookings...`)
 
-	console.time(`🐨 Created admin user "Alif"`)
+	console.time(`🐨 Created admin user "alif"`)
 
 	const kodyImages = {
 		kodyUser: { objectKey: 'user/kody.png' },

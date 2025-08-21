@@ -51,8 +51,6 @@ model Vendor {
   rating Float @default(0)
   reviews Review[]
   
-  profileImage VendorProfileImage?
-  coverImage VendorCoverImage?
 
   gallery VendorImage[]
   packages Package[]
@@ -63,10 +61,11 @@ model Vendor {
 
   favorites User[] @relation("UserFavorites")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  awards VendorAward[] 
 
-
+  venueDetails VenueDetails?
+  photographerDetails PhotographerDetails?
+  catererDetails CatererDetails?
 
   owner     User   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ownerId   String @unique
@@ -74,11 +73,20 @@ model Vendor {
   vendorType VendorType @relation(fields: [vendorTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   vendorTypeId String 
 
-  venueDetails VenueDetails?
-  photographerDetails PhotographerDetails?
-  catererDetails CatererDetails?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([ownerId, vendorTypeId, isFeatured, rating, businessName])
+}
+
+model VendorAward {
+  id          String    @id @default(cuid())
+  name        String
+  year        Int
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model VendorType {
@@ -120,29 +128,6 @@ model VendorImage {
   @@index([vendorId])
 }
 
-model VendorProfileImage {
-  id        String  @id @default(cuid())
-  altText   String?
-  objectKey String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  vendorId String @unique
-}
-
-model VendorCoverImage {
-  id        String  @id @default(cuid())
-  altText   String?
-  objectKey String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  vendorId String @unique
-}
 
 model Package {
   id         String   @id @default(cuid())
@@ -181,7 +166,7 @@ model Review {
   vendorId   String
   userId     String
 
-  rating     Int      // 1 to 5
+  rating     Int      // 1 to 5 scale
   comment    String?
 
   createdAt DateTime @default(now())
@@ -328,24 +313,73 @@ model VenueDetails {
   id                String      @id @default(cuid())
   vendor            Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   vendorId          String      @unique
-  minPrice          Float?
-  maxPrice          Float?
-  minCapacity       Int?
-  maxCapacity       Int?
-  venueType         VenueType[]
-  indoor            Boolean?
-  outdoor           Boolean?
-  smokingAllowed    Boolean?
-  parkingAvailable  Boolean?
-  wheelchairAccess  Boolean?
+  
+
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+
+  venueType         VenueType @relation(fields: [venueTypeId], references: [id], onDelete: Cascade)
+  venueTypeId       String
   
   // Relations to other venue-specific models
+
+  spaces         VenueSpace[]
+
+  services       VenueService[]
+
   amenities        VenueAmenity[]
   eventTypes       VenueEventType[]
-  awards           VenueAward[]
   availability     VenueAvailability[]
+}
+
+model VenueService {
+  id          String    @id @default(cuid())
+  name        String    @unique // "Catering", "Decoration", etc.
+
+  description String? // Optional description of the service
+  
+  price     Float?   // Optional price for the service
+  isVeg      Boolean? // Optional flag to indicate if the service is vegetarian
+  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId     String 
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model VenueSpace {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+
+
+  sittingCapacity Int
+  standingCapacity Int
+  parkingCapacity Int?
+
+  image    VenueSpaceImage? // Optional image for the space
+
+  price      Float   // Price for renting this space
+
+  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // non-unique foreign key
+  @@index([venueId, name])
+}
+
+model VenueSpaceImage {
+  id        String  @id @default(cuid())
+  altText   String?
+  objectKey String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venueSpace VenueSpace @relation(fields: [venueSpaceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  venueSpaceId String @unique
 }
 
 
@@ -373,15 +407,6 @@ model VenueEventType {
   updatedAt   DateTime  @updatedAt
 }
 
-model VenueAward {
-  id          String    @id @default(cuid())
-  name        String
-  year        Int
-  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
 
 model VenueAvailability {
   id          String    @id @default(cuid())
@@ -410,7 +435,6 @@ model PhotographerDetails {
   // Relations to other photography-specific models
   styles           PhotographyStyle[]
   services         PhotographyService[]
-  awards           PhotographyAward[]
   servedCities     PhotographerServedCity[]
 
   additionalInfo String? // Any additional information about the photographer
@@ -445,16 +469,6 @@ model PhotographyService {
   updatedAt   DateTime  @updatedAt
 }
 
-model PhotographyAward {
-  id          String    @id @default(cuid())
-  name        String
-  year        Int
-  photographer PhotographerDetails @relation(fields: [photographerId], references: [id], onDelete: Cascade)
-  photographerId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
 
 // ======================
 // Caterer-specific models
@@ -476,7 +490,6 @@ model CatererDetails {
   mealServices     CatererMealService[]
   cuisines         CatererCuisine[]
   dietaryOptions   CatererDietaryOption[]
-  awards           CatererAward[]
   beverageServices CatererBeverageService[]
   menuItems        CatererMenuItem[]
   catererServedCities CatererServedCity[]
@@ -515,16 +528,6 @@ model CatererDietaryOption {
   id          String    @id @default(cuid())
   name        String    @unique // "Vegetarian", "Vegan", "Gluten-Free", etc.
   caterers    CatererDetails[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model CatererAward {
-  id          String    @id @default(cuid())
-  name        String
-  year        Int
-  caterer     CatererDetails @relation(fields: [catererId], references: [id], onDelete: Cascade)
-  catererId   String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }

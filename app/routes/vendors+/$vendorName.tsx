@@ -153,7 +153,12 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 							<Separator className="my-6" />
 
-							<p className="text-muted-foreground text-base">
+							<h5 className="mb-2 text-lg font-medium md:mb-3 md:text-2xl">
+								About this{' '}
+								<span className="font-extrabold">{vendor.vendorType.name}</span>
+							</h5>
+
+							<p className="text-muted-foreground max-w-full text-base md:max-w-2xl md:text-lg">
 								{vendor.description}
 							</p>
 						</div>
@@ -182,8 +187,10 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					</div>
 				</div>
 			</section>
-			<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
-				<div className="container">Information</div>
+			<section className="container py-12">
+				{vendor.vendorType.name === 'venues' ? (
+					<VenueDetails vendor={vendor} />
+				) : null}
 			</section>
 		</>
 	)
@@ -235,5 +242,17 @@ const Gallery = ({
 				</div>
 			))}
 		</Link>
+	)
+}
+
+const VenueDetails = ({
+	vendor,
+}: {
+	vendor: Route.ComponentProps['loaderData']['vendor']
+}) => {
+	return (
+		<>
+			<h4 className="text-lg font-medium md:text-2xl">Event Spaces</h4>
+		</>
 	)
 }

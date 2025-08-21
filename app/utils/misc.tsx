@@ -5,6 +5,11 @@ import { useFormAction, useNavigation } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { twMerge } from 'tailwind-merge'
 
+export enum VendorType {
+	// PHOTOGRAPHER = 'photographer',
+	VENUE = 'venue',
+	// MAKEUP_ARTIST = 'makeup-artist',
+}
 export function getUserImgSrc(objectKey?: string | null) {
 	return objectKey
 		? `/resources/images?objectKey=${encodeURIComponent(objectKey)}`
