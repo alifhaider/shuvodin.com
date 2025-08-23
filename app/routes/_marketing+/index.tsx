@@ -1,5 +1,5 @@
 import { Image } from 'openimg/react'
-import { Form } from 'react-router'
+import { Form, useSearchParams } from 'react-router'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -20,6 +20,9 @@ import { Icon, type IconName } from '#app/components/ui/icon.tsx'
 import { Input } from '#app/components/ui/input.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { type Route } from './+types/index.ts'
+import { LocationCombobox } from '../resources+/location-combobox.tsx'
+import { VendorCombobox } from '../resources+/vendor-combobox.tsx'
+import { SearchBar } from '#app/components/search-bar.tsx'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Home / ShuvoDin' }]
@@ -195,6 +198,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
+	const [searchParams, setSearchParams] = useSearchParams()
 	return (
 		<>
 			<section className="relative overflow-hidden py-20 lg:py-32">
@@ -218,7 +222,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 								variant="secondary"
 								className="w-fit border-white/30 bg-white/20 tracking-wide text-white"
 							>
-								🇧🇩 Bangladesh's #1 Wedding Marketplace
+								🇧🇩 Bangladesh's 1st Wedding Marketplace
 							</Badge>
 							<h1 className="font-serif text-5xl leading-18 font-bold lg:text-7xl">
 								Your Dream
@@ -232,21 +236,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 							</p>
 						</div>
 
-						<div className="flex max-w-2xl flex-col gap-4 sm:flex-row">
-							<div className="relative flex-1">
-								<Icon
-									name="magnifying-glass"
-									className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform fill-white stroke-white text-white"
-								/>
-								<Input
-									placeholder="Search vendors, venues, or services..."
-									className="h-14 border-white/20 pl-12 text-lg backdrop-blur"
-								/>
-							</div>
-							<Button size="lg" className="h-14 px-8 text-lg font-semibold">
-								Find Vendors
-							</Button>
-						</div>
+						<SearchBar status="idle" />
 
 						<div className="flex flex-wrap items-center gap-8 text-sm text-white/80">
 							<div className="flex items-center gap-2">
@@ -266,7 +256,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 				</div>
 			</section>
 
-			<section className="bg-primary py-16">
+			{/* <section className="bg-primary py-16">
 				<div className="container">
 					<div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
 						{stats.map((stat, index) => (
@@ -285,7 +275,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 						))}
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Service Categories Carousel */}
 			<section className="bg-muted/30 py-20">
@@ -299,7 +289,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 							<Form
 								action="/vendors"
 								method="GET"
-								className="h-full w-full"
+								className="flex h-full w-full items-center justify-center"
 								key={`vendor-type-${vendor.slug}`}
 							>
 								<input type="hidden" name="vendorType" value={vendor.slug} />
@@ -324,7 +314,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 			{/* Popular Locations */}
 			<section className="container py-20">
 				<h2 className="font-serif text-4xl font-bold lg:text-5xl">
-					Popular Locations
+					Available Cities
 				</h2>
 
 				<Carousel

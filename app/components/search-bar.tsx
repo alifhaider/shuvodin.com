@@ -30,8 +30,8 @@ export function SearchBar({
 	return (
 		<Form
 			method="GET"
-			action="/users"
-			className="flex flex-wrap items-center justify-center gap-2"
+			action="/vendors"
+			className="flex max-w-2xl flex-wrap items-center justify-center gap-2"
 			onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
 		>
 			<div className="flex-1">
@@ -42,20 +42,20 @@ export function SearchBar({
 					type="search"
 					name="search"
 					id={id}
+					className="text-secondary-foreground placeholder:text-muted-foreground h-14 border-white/20 px-6 text-lg font-medium backdrop-blur placeholder:font-normal md:text-xl"
 					defaultValue={searchParams.get('search') ?? ''}
-					placeholder="Search"
-					className="w-full"
+					placeholder="Search vendors, venues, or services..."
 					autoFocus={autoFocus}
 				/>
 			</div>
 			<div>
 				<StatusButton
 					type="submit"
+					size="lg"
 					status={isSubmitting ? 'pending' : status}
-					className="flex w-full items-center justify-center"
+					className="flex h-14 w-full items-center justify-center px-8 text-lg font-semibold"
 				>
-					<Icon name="magnifying-glass" size="md" />
-					<span className="sr-only">Search</span>
+					<span>Find Vendors</span>
 				</StatusButton>
 			</div>
 		</Form>
