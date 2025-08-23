@@ -1,6 +1,7 @@
 import { invariantResponse } from '@epic-web/invariant'
 import clsx from 'clsx'
 import { Img } from 'openimg/react'
+import * as React from 'react'
 import { Link } from 'react-router'
 import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { Button } from '#app/components/ui/button.tsx'
@@ -25,28 +26,12 @@ export async function loader({ params }: Route.LoaderArgs) {
 	const vendor = await prisma.vendor.findUnique({
 		where: { slug: vendorName },
 		include: {
-			vendorType: {
-				select: {
-					slug: true,
-					name: true,
-				},
-			},
-			gallery: {
-				take: 4,
-				select: {
-					objectKey: true,
-					altText: true,
-				},
-			},
+			vendorType: { select: { slug: true, name: true } },
+			gallery: { take: 4, select: { objectKey: true, altText: true } },
 			owner: {
 				select: {
 					name: true,
-					image: {
-						select: {
-							objectKey: true,
-							altText: true,
-						},
-					},
+					image: { select: { objectKey: true, altText: true } },
 				},
 			},
 			venueDetails: {
@@ -59,23 +44,12 @@ export async function loader({ params }: Route.LoaderArgs) {
 							standingCapacity: true,
 							price: true,
 							description: true,
-							image: {
-								select: {
-									objectKey: true,
-									altText: true,
-								},
-							},
+							image: { select: { objectKey: true, altText: true } },
 						},
 					},
 				},
 			},
-			packages: {
-				select: {
-					title: true,
-					description: true,
-					price: true,
-				},
-			},
+			packages: { select: { title: true, description: true, price: true } },
 			_count: {
 				select: {
 					favorites: true,
@@ -90,12 +64,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 				orderBy: { createdAt: 'desc' },
 			},
 
-			location: {
-				select: {
-					city: true,
-					address: true,
-				},
-			},
+			location: { select: { city: true, address: true } },
 		},
 	})
 
@@ -106,6 +75,27 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 	const { vendor } = loaderData
+	const stickyRef = React.useRef<HTMLDivElement>(null)
+	const [showFloatingBtn, setShowFloatingBtn] = React.useState(false)
+
+	React.useEffect(() => {
+		if (!stickyRef.current) return
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (!entry) return
+				setShowFloatingBtn(!entry.isIntersecting)
+			},
+			{ threshold: 0 },
+		)
+
+		observer.observe(stickyRef.current)
+
+		return () => {
+			observer.disconnect()
+		}
+	}, [])
+
 	return (
 		<>
 			<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
@@ -126,8 +116,8 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						]}
 					/>
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
-					<div className="mt-6 flex gap-12">
-						<div className="flex-1">
+					<div className="mt-6 grid min-h-full w-full grid-cols-4">
+						<div className="md:col-span-3 md:mr-12">
 							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
 								{vendor.businessName}
 							</h1>
@@ -171,7 +161,10 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 							</p>
 						</div>
 
-						<div className="border-accent sticky mt-6 h-max w-1/4 rounded-2xl border p-6 shadow-sm">
+						<div
+							ref={stickyRef}
+							className="border-accent sticky top-20 col-span-1 mt-6 h-max rounded-2xl border p-6 shadow-sm transition-all"
+						>
 							<h4 className="text-2xl font-extrabold">
 								Want them for your wedding?
 							</h4>
@@ -195,7 +188,16 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					</div>
 				</div>
 			</section>
-			<section className="container py-12">
+
+			{showFloatingBtn && (
+				<section className="fixed right-20 bottom-10 z-50">
+					<Button className="h-14 w-full rounded-full text-xl">
+						Get Quote
+					</Button>
+				</section>
+			)}
+
+			<section className="container h-screen py-12">
 				{vendor.vendorType.name === 'venues' ? (
 					<VenueDetails venue={vendor.venueDetails} />
 				) : null}
