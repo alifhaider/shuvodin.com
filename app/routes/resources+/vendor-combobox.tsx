@@ -61,16 +61,17 @@ export function VendorCombobox() {
 
 	const displayMenu = cb.isOpen && vendorTypes.length > 0
 	const menuClassName =
-		'absolute z-10 mt-1 min-w-[448px] max-h-[336px] bg-background shadow-lg rounded-sm w-full overflow-y-scroll'
+		'absolute z-10 mt-4 min-w-md max-h-[336px] bg-white dark:bg-gray-800 shadow-lg rounded-sm w-full overflow-y-scroll'
 
 	return (
-		<div className="relative max-w-[448px] flex-1">
-			<div className="border-border/50 flex w-full max-w-[448px] flex-1 items-center gap-4 rounded-4xl border">
+		<div className="relative w-full flex-1 lg:max-w-md">
+			<div className="flex flex-1 items-center gap-4">
 				<label
 					htmlFor={id}
 					className="px-4 py-2 text-sm font-medium whitespace-nowrap"
 				>
-					Type
+					<Icon name="flower" className="h-5 w-5" />
+					<span className="sr-only">Vendor Type</span>
 				</label>
 				<div className="relative w-full">
 					<input
@@ -99,7 +100,7 @@ export function VendorCombobox() {
 									'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
 									{
 										'bg-accent text-accent-foreground':
-											cb.selectedItem?.slug === item.slug,
+											selectedVendorType?.slug === item.slug,
 									},
 								),
 							})}
@@ -110,7 +111,7 @@ export function VendorCombobox() {
 					))}
 			</ul>
 
-			<input type="hidden" value={cb.selectedItem?.slug ?? ''} />
+			<input type="hidden" value={selectedVendorType?.slug ?? ''} />
 		</div>
 	)
 }

@@ -7,6 +7,7 @@ import { Spinner } from '#app/components/spinner.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/location-combobox'
+import { Icon } from '#app/components/ui/icon.tsx'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const searchParams = new URL(request.url).searchParams
@@ -76,7 +77,6 @@ export function LocationCombobox() {
 		items,
 		itemToString: (item) => (item ? item.value : ''),
 		selectedItem: selectedItem,
-		inputValue: selectedItem ? selectedItem.value : '', // Add this line
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				await locationFetcher.submit(
@@ -106,7 +106,7 @@ export function LocationCombobox() {
 
 	const displayMenu = cb.isOpen && (cities.length > 0 || addresses.length > 0)
 	const menuClassName =
-		'absolute z-10 mt-4 min-w-[448px] max-h-[336px] bg-background shadow-lg rounded-sm w-full overflow-y-scroll'
+		'absolute z-10 mt-4 min-w-md max-h-[336px] bg-white dark:bg-gray-800 shadow-lg rounded-sm w-full overflow-y-scroll'
 
 	const busy = locationFetcher.state !== 'idle'
 	const showSpinner = useSpinDelay(busy, {
@@ -115,10 +115,14 @@ export function LocationCombobox() {
 	})
 
 	return (
-		<div className="relative max-w-[350px] flex-1">
-			<div className="flex w-full max-w-[350px] flex-1 items-center gap-4 border-b">
-				<label htmlFor={id} className="text-brand">
-					Location
+		<div className="relative w-full flex-1 lg:max-w-md">
+			<div className="flex flex-1 items-center gap-4">
+				<label
+					htmlFor={id}
+					className="px-4 py-2 text-sm font-medium whitespace-nowrap"
+				>
+					<span className="sr-only">Location</span>
+					<Icon name="map-pin" className="h-5 w-5" />
 				</label>
 				<div className="relative w-full">
 					<input
@@ -126,7 +130,7 @@ export function LocationCombobox() {
 						className="relative w-full bg-transparent outline-hidden"
 						{...cb.getInputProps({
 							id,
-							placeholder: 'Search by city or address...',
+							placeholder: 'Location',
 						})}
 					/>
 					<div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center justify-center">
@@ -142,7 +146,7 @@ export function LocationCombobox() {
 			>
 				{displayMenu && cities.length > 0 && (
 					<>
-						<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
+						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
 							Cities
 						</h5>
 						{cities.map((item, index) => (
@@ -166,9 +170,11 @@ export function LocationCombobox() {
 					</>
 				)}
 
+				<hr className="border-accent mx-4 my-1" />
+
 				{addresses.length > 0 && (
 					<>
-						<h5 className="text-muted-foreground mt-4 mb-2 px-2 text-sm font-semibold">
+						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
 							Addresses
 						</h5>
 						{addresses.map((item, index) => (

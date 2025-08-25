@@ -258,14 +258,30 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					</div>
 
 					{/* Search Bar */}
-					<div className="flex w-full flex-col gap-4 lg:flex-row">
+					<div className="border-muted divide-accent flex w-full flex-col items-center gap-4 divide-y rounded-2xl border bg-white px-6 py-4 lg:flex-row lg:divide-x lg:divide-y-0 lg:rounded-full dark:bg-gray-800">
+						<div className="flex w-full items-center gap-3 lg:flex-1">
+							<label
+								htmlFor="search"
+								className="px-4 py-2 text-sm font-medium whitespace-nowrap"
+							>
+								<span className="sr-only">Search</span>
+								<Icon name="square-pen" className="h-5 w-5" />
+							</label>
+
+							<input
+								type="text"
+								defaultValue={searchParams.get('search') || ''}
+								placeholder="Name"
+								className="text-secondary-foreground max-w-md flex-1 text-lg font-medium backdrop-blur outline-none placeholder:font-normal md:text-xl"
+							/>
+						</div>
 						<LocationCombobox />
 						<VendorCombobox />
 					</div>
 				</div>
 			</section>
 			<section className="container flex items-start gap-6">
-				<div className={clsx('w-1/4', vendor ? 'block' : 'hidden')}>
+				<div className={clsx('w-1/4', vendor ? 'hidden lg:block' : 'hidden')}>
 					<Form method="get" className="space-y-4" ref={$form} reloadDocument>
 						<Accordion type="multiple" className="w-full">
 							{renderFilters()}
@@ -310,7 +326,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 								href={`/vendors/${vendor.slug}`}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="group flex gap-4 py-4 md:gap-6"
+								className="group flex flex-col gap-4 py-4 md:gap-6 lg:flex-row"
 							>
 								<div className="relative h-60 min-w-103">
 									<Img
