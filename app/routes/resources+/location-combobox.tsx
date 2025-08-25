@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { useCombobox } from 'downshift'
-import { useId } from 'react'
+import { useId, useMemo } from 'react'
 import { data, useFetcher, useSearchParams } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { Spinner } from '#app/components/spinner.tsx'
@@ -40,17 +40,22 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export function LocationCombobox() {
+	const id = useId()
 	const [searchParams, setSearchParams] = useSearchParams()
 	const locationFetcher = useFetcher<typeof loader>()
-	const id = useId()
 
-	const initialCity = searchParams.get('city')
-	const initialAddress = searchParams.get('address')
+	const currentCity = searchParams.get('city')
+	const currentAddress = searchParams.get('address')
 
-	const initialItems = []
-	if (initialCity) initialItems.push({ type: 'city', value: initialCity })
-	if (initialAddress)
-		initialItems.push({ type: 'address', value: initialAddress })
+	const selectedItem = useMemo(() => {
+		return currentCity
+			? { type: 'city' as const, value: currentCity }
+			: currentAddress
+				? { type: 'address' as const, value: currentAddress }
+				: null
+	}, [currentCity, currentAddress])
+
+	const initialItems = selectedItem ? [selectedItem] : []
 
 	const cities =
 		locationFetcher.data?.cities.map((city) => ({
@@ -70,7 +75,8 @@ export function LocationCombobox() {
 		id,
 		items,
 		itemToString: (item) => (item ? item.value : ''),
-		initialSelectedItem: initialItems[0] ?? null,
+		selectedItem: selectedItem,
+		inputValue: selectedItem ? selectedItem.value : '', // Add this line
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				await locationFetcher.submit(
@@ -89,7 +95,6 @@ export function LocationCombobox() {
 		onSelectedItemChange: ({ selectedItem }) => {
 			const newSearchParams = new URLSearchParams(searchParams)
 			if (selectedItem?.value) {
-				console.log('selectedItem', selectedItem)
 				newSearchParams.set(selectedItem.type, selectedItem.value)
 			} else {
 				newSearchParams.delete('city')
@@ -117,6 +122,7 @@ export function LocationCombobox() {
 				</label>
 				<div className="relative w-full">
 					<input
+						key={id}
 						className="relative w-full bg-transparent outline-hidden"
 						{...cb.getInputProps({
 							id,
@@ -149,7 +155,7 @@ export function LocationCombobox() {
 										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
 										{
 											'bg-accent text-accent-foreground':
-												cb.selectedItem?.value === item.value,
+												selectedItem?.value === item.value,
 										},
 									),
 								})}
@@ -175,7 +181,7 @@ export function LocationCombobox() {
 										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
 										{
 											'bg-accent text-accent-foreground':
-												cb.selectedItem?.value === item.value,
+												selectedItem?.value === item.value,
 										},
 									),
 								})}
@@ -187,7 +193,7 @@ export function LocationCombobox() {
 				)}
 			</ul>
 
-			<input type="hidden" value={cb.selectedItem?.value ?? ''} />
+			<input type="hidden" value={selectedItem?.value ?? ''} />
 		</div>
 	)
 }

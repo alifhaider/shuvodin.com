@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { useCombobox } from 'downshift'
-import { useId } from 'react'
+import { useEffect, useId } from 'react'
 import { useSearchParams } from 'react-router'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
@@ -8,16 +8,20 @@ import { cn } from '#app/utils/misc.tsx'
 import { type IconName } from '@/icon-name'
 
 export function VendorCombobox() {
-	const [searchParams, setSearchParams] = useSearchParams()
 	const id = useId()
+	const [searchParams, setSearchParams] = useSearchParams()
+
+	const currentVendorType = searchParams.get('vendorType')
+
+	// Find the corresponding vendor type object
+	const selectedVendorType =
+		vendorTypes.find((item) => item.slug === currentVendorType) ?? null
+
 	const cb = useCombobox<(typeof vendorTypes)[number]>({
 		id,
 		items: vendorTypes,
 		itemToString: (item) => (item ? item.title : ''),
-		initialSelectedItem:
-			vendorTypes.find(
-				(item) => item.slug === searchParams.get('vendorType'),
-			) ?? null,
+		selectedItem: selectedVendorType,
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				const selectedItem = vendorTypes.find(

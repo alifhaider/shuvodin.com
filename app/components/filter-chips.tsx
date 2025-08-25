@@ -19,7 +19,6 @@ export function FilterChips() {
 		filterValue: string,
 		params: URLSearchParams,
 	) => {
-		console.log('filterType:', filterType)
 		const currentValues = params.getAll(filterType)
 
 		if (currentValues.length > 1) {
@@ -65,7 +64,9 @@ export function FilterChips() {
 					onRemove={handleRemoveFilter}
 				/>
 			))}
-			<ClearAllButton onClear={handleClearAll} />
+			{activeFilters.length > 0 && activeFilters[0]?.label && (
+				<ClearAllButton onClear={handleClearAll} />
+			)}
 		</div>
 	)
 }
@@ -77,18 +78,21 @@ const FilterChip = ({
 }: {
 	filter: ActiveFilter
 	onRemove: (f: ActiveFilter) => void
-}) => (
-	<button
-		onClick={() => onRemove(filter)}
-		className="border-secondary group hover:border-primary/80 flex items-center gap-2 rounded-lg border px-3 py-1 text-sm font-semibold transition-all"
-	>
-		{filter.label}
-		<Icon
-			name="cross-2"
-			className="group-hover:text-primary/80 h-3 w-3 stroke-3"
-		/>
-	</button>
-)
+}) => {
+	if (!filter.label) return null
+	return (
+		<button
+			onClick={() => onRemove(filter)}
+			className="border-secondary group hover:border-primary/80 flex items-center gap-2 rounded-lg border px-3 py-1 text-sm font-semibold transition-all"
+		>
+			{filter.label}
+			<Icon
+				name="cross-2"
+				className="group-hover:text-primary/80 h-3 w-3 stroke-3"
+			/>
+		</button>
+	)
+}
 
 const ClearAllButton = ({ onClear }: { onClear: () => void }) => (
 	<button
