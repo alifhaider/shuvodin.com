@@ -300,7 +300,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 							<Form method="get" className="w-40">
 								<Select
 									name="sortOrder"
-									defaultValue={searchParams.get('sortOrder') || 'relevance'}
+									value={searchParams.get('sortOrder') || 'relevance'}
 									onValueChange={handleSortChange}
 								>
 									<SelectTrigger className="w-[180px]">
