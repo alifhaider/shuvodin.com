@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { prisma } from '#app/utils/db.server.ts'
+import { VendorType } from '#app/utils/misc.tsx'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
 import {
 	createPassword,
@@ -8,20 +9,31 @@ import {
 	getUserImages,
 } from '#tests/db-utils.ts'
 import { insertGitHubUser } from '#tests/mocks/github.ts'
-import { VendorType } from '#app/utils/misc.tsx'
 
 const mockVendorLocations = [
 	{
-		city: 'Dhaka',
+		division: 'Dhaka',
+		district: 'Dhaka',
+		thana: 'Dhanmondi',
 		address: '123 Main St, Dhaka',
 	},
 	{
-		city: 'Chittagong',
+		division: 'Chittagong',
+		district: 'Chittagong',
+		thana: 'Pahartali',
 		address: '456 Elm St, Chittagong',
 	},
 	{
-		city: 'Sylhet',
+		division: 'Sylhet',
+		district: 'Sylhet',
+		thana: 'Sylhet Sadar',
 		address: '789 Oak St, Sylhet',
+	},
+	{
+		division: 'Rajshahi',
+		district: 'Naogaon',
+		thana: 'Mohadebpur',
+		address: 'Mohadebpur Busstand',
 	},
 ]
 

@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { useCombobox } from 'downshift'
-import { useEffect, useId } from 'react'
+import { useId } from 'react'
 import { useSearchParams } from 'react-router'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
@@ -70,7 +70,10 @@ export function VendorCombobox() {
 					htmlFor={id}
 					className="px-4 py-2 text-sm font-medium whitespace-nowrap"
 				>
-					<Icon name="flower" className="h-5 w-5" />
+					<Icon
+						name={(selectedVendorType?.icon as IconName) ?? 'flower'}
+						className="h-5 w-5"
+					/>
 					<span className="sr-only">Vendor Type</span>
 				</label>
 				<div className="relative w-full">
@@ -82,6 +85,27 @@ export function VendorCombobox() {
 						})}
 					/>
 				</div>
+
+				{selectedVendorType && (
+					<button
+						type="button"
+						className="px-2 py-1"
+						aria-label="Clear selection"
+						onClick={() => {
+							setSearchParams((prev) => {
+								const newParams = new URLSearchParams(prev)
+								newParams.delete('vendorType')
+								return newParams
+							})
+							cb.reset()
+						}}
+					>
+						<Icon
+							name="cross-2"
+							className="text-muted-foreground hover:text-foreground h-4 w-4"
+						/>
+					</button>
+				)}
 			</div>
 
 			<ul

@@ -4,40 +4,26 @@ import { useId, useMemo } from 'react'
 import { data, useFetcher, useSearchParams } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { Spinner } from '#app/components/spinner.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { prisma } from '#app/utils/db.server.ts'
+import {
+	divisions,
+	districtsByDivision,
+	getLocations,
+} from '#app/utils/locations.server.ts'
 import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/location-combobox'
-import { Icon } from '#app/components/ui/icon.tsx'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('query')?.toLocaleLowerCase()
 
-	const locations = await prisma.vendorLocation.findMany({
-		where: {
-			OR: [{ city: { contains: query } }, { address: { contains: query } }],
-		},
-		select: {
-			address: true,
-			city: true,
-		},
-		distinct: ['city', 'address'],
-	})
+	// query will be Dha
+	// then locations will be [{division: ["Dhaka"], districts: ["Dhaka", "Faridpur", "Gazipur"] }]
+	const locations = getLocations(request)
+	console.log('Locations from loader:', locations)
 
-	// Create sets to avoid duplicates
-	const cities = new Set<string>()
-	const addresses = new Set<string>()
-
-	// Populate the sets
-	locations.forEach((location) => {
-		if (location.city) cities.add(location.city)
-		if (location.address) addresses.add(location.address)
-	})
-
-	return data({
-		cities: Array.from(cities),
-		addresses: Array.from(addresses),
-	})
+	return locations
 }
 
 export function LocationCombobox() {
@@ -45,32 +31,53 @@ export function LocationCombobox() {
 	const [searchParams, setSearchParams] = useSearchParams()
 	const locationFetcher = useFetcher<typeof loader>()
 
-	const currentCity = searchParams.get('city')
-	const currentAddress = searchParams.get('address')
+	const currentDivision = searchParams.get('division')
+	const currentDistrict = searchParams.get('district')
+	const currentThana = searchParams.get('thana')
 
 	const selectedItem = useMemo(() => {
-		return currentCity
-			? { type: 'city' as const, value: currentCity }
-			: currentAddress
-				? { type: 'address' as const, value: currentAddress }
-				: null
-	}, [currentCity, currentAddress])
+		// Prioritize division over district if both exist
+		if (currentDivision) {
+			return { type: 'division' as const, value: currentDivision }
+		}
+		if (currentDistrict) {
+			return { type: 'district' as const, value: currentDistrict }
+		}
+		if (currentThana) {
+			return { type: 'thana' as const, value: currentThana }
+		}
+		return null
+	}, [currentDivision, currentDistrict, currentThana])
 
-	const initialItems = selectedItem ? [selectedItem] : []
+	const divisions = useMemo(
+		() =>
+			locationFetcher.data?.divisions.map((division) => ({
+				type: 'division',
+				value: division,
+			})) || [],
+		[locationFetcher.data],
+	)
 
-	const cities =
-		locationFetcher.data?.cities.map((city) => ({
-			type: 'city',
-			value: city,
-		})) ?? initialItems.filter((item) => item.type === 'city')
+	const districts = useMemo(
+		() =>
+			locationFetcher.data?.districts.map((district) => ({
+				type: 'district',
 
-	const addresses =
-		locationFetcher.data?.addresses.map((address) => ({
-			type: 'address',
-			value: address,
-		})) ?? initialItems.filter((item) => item.type === 'address')
+				value: district,
+			})) || [],
+		[locationFetcher.data],
+	)
 
-	const items = [...cities, ...addresses]
+	const thanas = useMemo(
+		() =>
+			locationFetcher.data?.thanas?.map((thana) => ({
+				type: 'thana',
+				value: thana,
+			})) || [],
+		[locationFetcher.data],
+	)
+
+	const items = [...divisions, ...districts, ...thanas]
 
 	const cb = useCombobox<(typeof items)[number]>({
 		id,
@@ -86,25 +93,33 @@ export function LocationCombobox() {
 			} else {
 				setSearchParams((prev) => {
 					const newParams = new URLSearchParams(prev)
-					newParams.delete('city')
-					newParams.delete('address')
+					newParams.delete('division')
+					newParams.delete('district')
+					newParams.delete('thana')
 					return newParams
 				})
 			}
 		},
 		onSelectedItemChange: ({ selectedItem }) => {
 			const newSearchParams = new URLSearchParams(searchParams)
+
+			// Clear both params first
+			newSearchParams.delete('division')
+			newSearchParams.delete('district')
+			newSearchParams.delete('thana')
+
+			// Then set the selected one
 			if (selectedItem?.value) {
 				newSearchParams.set(selectedItem.type, selectedItem.value)
-			} else {
-				newSearchParams.delete('city')
-				newSearchParams.delete('address')
 			}
+
 			setSearchParams(newSearchParams)
 		},
 	})
 
-	const displayMenu = cb.isOpen && (cities.length > 0 || addresses.length > 0)
+	const displayMenu =
+		cb.isOpen &&
+		(divisions.length > 0 || districts.length > 0 || thanas.length > 0)
 	const menuClassName =
 		'absolute z-10 mt-4 min-w-md max-h-[336px] bg-white dark:bg-gray-800 shadow-lg rounded-sm w-full overflow-y-scroll'
 
@@ -130,13 +145,35 @@ export function LocationCombobox() {
 						className="relative w-full bg-transparent outline-hidden"
 						{...cb.getInputProps({
 							id,
-							placeholder: 'Location',
+							placeholder: 'Division, District or Thana',
 						})}
 					/>
 					<div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center justify-center">
 						<Spinner showSpinner={showSpinner} />
 					</div>
 				</div>
+
+				{selectedItem && (
+					<button
+						type="button"
+						className="px-2 py-1"
+						aria-label="Clear selection"
+						onClick={() => {
+							setSearchParams((prev) => {
+								const newParams = new URLSearchParams(prev)
+								newParams.delete('division')
+								newParams.delete('district')
+								return newParams
+							})
+							cb.reset()
+						}}
+					>
+						<Icon
+							name="cross-2"
+							className="text-muted-foreground hover:text-foreground h-4 w-4"
+						/>
+					</button>
+				)}
 			</div>
 
 			<ul
@@ -144,14 +181,14 @@ export function LocationCombobox() {
 					className: clsx(menuClassName, { hidden: !displayMenu }),
 				})}
 			>
-				{displayMenu && cities.length > 0 && (
+				{displayMenu && divisions.length > 0 && (
 					<>
 						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
-							Cities
+							Divisions
 						</h5>
-						{cities.map((item, index) => (
+						{divisions.map((item, index) => (
 							<li
-								key={`city-${item.value}`}
+								key={`division-${item.value}`}
 								{...cb.getItemProps({
 									item,
 									index,
@@ -170,29 +207,55 @@ export function LocationCombobox() {
 					</>
 				)}
 
-				<hr className="border-accent mx-4 my-1" />
-
-				{addresses.length > 0 && (
+				{displayMenu && districts.length > 0 && (
 					<>
+						<hr className="border-accent mx-4 my-1" />
 						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
-							Addresses
+							Districts
 						</h5>
-						{addresses.map((item, index) => (
+						{districts.map((district, index) => (
 							<li
-								key={`address-${item.value}`}
+								key={`district-${district.value}`}
 								{...cb.getItemProps({
-									item,
-									index: cities.length + index, // Important for correct indexing
+									item: district,
+									index: districts.length + index, // Important for correct indexing
 									className: cn(
 										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
 										{
 											'bg-accent text-accent-foreground':
-												selectedItem?.value === item.value,
+												selectedItem?.value === district.value,
 										},
 									),
 								})}
 							>
-								{item.value}
+								{district.value}
+							</li>
+						))}
+					</>
+				)}
+
+				{displayMenu && thanas.length > 0 && (
+					<>
+						<hr className="border-accent mx-4 my-1" />
+						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
+							Thanas
+						</h5>
+						{thanas.map((thana, index) => (
+							<li
+								key={`thana-${thana.value}`}
+								{...cb.getItemProps({
+									item: thana,
+									index: divisions.length + districts.length + index, // Important for correct indexing
+									className: cn(
+										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
+										{
+											'bg-accent text-accent-foreground':
+												selectedItem?.value === thana.value,
+										},
+									),
+								})}
+							>
+								{thana.value}
 							</li>
 						))}
 					</>

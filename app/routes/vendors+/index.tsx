@@ -45,7 +45,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 			description: true,
 			location: {
 				select: {
-					city: true,
+					division: true,
+					district: true,
 					address: true,
 				},
 			},
@@ -99,9 +100,10 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 		(vendor) => vendor.slug === searchParams.get('vendorType'),
 	)
 	const vendorType = vendor ? vendor.title : 'Wedding'
-	const city = searchParams.get('city') || ''
-	const address = searchParams.get('address') || ''
-	const location = city || address || 'Bangladesh'
+	const division = searchParams.get('division') || ''
+	const district = searchParams.get('district') || ''
+	const thana = searchParams.get('thana') || ''
+	const location = division || district || thana || 'Bangladesh'
 
 	const breadcrumbs = [
 		{ label: 'Home', to: '/' },
@@ -270,7 +272,13 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 							<input
 								type="text"
+								key={searchParams.get('search') || ''}
 								defaultValue={searchParams.get('search') || ''}
+								name="search"
+								id="search"
+								onChange={(e) =>
+									handleInputChange('search', e.currentTarget.value)
+								}
 								placeholder="Name"
 								className="text-secondary-foreground max-w-md flex-1 text-lg font-medium backdrop-blur outline-none placeholder:font-normal md:text-xl"
 							/>
@@ -291,7 +299,10 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 				<div className="flex-1">
 					<div className="border-secondary flex w-full items-start justify-between border-b py-4">
 						<div className="space-y-2">
-							<p className="text-sm md:text-base">100+ Wedding Vendors Found</p>
+							<p className="text-sm md:text-base">
+								100+ Wedding <strong>{vendor?.title ?? 'Vendors'} </strong>{' '}
+								Found in <strong> {location ? location : 'Bangladesh'}</strong>
+							</p>
 
 							<FilterChips />
 						</div>
@@ -386,7 +397,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 										<span className="ml-3 text-sm font-medium">
 											<Icon name="map-pin" className="h-4 w-4" />
-											{vendor.location?.city}- {vendor?.location?.address}
+											{vendor.location?.address}- {vendor?.location?.district}
 										</span>
 									</div>
 

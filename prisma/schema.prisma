@@ -101,16 +101,21 @@ model VendorType {
 
 model VendorLocation {
   id        String  @id @default(cuid())
-  city      String
+  division  String
+
+  thana     String
+  district  String
   address   String?
+  
+  mapUrl    String?
   latitude  Float?
   longitude Float?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  vendorId String @unique
+  vendor        Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendorId      String @unique
 }
 
 model VendorImage {
