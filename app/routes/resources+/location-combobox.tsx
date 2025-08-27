@@ -1,28 +1,16 @@
 import clsx from 'clsx'
 import { useCombobox } from 'downshift'
 import { useId, useMemo } from 'react'
-import { data, useFetcher, useSearchParams } from 'react-router'
+import { useFetcher, useSearchParams } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { Spinner } from '#app/components/spinner.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import {
-	divisions,
-	districtsByDivision,
-	getLocations,
-} from '#app/utils/locations.server.ts'
+import { getLocations } from '#app/utils/locations.server.ts'
 import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/location-combobox'
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const searchParams = new URL(request.url).searchParams
-	const query = searchParams.get('query')?.toLocaleLowerCase()
-
-	// query will be Dha
-	// then locations will be [{division: ["Dhaka"], districts: ["Dhaka", "Faridpur", "Gazipur"] }]
 	const locations = getLocations(request)
-	console.log('Locations from loader:', locations)
-
 	return locations
 }
 
