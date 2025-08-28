@@ -339,7 +339,7 @@ model VenueDetails {
 
 model VenueService {
   id          String    @id @default(cuid())
-  name        String    @unique // "Catering", "Decoration", etc.
+  name        String    // "Catering", "Decoration", etc.
 
   description String? // Optional description of the service
   
@@ -350,11 +350,14 @@ model VenueService {
   
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@unique([venueId, name] )
+  @@index([venueId, name] )
 }
 
 model VenueSpace {
   id          String    @id @default(cuid())
-  name        String    @unique
+  name        String 
   description String?
 
 
@@ -364,7 +367,8 @@ model VenueSpace {
 
   image    VenueSpaceImage? // Optional image for the space
 
-  price      Float   // Price for renting this space
+  price      Float?   // Price for renting this space
+  includeInTotalPrice Boolean @default(false) // Whether to include this space's price in total venue price
 
   venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
   venueId     String
@@ -390,26 +394,31 @@ model VenueSpaceImage {
 
 model VenueType {
   id          String    @id @default(cuid())
-  name        String    @unique // "Ballroom", "Garden", "Hotel", etc.
+  name        String     // "Ballroom", "Garden", "Hotel", etc.
   venues      VenueDetails[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  @@unique([name] )
 }
 
 model VenueAmenity {
   id          String    @id @default(cuid())
-  name        String    @unique // "Dance Floor", "Stage", "Sound System", etc.
+  name        String    
   venues      VenueDetails[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@unique([name] )
 }
 
 model VenueEventType {
   id          String    @id @default(cuid())
-  name        String    @unique // "Wedding", "Corporate", "Birthday", etc.
+  name        String    
   venues      VenueDetails[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@unique([name] )
 }
 
 

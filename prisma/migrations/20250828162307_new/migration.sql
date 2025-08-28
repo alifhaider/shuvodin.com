@@ -12,25 +12,36 @@ CREATE TABLE "User" (
 CREATE TABLE "Vendor" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "businessName" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
     "description" TEXT,
     "phone" TEXT,
     "website" TEXT,
     "socialLinks" JSONB,
     "rating" REAL NOT NULL DEFAULT 0,
     "isFeatured" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "categoryId" TEXT NOT NULL,
     "ownerId" TEXT NOT NULL,
     "vendorTypeId" TEXT NOT NULL,
-    CONSTRAINT "Vendor_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "VendorCategory" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Vendor_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "Vendor_vendorTypeId_fkey" FOREIGN KEY ("vendorTypeId") REFERENCES "VendorType" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
+CREATE TABLE "VendorAward" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "year" INTEGER NOT NULL,
+    "vendorId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "VendorAward_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
 CREATE TABLE "VendorType" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -40,8 +51,11 @@ CREATE TABLE "VendorType" (
 -- CreateTable
 CREATE TABLE "VendorLocation" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "city" TEXT NOT NULL,
+    "division" TEXT NOT NULL,
+    "thana" TEXT NOT NULL,
+    "district" TEXT NOT NULL,
     "address" TEXT,
+    "mapUrl" TEXT,
     "latitude" REAL,
     "longitude" REAL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -59,28 +73,6 @@ CREATE TABLE "VendorImage" (
     "updatedAt" DATETIME NOT NULL,
     "vendorId" TEXT NOT NULL,
     CONSTRAINT "VendorImage_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "VendorProfileImage" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "altText" TEXT,
-    "objectKey" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "vendorId" TEXT NOT NULL,
-    CONSTRAINT "VendorProfileImage_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "VendorCoverImage" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "altText" TEXT,
-    "objectKey" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "vendorId" TEXT NOT NULL,
-    CONSTRAINT "VendorCoverImage_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -121,15 +113,6 @@ CREATE TABLE "Review" (
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Review_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "VendorCategory" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
@@ -225,18 +208,50 @@ CREATE TABLE "Passkey" (
 CREATE TABLE "VenueDetails" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "vendorId" TEXT NOT NULL,
-    "minPrice" REAL,
-    "maxPrice" REAL,
-    "minCapacity" INTEGER,
-    "maxCapacity" INTEGER,
-    "indoor" BOOLEAN,
-    "outdoor" BOOLEAN,
-    "smokingAllowed" BOOLEAN,
-    "parkingAvailable" BOOLEAN,
-    "wheelchairAccess" BOOLEAN,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "VenueDetails_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "venueTypeId" TEXT NOT NULL,
+    CONSTRAINT "VenueDetails_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "Vendor" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "VenueDetails_venueTypeId_fkey" FOREIGN KEY ("venueTypeId") REFERENCES "VenueType" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "VenueService" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "price" REAL,
+    "isVeg" BOOLEAN,
+    "venueId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "VenueService_venueId_fkey" FOREIGN KEY ("venueId") REFERENCES "VenueDetails" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "VenueSpace" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "sittingCapacity" INTEGER NOT NULL,
+    "standingCapacity" INTEGER NOT NULL,
+    "parkingCapacity" INTEGER,
+    "price" REAL NOT NULL,
+    "venueId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "VenueSpace_venueId_fkey" FOREIGN KEY ("venueId") REFERENCES "VenueDetails" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "VenueSpaceImage" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "altText" TEXT,
+    "objectKey" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "venueSpaceId" TEXT NOT NULL,
+    CONSTRAINT "VenueSpaceImage_venueSpaceId_fkey" FOREIGN KEY ("venueSpaceId") REFERENCES "VenueSpace" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -261,17 +276,6 @@ CREATE TABLE "VenueEventType" (
     "name" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
-);
-
--- CreateTable
-CREATE TABLE "VenueAward" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "year" INTEGER NOT NULL,
-    "venueId" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "VenueAward_venueId_fkey" FOREIGN KEY ("venueId") REFERENCES "VenueDetails" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -328,17 +332,6 @@ CREATE TABLE "PhotographyService" (
 );
 
 -- CreateTable
-CREATE TABLE "PhotographyAward" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "year" INTEGER NOT NULL,
-    "photographerId" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "PhotographyAward_photographerId_fkey" FOREIGN KEY ("photographerId") REFERENCES "PhotographerDetails" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
 CREATE TABLE "CatererDetails" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "vendorId" TEXT NOT NULL,
@@ -388,17 +381,6 @@ CREATE TABLE "CatererDietaryOption" (
 );
 
 -- CreateTable
-CREATE TABLE "CatererAward" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "year" INTEGER NOT NULL,
-    "catererId" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "CatererAward_catererId_fkey" FOREIGN KEY ("catererId") REFERENCES "CatererDetails" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
 CREATE TABLE "CatererBeverageService" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -441,14 +423,6 @@ CREATE TABLE "_RoleToUser" (
     "B" TEXT NOT NULL,
     CONSTRAINT "_RoleToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_RoleToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "_VenueDetailsToVenueType" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-    CONSTRAINT "_VenueDetailsToVenueType_A_fkey" FOREIGN KEY ("A") REFERENCES "VenueDetails" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "_VenueDetailsToVenueType_B_fkey" FOREIGN KEY ("B") REFERENCES "VenueType" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -522,28 +496,16 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Vendor_slug_key" ON "Vendor"("slug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Vendor_ownerId_key" ON "Vendor"("ownerId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Vendor_vendorTypeId_key" ON "Vendor"("vendorTypeId");
+CREATE INDEX "Vendor_ownerId_vendorTypeId_isFeatured_rating_businessName_idx" ON "Vendor"("ownerId", "vendorTypeId", "isFeatured", "rating", "businessName");
 
 -- CreateIndex
-CREATE INDEX "Vendor_ownerId_idx" ON "Vendor"("ownerId");
-
--- CreateIndex
-CREATE INDEX "Vendor_vendorTypeId_idx" ON "Vendor"("vendorTypeId");
-
--- CreateIndex
-CREATE INDEX "Vendor_categoryId_idx" ON "Vendor"("categoryId");
-
--- CreateIndex
-CREATE INDEX "Vendor_isFeatured_idx" ON "Vendor"("isFeatured");
-
--- CreateIndex
-CREATE INDEX "Vendor_rating_idx" ON "Vendor"("rating");
-
--- CreateIndex
-CREATE INDEX "Vendor_businessName_idx" ON "Vendor"("businessName");
+CREATE UNIQUE INDEX "VendorType_slug_key" ON "VendorType"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VendorType_name_key" ON "VendorType"("name");
@@ -555,25 +517,10 @@ CREATE UNIQUE INDEX "VendorLocation_vendorId_key" ON "VendorLocation"("vendorId"
 CREATE INDEX "VendorImage_vendorId_idx" ON "VendorImage"("vendorId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VendorProfileImage_vendorId_key" ON "VendorProfileImage"("vendorId");
+CREATE INDEX "Booking_vendorId_userId_idx" ON "Booking"("vendorId", "userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VendorCoverImage_vendorId_key" ON "VendorCoverImage"("vendorId");
-
--- CreateIndex
-CREATE INDEX "Booking_vendorId_idx" ON "Booking"("vendorId");
-
--- CreateIndex
-CREATE INDEX "Booking_userId_idx" ON "Booking"("userId");
-
--- CreateIndex
-CREATE INDEX "Review_vendorId_idx" ON "Review"("vendorId");
-
--- CreateIndex
-CREATE INDEX "Review_userId_idx" ON "Review"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VendorCategory_name_key" ON "VendorCategory"("name");
+CREATE INDEX "Review_vendorId_userId_idx" ON "Review"("vendorId", "userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserImage_userId_key" ON "UserImage"("userId");
@@ -601,6 +548,15 @@ CREATE INDEX "Passkey_userId_idx" ON "Passkey"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VenueDetails_vendorId_key" ON "VenueDetails"("vendorId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VenueService_name_key" ON "VenueService"("name");
+
+-- CreateIndex
+CREATE INDEX "VenueSpace_venueId_name_idx" ON "VenueSpace"("venueId", "name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VenueSpaceImage_venueSpaceId_key" ON "VenueSpaceImage"("venueSpaceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VenueType_name_key" ON "VenueType"("name");
@@ -658,12 +614,6 @@ CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_RoleToUser_B_index" ON "_RoleToUser"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_VenueDetailsToVenueType_AB_unique" ON "_VenueDetailsToVenueType"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_VenueDetailsToVenueType_B_index" ON "_VenueDetailsToVenueType"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_VenueDetailsToVenueEventType_AB_unique" ON "_VenueDetailsToVenueEventType"("A", "B");

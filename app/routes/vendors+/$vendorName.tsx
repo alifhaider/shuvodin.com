@@ -40,8 +40,10 @@ export async function loader({ params }: Route.LoaderArgs) {
 						select: {
 							id: true,
 							name: true,
+							includeInTotalPrice: true,
 							sittingCapacity: true,
 							standingCapacity: true,
+							parkingCapacity: true,
 							price: true,
 							description: true,
 							image: { select: { objectKey: true, altText: true } },
@@ -64,7 +66,9 @@ export async function loader({ params }: Route.LoaderArgs) {
 				orderBy: { createdAt: 'desc' },
 			},
 
-			location: { select: { city: true, address: true } },
+			location: {
+				select: { division: true, district: true, thana: true, address: true },
+			},
 		},
 	})
 
@@ -75,31 +79,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 	const { vendor } = loaderData
-	const stickyRef = React.useRef<HTMLDivElement>(null)
-	const [showFloatingBtn, setShowFloatingBtn] = React.useState(false)
-
-	React.useEffect(() => {
-		if (!stickyRef.current) return
-
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (!entry) return
-				setShowFloatingBtn(!entry.isIntersecting)
-			},
-			{ threshold: 0 },
-		)
-
-		observer.observe(stickyRef.current)
-
-		return () => {
-			observer.disconnect()
-		}
-	}, [])
 
 	return (
 		<>
-			<section className="from-primary/10 via-accent/5 to-secondary/10 bg-gradient-to-r py-12">
-				<div className="container py-6">
+			<section className="from-primary/10 via-accent/5 to-secondary/10 relative bg-gradient-to-r py-12">
+				<div className="relative container py-6">
 					<Breadcrumb
 						items={[
 							{ to: '/', label: 'Home' },
@@ -116,15 +100,16 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						]}
 					/>
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
-					<div className="mt-6 grid min-h-full w-full grid-cols-4">
-						<div className="md:col-span-3 md:mr-12">
+					<div className="inline-block w-full py-12 md:w-3/4">
+						<div className="flex-1">
 							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
 								{vendor.businessName}
 							</h1>
 
 							<p className="mt-4 flex items-center gap-2 text-base font-semibold">
 								<Icon name="map-pin" className="inline h-4 w-4" />
-								{vendor.location?.address}, {vendor.location?.city}
+								{vendor.location?.address}, {vendor.location?.thana},{' '}
+								{vendor.location?.district}, {vendor.location?.division}
 							</p>
 
 							<div className="mt-3 flex items-end gap-[1px]">
@@ -160,47 +145,38 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 								{vendor.description}
 							</p>
 						</div>
+					</div>
+					<div className="border-accent sticky top-20 col-span-1 mt-6 inline-block h-max w-full rounded-2xl border bg-gray-50 p-6 shadow-sm transition-all md:w-1/4 dark:bg-gray-800">
+						<h4 className="text-2xl font-extrabold">
+							Want them for your wedding?
+						</h4>
 
-						<div
-							ref={stickyRef}
-							className="border-accent sticky top-20 col-span-1 mt-6 h-max rounded-2xl border p-6 shadow-sm transition-all"
-						>
-							<h4 className="text-2xl font-extrabold">
-								Want them for your wedding?
-							</h4>
+						<div className="mt-4 flex items-center gap-4 font-medium">
+							<Button className="h-14 w-full rounded-full text-xl whitespace-nowrap">
+								Get Quote
+							</Button>
 
-							<div className="mt-4 flex items-center gap-4 font-medium">
-								<Button className="h-14 w-full rounded-full text-xl">
-									Get Quote
-								</Button>
+							<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+								<Icon name="share" className="h-5 w-5" />
+								<span className="sr-only">Share</span>
+							</button>
 
-								<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
-									<Icon name="share" className="h-5 w-5" />
-									<span className="sr-only">Share</span>
-								</button>
+							<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
+								<Icon name="heart" fill="red" className="h-5 w-5" />
+								<span className="sr-only">Favorite</span>
+							</button>
+						</div>
+					</div>
 
-								<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
-									<Icon name="heart" fill="red" className="h-5 w-5" />
-									<span className="sr-only">Favorite</span>
-								</button>
-							</div>
+					<div className="container grid h-screen grid-cols-4 gap-6 py-12 md:gap-10">
+						{vendor.vendorType.name === 'venue' ? (
+							<VenueDetails venue={vendor.venueDetails} />
+						) : null}
+						<div className="border-secondary-foreground/20 col-span-4 rounded-lg border p-4 md:col-span-1">
+							<h5 className="text-xl font-bold">You may also like</h5>
 						</div>
 					</div>
 				</div>
-			</section>
-
-			{showFloatingBtn && (
-				<section className="fixed right-20 bottom-10 z-50">
-					<Button className="h-14 w-full rounded-full text-xl">
-						Get Quote
-					</Button>
-				</section>
-			)}
-
-			<section className="container h-screen py-12">
-				{vendor.vendorType.name === 'venues' ? (
-					<VenueDetails venue={vendor.venueDetails} />
-				) : null}
 			</section>
 		</>
 	)
@@ -260,29 +236,53 @@ type VenueDetailsProps = {
 }
 
 const VenueDetails = ({ venue }: VenueDetailsProps) => {
-	console.log('Venue Details:', venue)
 	return (
-		<>
-			<h4 className="text-lg font-medium md:text-2xl">Event Spaces</h4>
-			{venue?.spaces.map((space) => {
-				return (
-					<div key={space.id} className="mb-4">
-						<h5 className="text-md font-semibold">{space.name}</h5>
-						<p className="text-muted-foreground text-sm">
-							Sitting Capacity: {space.sittingCapacity}
-						</p>
-						<p className="text-muted-foreground text-sm">
-							Standing Capacity: {space.standingCapacity}
-						</p>
-						<p className="text-muted-foreground text-sm">
-							Price: {space.price}
-						</p>
-						<p className="text-muted-foreground text-sm">
-							Description: {space.description}
-						</p>
-					</div>
-				)
-			})}
-		</>
+		<div className="col-span-4 md:col-span-3">
+			<h4 className="mb-4 text-lg font-extrabold md:text-2xl">Event Spaces</h4>
+			<div className="space-y-6">
+				{venue?.spaces.map((space) => {
+					return (
+						<div
+							key={space.id}
+							className="border-primary/30 mb-4 rounded-2xl border px-6 py-4 shadow-sm"
+						>
+							<div className="flex justify-between">
+								<h5 className="text-md font-bold">{space.name}</h5>
+								{space.includeInTotalPrice ? (
+									<p>Includes in Total Price</p>
+								) : (
+									<p className="text-lg">
+										TK: <strong>{space.price}/-</strong>
+									</p>
+								)}
+							</div>
+							<div className="bg-accent/50 mt-4 grid grid-cols-3 gap-4 rounded-lg px-6 py-4">
+								<div className="text-secondary-foreground flex flex-col items-center gap-2 text-sm md:text-lg">
+									<Icon name="sofa" className="h-6 w-6" />
+									<span className="sr-only">Sitting Capacity</span>
+									<span>{space.sittingCapacity} Capacity</span>
+								</div>
+								<div className="text-secondary-foreground flex flex-col items-center gap-2 text-sm md:text-lg">
+									<Icon name="person-standing" className="h-6 w-6" />
+									<span className="sr-only">Standing Capacity</span>
+									<span>{space.standingCapacity} Capacity</span>
+								</div>
+								<div className="text-secondary-foreground flex flex-col items-center gap-2 text-sm md:text-lg">
+									<Icon name="car-front" className="h-6 w-6" />
+									<span className="sr-only">Parking Capacity</span>
+									<span>{space.parkingCapacity || 'N/A'} Parking</span>
+								</div>
+							</div>
+							{space.description && (
+								<p className="text-muted-foreground mt-1 text-sm">
+									<strong>Description: </strong>
+									{space.description}
+								</p>
+							)}
+						</div>
+					)
+				})}
+			</div>
+		</div>
 	)
 }

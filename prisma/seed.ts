@@ -54,6 +54,8 @@ async function seed() {
 	await prisma.venueAmenity.deleteMany({})
 	await prisma.venueType.deleteMany({})
 	await prisma.venueSpace.deleteMany({})
+	await prisma.venueService.deleteMany({})
+	await prisma.venueAvailability.deleteMany({})
 	await prisma.venueDetails.deleteMany({})
 
 	await prisma.booking.deleteMany({})
@@ -299,7 +301,7 @@ async function seed() {
 			name: 'Main Hall',
 			sittingCapacity: 200,
 			standingCapacity: 300,
-			price: 25000,
+			includeInTotalPrice: true,
 			description: faker.lorem.sentence({ max: 20, min: 10 }),
 		},
 		{
@@ -402,8 +404,11 @@ async function seed() {
 			`Need at least ${totalVenues} vendors, but found ${vendors.length}`,
 		)
 	}
-	for (let index = 0; index < totalVenues; index++) {
-		const vendor = vendors[index]
+
+	const uniqueVendors = vendors.slice(0, totalVenues)
+
+	for (let index = 0; index < uniqueVendors.length; index++) {
+		const vendor = uniqueVendors[index]
 		if (!vendor) continue
 
 		console.log(`Creating venue for vendor ${vendor.businessName}...`)
@@ -413,36 +418,31 @@ async function seed() {
 			const eventTypes = await prisma.venueEventType.findMany()
 
 			// Generate a unique identifier for this vendor's venue
-			const venueUniqueId = vendor.id.slice(0, 8)
 
 			const venue = await prisma.venueDetails.create({
 				data: {
 					vendorId: vendor.id,
 					venueTypeId: faker.helpers.arrayElement(venueTypes)?.id,
 
-					// Make ALL names unique by including vendor/venue identifier
 					spaces: {
-						create: faker.helpers
-							.arrayElements(mockVenueSpaces, { min: 1, max: 3 })
-							.map((space, i) => ({
-								name: `${space.name} - ${vendor.businessName} ${i + 1} - ${venueUniqueId}`,
-								sittingCapacity: space.sittingCapacity,
-								standingCapacity: space.standingCapacity,
-								price: space.price,
-								description: `${space.description || faker.lorem.sentence()} - ${vendor.businessName}`,
-							})),
+						createMany: {
+							data: faker.helpers
+								.arrayElements(mockVenueSpaces, { min: 1, max: 3 })
+								.map((space) => ({
+									...space,
+								})),
+						},
 					},
 
 					services: {
-						create: faker.helpers
-							.arrayElements(mockVenueServices, { min: 1, max: 3 })
-							.map((service, i) => ({
-								name: `${service.name} - ${vendor.businessName} ${i + 1} - ${venueUniqueId}`,
-								price:
-									service.price || faker.number.int({ min: 100, max: 1000 }),
-								description: `${service.description || faker.lorem.sentence()} - ${vendor.businessName}`,
-								isVeg: service.isVeg ?? faker.datatype.boolean(),
-							})),
+						createMany: {
+							data: faker.helpers
+								.arrayElements(mockVenueServices, { min: 1, max: 3 })
+								.map((service, index) => ({
+									...service,
+									name: `${service.name} ${index + 1}`, // Make service names unique
+								})),
+						},
 					},
 
 					availability: {
