@@ -480,7 +480,7 @@ export function getFilterInputs(vendorType: string) {
 	switch (vendorType.toLocaleLowerCase()) {
 		case 'photographer':
 			return photographerFilterInputs
-		case 'venues':
+		case 'venue':
 			return venueFilterInputsSchema
 
 		default:

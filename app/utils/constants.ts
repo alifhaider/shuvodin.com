@@ -9,7 +9,7 @@ export const vendorTypes = [
 		icon: 'building-2',
 		title: 'Venues',
 		color: 'bg-purple-50 text-purple-600',
-		slug: 'venues',
+		slug: 'venue',
 	},
 	{
 		icon: 'utensils',

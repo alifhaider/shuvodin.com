@@ -10,6 +10,13 @@ import { Separator } from '#app/components/ui/separator.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { getVendorImgSrc } from '#app/utils/misc.tsx'
 import { type Route } from './+types/$vendorName'
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from '#app/components/ui/accordion.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
 
 export const meta: Route.MetaFunction = ({ data }) => {
 	return [
@@ -36,6 +43,13 @@ export async function loader({ params }: Route.LoaderArgs) {
 			},
 			venueDetails: {
 				select: {
+					services: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+						},
+					},
 					spaces: {
 						select: {
 							id: true,
@@ -51,6 +65,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 					},
 				},
 			},
+
 			packages: { select: { title: true, description: true, price: true } },
 			_count: {
 				select: {
@@ -82,8 +97,8 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<>
-			<section className="from-primary/10 via-accent/5 to-secondary/10 relative bg-gradient-to-r py-12">
-				<div className="relative container py-6">
+			<section className="from-primary/10 via-accent/5 to-secondary/10 relative bg-gradient-to-r py-6">
+				<div className="container">
 					<Breadcrumb
 						items={[
 							{ to: '/', label: 'Home' },
@@ -100,8 +115,8 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						]}
 					/>
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
-					<div className="inline-block w-full py-12 md:w-3/4">
-						<div className="flex-1">
+					<div className="flex justify-between gap-6 py-12">
+						<div className="mr-6">
 							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
 								{vendor.businessName}
 							</h1>
@@ -144,36 +159,33 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 							<p className="text-muted-foreground max-w-full text-base md:max-w-2xl md:text-lg">
 								{vendor.description}
 							</p>
+
+							<Spacer size="2xs" />
+
+							{vendor.vendorType.name === 'venue' ? (
+								<VenueDetails venue={vendor.venueDetails} />
+							) : null}
 						</div>
-					</div>
-					<div className="border-accent sticky top-20 col-span-1 mt-6 inline-block h-max w-full rounded-2xl border bg-gray-50 p-6 shadow-sm transition-all md:w-1/4 dark:bg-gray-800">
-						<h4 className="text-2xl font-extrabold">
-							Want them for your wedding?
-						</h4>
+						<div className="border-accent sticky top-20 inline-block h-full w-full rounded-2xl border bg-gray-50 p-6 shadow-sm transition-all md:w-1/4 dark:bg-gray-800">
+							<h4 className="text-2xl font-extrabold">
+								Want them for your wedding?
+							</h4>
 
-						<div className="mt-4 flex items-center gap-4 font-medium">
-							<Button className="h-14 w-full rounded-full text-xl whitespace-nowrap">
-								Get Quote
-							</Button>
+							<div className="mt-4 flex items-center gap-4 font-medium">
+								<Button className="h-14 w-full rounded-full text-xl whitespace-nowrap">
+									Get Quote
+								</Button>
 
-							<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
-								<Icon name="share" className="h-5 w-5" />
-								<span className="sr-only">Share</span>
-							</button>
+								<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+									<Icon name="share" className="h-5 w-5" />
+									<span className="sr-only">Share</span>
+								</button>
 
-							<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
-								<Icon name="heart" fill="red" className="h-5 w-5" />
-								<span className="sr-only">Favorite</span>
-							</button>
-						</div>
-					</div>
-
-					<div className="container grid h-screen grid-cols-4 gap-6 py-12 md:gap-10">
-						{vendor.vendorType.name === 'venue' ? (
-							<VenueDetails venue={vendor.venueDetails} />
-						) : null}
-						<div className="border-secondary-foreground/20 col-span-4 rounded-lg border p-4 md:col-span-1">
-							<h5 className="text-xl font-bold">You may also like</h5>
+								<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
+									<Icon name="heart" fill="red" className="h-5 w-5" />
+									<span className="sr-only">Favorite</span>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -237,26 +249,32 @@ type VenueDetailsProps = {
 
 const VenueDetails = ({ venue }: VenueDetailsProps) => {
 	return (
-		<div className="col-span-4 md:col-span-3">
+		<>
 			<h4 className="mb-4 text-lg font-extrabold md:text-2xl">Event Spaces</h4>
-			<div className="space-y-6">
+			<Accordion
+				type="single"
+				collapsible
+				className="w-full space-y-6"
+				defaultValue="item-1"
+			>
 				{venue?.spaces.map((space) => {
 					return (
-						<div
+						<AccordionItem
+							value={`space-${space.id}`}
 							key={space.id}
-							className="border-primary/30 mb-4 rounded-2xl border px-6 py-4 shadow-sm"
+							className="border-primary/30 bg-background mb-4 rounded-2xl border px-6 py-4 shadow-sm"
 						>
-							<div className="flex justify-between">
-								<h5 className="text-md font-bold">{space.name}</h5>
+							<AccordionTrigger>
+								<h5 className="font-body flex-1 text-base">{space.name}</h5>
 								{space.includeInTotalPrice ? (
 									<p>Includes in Total Price</p>
 								) : (
-									<p className="text-lg">
-										TK: <strong>{space.price}/-</strong>
+									<p className="font-body text-base">
+										TK: <span className="font-bold">{space.price}/-</span>
 									</p>
 								)}
-							</div>
-							<div className="bg-accent/50 mt-4 grid grid-cols-3 gap-4 rounded-lg px-6 py-4">
+							</AccordionTrigger>
+							<AccordionContent className="bg-accent/50 mt-4 grid grid-cols-3 gap-4 rounded-lg px-6 py-4">
 								<div className="text-secondary-foreground flex flex-col items-center gap-2 text-sm md:text-lg">
 									<Icon name="sofa" className="h-6 w-6" />
 									<span className="sr-only">Sitting Capacity</span>
@@ -272,17 +290,28 @@ const VenueDetails = ({ venue }: VenueDetailsProps) => {
 									<span className="sr-only">Parking Capacity</span>
 									<span>{space.parkingCapacity || 'N/A'} Parking</span>
 								</div>
-							</div>
+							</AccordionContent>
 							{space.description && (
 								<p className="text-muted-foreground mt-1 text-sm">
 									<strong>Description: </strong>
 									{space.description}
 								</p>
 							)}
-						</div>
+						</AccordionItem>
 					)
 				})}
-			</div>
-		</div>
+			</Accordion>
+
+			<Spacer size="2xs" />
+
+			<h4 className="mb-4 text-lg font-extrabold md:text-2xl">
+				Services Offered
+			</h4>
+			<ul>
+				{venue?.services.map((service) => (
+					<li key={service.id}>{service.name}</li>
+				))}
+			</ul>
+		</>
 	)
 }
