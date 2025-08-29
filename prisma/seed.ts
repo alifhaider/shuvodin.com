@@ -570,7 +570,7 @@ async function seed() {
 			email: 'alif@shuvodin.dev',
 			username: 'alif',
 			name: 'Alif',
-			password: { create: createPassword('alif') },
+			password: { create: createPassword('aliflovesyou') },
 			connections: {
 				create: {
 					providerName: 'github',

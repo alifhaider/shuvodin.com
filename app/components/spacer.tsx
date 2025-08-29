@@ -41,16 +41,16 @@ export function Spacer({
 }) {
 	const options: Record<typeof size, string> = {
 		'4xs': 'h-4',
-		'3xs': 'h-8',
-		'2xs': 'h-12',
-		xs: 'h-16',
-		sm: 'h-20',
-		md: 'h-24',
-		lg: 'h-28',
-		xl: 'h-32',
-		'2xl': 'h-36',
-		'3xl': 'h-40',
-		'4xl': 'h-44',
+		'3xs': 'h-6',
+		'2xs': 'h-8',
+		xs: 'h-10',
+		sm: 'h-16',
+		md: 'h-20',
+		lg: 'h-24',
+		xl: 'h-28',
+		'2xl': 'h-32',
+		'3xl': 'h-36',
+		'4xl': 'h-40',
 	}
 	const className = options[size]
 	return <div className={className} />
