@@ -580,19 +580,16 @@ const Reviews = ({
 					No reviews yet. Be the first to share your experience!
 				</p>
 			) : null}
-			<ul className="max-w-4xl py-2">
+			<ul className="max-w-4xl space-y-6 py-2">
 				{reviews.map((review) => (
-					<li
-						key={review.id}
-						className="flex items-start gap-4 py-6 first:pt-0"
-					>
+					<li key={review.id} className="flex items-start gap-4 first:pt-0">
 						<div className="flex-1 space-y-2">
 							<div className="flex gap-0.5">
 								{Array.from({ length: 5 }, (_, i) => (
 									<span key={i}>
 										<Icon
 											name="star"
-											className={`h-5 w-5 text-gray-300 ${review.rating > i ? 'fill-primary text-primary' : ''}`}
+											className={`h-5 w-5 fill-transparent text-gray-300 ${review.rating > i ? 'fill-primary text-primary' : ''}`}
 										/>
 									</span>
 								))}
@@ -612,7 +609,7 @@ const Reviews = ({
 				))}
 			</ul>
 
-			<Spacer size="md" />
+			{/* <Spacer size="md" /> */}
 			{/* <div className="flex max-w-4xl items-center justify-center">
 				<Button asChild size="default">
 					<Link to="/reviews">See More</Link>
