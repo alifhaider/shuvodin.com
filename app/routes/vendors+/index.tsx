@@ -43,13 +43,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 			businessName: true,
 			slug: true,
 			description: true,
-			location: {
-				select: {
-					division: true,
-					district: true,
-					address: true,
-				},
-			},
+			division: true,
+			district: true,
+			address: true,
 			isFeatured: true,
 			rating: true,
 			gallery: {
@@ -397,7 +393,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 
 										<span className="ml-3 text-sm font-medium">
 											<Icon name="map-pin" className="h-4 w-4" />
-											{vendor.location?.address}- {vendor?.location?.district}
+											{vendor.address}- {vendor?.district}
 										</span>
 									</div>
 

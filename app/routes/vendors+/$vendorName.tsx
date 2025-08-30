@@ -123,10 +123,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 				skip: reviewOffset,
 				orderBy: { createdAt: 'desc' },
 			},
-
-			location: {
-				select: { division: true, district: true, thana: true, address: true },
-			},
 		},
 	})
 
@@ -256,8 +252,8 @@ export default function VendorsPage({
 
 							<p className="mt-4 flex items-center gap-2 text-base font-semibold">
 								<Icon name="map-pin" className="inline h-4 w-4" />
-								{vendor.location?.address}, {vendor.location?.thana},{' '}
-								{vendor.location?.district}, {vendor.location?.division}
+								{vendor.address}, {vendor?.thana}, {vendor?.district},{' '}
+								{vendor?.division}
 							</p>
 
 							<div className="mt-3 flex items-end gap-[1px]">

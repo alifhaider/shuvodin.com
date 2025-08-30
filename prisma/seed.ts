@@ -181,7 +181,13 @@ async function seed() {
 					phone: faker.phone.number(),
 					website: faker.internet.url(),
 					rating: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
-					location: { create: faker.helpers.arrayElement(mockVendorLocations) },
+					division: faker.helpers.arrayElement(mockVendorLocations)?.division,
+					district: faker.helpers.arrayElement(mockVendorLocations)?.district,
+					thana: faker.helpers.arrayElement(mockVendorLocations)?.thana,
+					address: faker.helpers.arrayElement(mockVendorLocations)?.address,
+					mapUrl:
+						'https://maps.google.com/?q=' +
+						encodeURIComponent(faker.address.streetAddress()),
 					isFeatured: faker.datatype.boolean(),
 					awards: {
 						create: faker.helpers

@@ -42,7 +42,15 @@ model Vendor {
   slug       String @unique
   description String?
 
-  location   VendorLocation?
+  division  String
+
+  thana     String
+  district  String
+  address   String?
+  
+  mapUrl    String?
+  latitude  Float?
+  longitude Float?
   
   phone String?
   website String?
@@ -99,24 +107,6 @@ model VendorType {
   updatedAt   DateTime  @updatedAt
 }
 
-model VendorLocation {
-  id        String  @id @default(cuid())
-  division  String
-
-  thana     String
-  district  String
-  address   String?
-  
-  mapUrl    String?
-  latitude  Float?
-  longitude Float?
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  vendor        Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  vendorId      String @unique
-}
 
 model VendorImage {
   id        String  @id @default(cuid())
