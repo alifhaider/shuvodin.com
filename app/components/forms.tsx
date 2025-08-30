@@ -26,7 +26,11 @@ export function ErrorList({
 	return (
 		<ul id={id} className="flex flex-col gap-1">
 			{errorsToRender.map((e) => (
-				<li key={e} className="text-foreground-destructive text-[10px]">
+				<li
+					key={e}
+					className="text-foreground-destructive flex items-center gap-1 text-[10px]"
+				>
+					<span className="bg-foreground-destructive h-1.5 w-1.5 rounded-full"></span>
 					{e}
 				</li>
 			))}
@@ -57,7 +61,7 @@ export function Field({
 				aria-describedby={errorId}
 				{...inputProps}
 			/>
-			<div className="min-h-[32px] px-4 pt-1 pb-3">
+			<div className="min-h-[32px] pt-1 pb-3">
 				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
 			</div>
 		</div>
@@ -101,7 +105,7 @@ export function OTPField({
 					<InputOTPSlot index={5} />
 				</InputOTPGroup>
 			</InputOTP>
-			<div className="min-h-[32px] px-4 pt-1 pb-3">
+			<div className="min-h-[32px] pt-1 pb-3">
 				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
 			</div>
 		</div>
@@ -131,7 +135,7 @@ export function TextareaField({
 				aria-describedby={errorId}
 				{...textareaProps}
 			/>
-			<div className="min-h-[32px] px-4 pt-1 pb-3">
+			<div className="min-h-[32px] pt-1 pb-3">
 				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
 			</div>
 		</div>
@@ -194,7 +198,7 @@ export function CheckboxField({
 					className="text-body-xs text-muted-foreground self-center"
 				/>
 			</div>
-			<div className="px-4 pt-1 pb-3">
+			<div className="pt-1 pb-3">
 				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
 			</div>
 		</div>

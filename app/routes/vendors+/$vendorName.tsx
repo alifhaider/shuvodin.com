@@ -50,6 +50,12 @@ const ReviewSchema = z.object({
 export async function loader({ params, request }: Route.LoaderArgs) {
 	const { vendorName } = params
 	const loggedInUserId = await getUserId(request)
+
+	const searchParams = new URL(request.url).searchParams
+	const reviewPage = parseInt(searchParams.get('reviewPage') || '1', 10)
+	const reviewsPerPage = 5
+	const reviewOffset = (reviewPage - 1) * reviewsPerPage
+
 	const vendor = await prisma.vendor.findUnique({
 		where: { slug: vendorName },
 		include: {
@@ -113,7 +119,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 					user: { select: { username: true, name: true } },
 					createdAt: true,
 				},
-				take: 5,
+				take: reviewsPerPage,
+				skip: reviewOffset,
 				orderBy: { createdAt: 'desc' },
 			},
 
@@ -609,12 +616,12 @@ const Reviews = ({
 				))}
 			</ul>
 
-			{/* <Spacer size="md" /> */}
-			{/* <div className="flex max-w-4xl items-center justify-center">
+			<Spacer size="md" />
+			<div className="flex max-w-4xl items-center justify-center">
 				<Button asChild size="default">
 					<Link to="/reviews">See More</Link>
 				</Button>
-			</div> */}
+			</div>
 
 			<Spacer size="md" />
 
