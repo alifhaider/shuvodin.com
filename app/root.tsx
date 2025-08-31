@@ -88,6 +88,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 							name: true,
 							username: true,
 							image: { select: { objectKey: true } },
+							vendor: {
+								select: { id: true, businessName: true, slug: true },
+							},
 							roles: {
 								select: {
 									name: true,
@@ -114,6 +117,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return data(
 		{
 			user,
+			isVendor: Boolean(user?.vendor),
 			requestInfo: {
 				hints: getHints(request),
 				origin: getDomainUrl(request),
@@ -241,7 +245,11 @@ function App() {
 								Sign In
 							</Button>
 						)}
-						<Button size="sm">Join as Vendor</Button>
+						<Button size="sm" asChild>
+							<Link to="/vendors/onboarding/hint" prefetch="intent">
+								Join as Vendor
+							</Link>
+						</Button>
 					</div>
 				</div>
 			</header>
