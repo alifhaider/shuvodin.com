@@ -48,22 +48,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 			address: true,
 			isFeatured: true,
 			rating: true,
-			gallery: {
-				take: 4,
-				select: {
-					objectKey: true,
-					altText: true,
-				},
-			},
+			gallery: { take: 4, select: { objectKey: true, altText: true } },
 			reviews: {
 				take: 1,
 				select: {
-					user: {
-						select: {
-							name: true,
-							username: true,
-						},
-					},
+					user: { select: { name: true, username: true } },
 					createdAt: true,
 					comment: true,
 				},

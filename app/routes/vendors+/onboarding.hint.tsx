@@ -7,17 +7,17 @@ export default function VendorOnboardingHint() {
 	return (
 		<>
 			{/* Hero Section */}
-			<div className="space-y-4 text-center">
-				<p className="text-muted-foreground mx-auto max-w-2xl text-lg text-balance">
+			<div className="space-y-4">
+				<p className="text-muted-foreground max-w-2xl text-lg text-balance">
 					Set up your vendor profile in just a few simple steps. Create a
 					compelling presence that attracts customers and grows your business.
 				</p>
 			</div>
 
 			{/* Process Steps */}
-			<div className="grid gap-6 md:grid-cols-3">
+			<div className="grid max-w-4xl gap-6 md:grid-cols-3">
 				<Card className="border-accent/50 hover:border-accent border-2 bg-gray-50 transition-colors dark:bg-gray-800">
-					<CardContent className="space-y-4 p-6 text-center">
+					<CardContent className="space-y-4 p-6">
 						<div className="bg-primary/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
 							<Icon name="pencil-2" className="text-primary h-6 w-6" />
 						</div>
@@ -32,7 +32,7 @@ export default function VendorOnboardingHint() {
 				</Card>
 
 				<Card className="border-accent/50 hover:border-accent border-2 bg-gray-50 transition-colors dark:bg-gray-800">
-					<CardContent className="space-y-4 p-6 text-center">
+					<CardContent className="space-y-4 p-6">
 						<div className="bg-primary/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
 							<Icon name="upload" className="text-primary h-6 w-6" />
 						</div>
@@ -47,7 +47,7 @@ export default function VendorOnboardingHint() {
 				</Card>
 
 				<Card className="border-accent/50 hover:border-accent border-2 bg-gray-50 transition-colors dark:bg-gray-800">
-					<CardContent className="space-y-4 p-6 text-center">
+					<CardContent className="space-y-4 p-6">
 						<div className="bg-primary/10 inline-flex h-12 w-12 items-center justify-center rounded-full">
 							<Icon name="circle-check" className="text-primary h-6 w-6" />
 						</div>
@@ -63,7 +63,7 @@ export default function VendorOnboardingHint() {
 			{/* Key Benefits */}
 
 			{/* CTA Section */}
-			<div className="space-y-4 text-center">
+			<div className="space-y-4">
 				<p className="text-muted-foreground">
 					Ready to get started? The process takes just a few minutes.
 				</p>

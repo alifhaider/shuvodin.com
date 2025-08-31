@@ -1,10 +1,10 @@
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { VendorType } from '#app/utils/misc.tsx'
+import { cn, VendorType } from '#app/utils/misc.tsx'
 import { z } from 'zod'
 import { Route } from './+types/onboarding'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { parseWithZod } from '@conform-to/zod'
-import { data, Outlet, redirect } from 'react-router'
+import { data, Link, Outlet, redirect, useMatches } from 'react-router'
 import {
 	venueAmenityNames,
 	venueEventSpaceNames,
@@ -14,6 +14,12 @@ import {
 import { OnboardingWizard } from '#app/components/onboarding-wizard.tsx'
 import { useState } from 'react'
 import { Icon } from '#app/components/ui/icon.tsx'
+import Breadcrumb from '#app/components/breadcrumb.tsx'
+import { SEOHandle } from '@nasa-gcn/remix-seo'
+
+export const meta: Route.MetaFunction = () => {
+	return [{ title: 'Vendor Onboarding / ShuvoDin' }]
+}
 
 export const onboardingVendorSessionKey = 'onboardingVendor'
 export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3 // 3MB
@@ -112,24 +118,9 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function OnboardingVendor() {
-	const [currentStep, setCurrentStep] = useState(1)
-	const [formData, setFormData] = useState({})
-
-	const handleNext = () => setCurrentStep((prev) => Math.min(prev + 1, 5))
-	const handlePrevious = () => setCurrentStep((prev) => Math.max(prev - 1, 1))
-
-	const handleUpdate = (stepData: any) => {
-		setFormData((prev) => ({ ...prev, ...stepData }))
-		handleNext()
-	}
-
 	return (
-		<section className="mx-auto min-h-screen max-w-4xl space-y-6 py-12">
-			<h1 className="text-foreground text-center text-3xl font-bold">
-				Welcome to Vendor Onboarding
-			</h1>
-
+		<div className="space-y-6">
 			<Outlet />
-		</section>
+		</div>
 	)
 }
