@@ -83,7 +83,7 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 	[DIVISIONS.Sylhet]: ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet'],
 }
 
-const thanaByDistrict: Record<string, string[]> = {
+export const thanaByDistrict: Record<string, string[]> = {
 	Barguna: [
 		'Amtali',
 		'Bamna',

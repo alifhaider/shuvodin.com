@@ -5,7 +5,7 @@ import { useFetcher, useSearchParams } from 'react-router'
 import { useSpinDelay } from 'spin-delay'
 import { Spinner } from '#app/components/spinner.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { getLocations } from '#app/utils/locations.server.ts'
+import { getLocations } from '#app/utils/locations.ts'
 import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/location-combobox'
 

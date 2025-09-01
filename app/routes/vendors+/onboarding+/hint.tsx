@@ -5,14 +5,13 @@ import { Icon } from '#app/components/ui/icon.tsx'
 
 export default function VendorOnboardingHint() {
 	return (
-		<>
-			{/* Hero Section */}
-			<div className="space-y-4">
-				<p className="text-muted-foreground max-w-2xl text-lg text-balance">
-					Set up your vendor profile in just a few simple steps. Create a
-					compelling presence that attracts customers and grows your business.
-				</p>
-			</div>
+		<section className="space-y-4 md:space-y-6">
+			<h4 className="text-foreground">Vendor Onboarding Guide</h4>
+
+			<p className="text-muted-foreground max-w-2xl text-lg text-balance">
+				Set up your vendor profile in just a few simple steps. Create a
+				compelling presence that attracts customers and grows your business.
+			</p>
 
 			{/* Process Steps */}
 			<div className="grid max-w-4xl gap-6 md:grid-cols-3">
@@ -78,6 +77,6 @@ export default function VendorOnboardingHint() {
 					anytime
 				</p>
 			</div>
-		</>
+		</section>
 	)
 }

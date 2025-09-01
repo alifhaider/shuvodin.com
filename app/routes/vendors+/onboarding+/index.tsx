@@ -1,7 +1,7 @@
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { cn, VendorType } from '#app/utils/misc.tsx'
 import { z } from 'zod'
-import { Route } from './+types/onboarding'
+import { Route } from '../+types/onboarding'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { parseWithZod } from '@conform-to/zod'
 import { data, Link, Outlet, redirect, useMatches } from 'react-router'
@@ -10,7 +10,7 @@ import {
 	venueEventSpaceNames,
 	venueEventTypeNames,
 	venueServiceNames,
-} from './__vendor-types'
+} from '../__vendor-types'
 import { OnboardingWizard } from '#app/components/onboarding-wizard.tsx'
 import { useState } from 'react'
 import { Icon } from '#app/components/ui/icon.tsx'

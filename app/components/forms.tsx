@@ -11,6 +11,16 @@ import {
 import { Input } from './ui/input.tsx'
 import { Label } from './ui/label.tsx'
 import { Textarea } from './ui/textarea.tsx'
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from './ui/select.tsx'
+import { vendorTypes } from '#app/utils/constants.ts'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
 
@@ -199,6 +209,50 @@ export function CheckboxField({
 				/>
 			</div>
 			<div className="pt-1 pb-3">
+				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
+			</div>
+		</div>
+	)
+}
+
+export function SelectField({
+	labelProps,
+	selectProps,
+	options,
+	errors,
+	className,
+}: {
+	labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
+	selectProps: React.SelectHTMLAttributes<HTMLSelectElement>
+	options: Array<{ label: string; value: string }>
+	errors?: ListOfErrors
+	className?: string
+}) {
+	const fallbackId = useId()
+	const id = selectProps.id ?? selectProps.name ?? fallbackId
+	const errorId = errors?.length ? `${id}-error` : undefined
+	return (
+		<div className={className}>
+			<Label htmlFor={id} {...labelProps} />
+			<Select>
+				<SelectTrigger className="w-full capitalize">
+					<SelectValue placeholder="Select a Vendor type" />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectGroup>
+						{options.map((option) => (
+							<SelectItem
+								key={option.value}
+								value={option.value}
+								className="capitalize"
+							>
+								{option.label}
+							</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+			<div className="min-h-[32px] pt-1 pb-3">
 				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
 			</div>
 		</div>
