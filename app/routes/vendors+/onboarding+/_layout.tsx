@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { Route } from './+types/_layout'
+import { type Route } from './+types/_layout'
 
 const navigationItems = [
 	{

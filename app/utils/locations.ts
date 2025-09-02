@@ -1,17 +1,18 @@
-enum DIVISIONS {
-	Barishal = 'Barishal',
-	Chattogram = 'Chattogram',
-	Dhaka = 'Dhaka',
-	Khulna = 'Khulna',
-	Mymensing = 'Mymensingh',
-	Rajshahi = 'Rajshahi',
-	Rangpur = 'Rangpur',
-	Sylhet = 'Sylhet',
-}
+export const divisions = {
+	Barishal: 'Barishal',
+	Chattogram: 'Chattogram',
+	Dhaka: 'Dhaka',
+	Khulna: 'Khulna',
+	Mymensing: 'Mymensingh',
+	Rajshahi: 'Rajshahi',
+	Rangpur: 'Rangpur',
+	Sylhet: 'Sylhet',
+} as const
 
-export const divisions = Object.values(DIVISIONS)
+export type DIVISIONS = (typeof divisions)[keyof typeof divisions]
+
 export const districtsByDivision: Record<DIVISIONS, string[]> = {
-	[DIVISIONS.Barishal]: [
+	[divisions.Barishal]: [
 		'Barguna',
 		'Barishal',
 		'Bhola',
@@ -19,7 +20,7 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 		'Patuakhali',
 		'Pirojpur',
 	],
-	[DIVISIONS.Chattogram]: [
+	[divisions.Chattogram]: [
 		'Bandarban',
 		'Brahmanbaria',
 		'Chandpur',
@@ -32,7 +33,7 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 		'Noakhali',
 		'Rangamati',
 	],
-	[DIVISIONS.Dhaka]: [
+	[divisions.Dhaka]: [
 		'Dhaka',
 		'Faridpur',
 		'Gazipur',
@@ -47,7 +48,7 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 		'Shariatpur',
 		'Tangail',
 	],
-	[DIVISIONS.Khulna]: [
+	[divisions.Khulna]: [
 		'Bagerhat',
 		'Chuadanga',
 		'Jashore',
@@ -59,8 +60,8 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 		'Narail',
 		'Satkhira',
 	],
-	[DIVISIONS.Mymensing]: ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur'],
-	[DIVISIONS.Rajshahi]: [
+	[divisions.Mymensing]: ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur'],
+	[divisions.Rajshahi]: [
 		'Bogra',
 		'Joypurhat',
 		'Naogaon',
@@ -70,7 +71,7 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 		'Rajshahi',
 		'Sirajganj',
 	],
-	[DIVISIONS.Rangpur]: [
+	[divisions.Rangpur]: [
 		'Dinajpur',
 		'Gaibandha',
 		'Kurigram',
@@ -80,7 +81,7 @@ export const districtsByDivision: Record<DIVISIONS, string[]> = {
 		'Rangpur',
 		'Thakurgaon',
 	],
-	[DIVISIONS.Sylhet]: ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet'],
+	[divisions.Sylhet]: ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet'],
 }
 
 export const thanaByDistrict: Record<string, string[]> = {
@@ -566,6 +567,16 @@ export const thanaByDistrict: Record<string, string[]> = {
 	],
 }
 
+export const getDistrictsForDivision = (division: string): string[] => {
+	if (!division) return []
+
+	const divisionKey = Object.keys(districtsByDivision).find(
+		(key) => key.toLowerCase() === division.toLowerCase(),
+	)
+
+	return divisionKey ? districtsByDivision[divisionKey as DIVISIONS] : []
+}
+
 export async function getLocations(request: Request) {
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('query')?.toLocaleLowerCase()
@@ -575,7 +586,7 @@ export async function getLocations(request: Request) {
 	}
 
 	// Find matching divisions
-	const matchingDivisions = divisions.filter((division) =>
+	const matchingDivisions = Object.values(divisions).filter((division) =>
 		division.toLocaleLowerCase().includes(query),
 	)
 

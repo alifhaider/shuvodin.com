@@ -221,12 +221,17 @@ export function SelectField({
 	options,
 	errors,
 	className,
+	placeholder,
 }: {
 	labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
-	selectProps: React.SelectHTMLAttributes<HTMLSelectElement>
+	selectProps: React.SelectHTMLAttributes<HTMLSelectElement> & {
+		value?: string
+		onValueChange?: (value: string) => void
+	}
 	options: Array<{ label: string; value: string }>
 	errors?: ListOfErrors
 	className?: string
+	placeholder?: string
 }) {
 	const fallbackId = useId()
 	const id = selectProps.id ?? selectProps.name ?? fallbackId
@@ -234,9 +239,23 @@ export function SelectField({
 	return (
 		<div className={className}>
 			<Label htmlFor={id} {...labelProps} />
-			<Select>
+			<Select
+				name={selectProps.name}
+				value={selectProps.value as string}
+				onValueChange={
+					selectProps.onValueChange ||
+					((value) => {
+						if (selectProps.onChange) {
+							const syntheticEvent = {
+								target: { value, name: selectProps.name },
+							} as React.ChangeEvent<HTMLSelectElement>
+							selectProps.onChange(syntheticEvent)
+						}
+					})
+				}
+			>
 				<SelectTrigger className="w-full capitalize">
-					<SelectValue placeholder="Select a Vendor type" />
+					<SelectValue placeholder={placeholder ?? 'Select an option'} />
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>

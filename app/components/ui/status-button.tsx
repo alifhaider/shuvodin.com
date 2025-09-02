@@ -44,23 +44,20 @@ export const StatusButton = ({
 				<Icon name="check" title="success" />
 			</div>
 		),
-		error: (
-			<div
-				role="status"
-				className="bg-destructive inline-flex size-6 items-center justify-center rounded-full"
-			>
-				<Icon
-					name="cross-1"
-					className="text-destructive-foreground"
-					title="error"
-				/>
-			</div>
-		),
+
+		error: <></>,
 		idle: null,
 	}[status]
 
 	return (
-		<Button className={cn('flex justify-center gap-4', className)} {...props}>
+		<Button
+			className={cn(
+				'flex justify-center gap-4',
+				className,
+				status === 'error' ? 'bg-destructive hover:bg-destructive/70' : '',
+			)}
+			{...props}
+		>
 			<div>{children}</div>
 			{message ? (
 				<TooltipProvider>
