@@ -37,6 +37,18 @@ export async function uploadProfileImage(
 	return uploadToStorage(file, key)
 }
 
+export async function uploadVendorImage(
+	userId: string,
+	vendorId: string,
+	file: File | FileUpload,
+) {
+	const fileId = createId()
+	const fileExtension = file.name.split('.').pop() || ''
+	const timestamp = Date.now()
+	const key = `users/${userId}/vendors/${vendorId}/images/${timestamp}-${fileId}.${fileExtension}`
+	return uploadToStorage(file, key)
+}
+
 export async function uploadNoteImage(
 	userId: string,
 	noteId: string,
