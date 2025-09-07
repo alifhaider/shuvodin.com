@@ -245,7 +245,7 @@ export default function VendorsPage({
 					/>
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
 					<div className="flex justify-between gap-6 py-12">
-						<div className="mr-6">
+						<div className="mr-6 flex-1">
 							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
 								{vendor.businessName}
 							</h1>
