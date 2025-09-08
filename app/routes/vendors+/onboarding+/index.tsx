@@ -1,28 +1,22 @@
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { cn, VendorType } from '#app/utils/misc.tsx'
-import { z } from 'zod'
-import { Route } from '../+types/onboarding'
-import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { parseWithZod } from '@conform-to/zod'
-import { data, Link, Outlet, redirect, useMatches } from 'react-router'
+import { Outlet, redirect } from 'react-router'
+import { z } from 'zod'
+import { requireUserId } from '#app/utils/auth.server.ts'
+import { VendorType } from '#app/utils/misc.tsx'
+import { type Route } from '../+types/index'
+import { GalleryEditorSchema } from '../__gallery-editor'
 import {
 	venueAmenityNames,
 	venueEventSpaceNames,
 	venueEventTypeNames,
 	venueServiceNames,
 } from '../__vendor-types'
-import { OnboardingWizard } from '#app/components/onboarding-wizard.tsx'
-import { useState } from 'react'
-import { Icon } from '#app/components/ui/icon.tsx'
-import Breadcrumb from '#app/components/breadcrumb.tsx'
-import { SEOHandle } from '@nasa-gcn/remix-seo'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendor Onboarding / ShuvoDin' }]
 }
 
 export const onboardingVendorSessionKey = 'onboardingVendor'
-export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3 // 3MB
 
 const VendorSlugSchema = z
 	.string()
@@ -30,17 +24,6 @@ const VendorSlugSchema = z
 	.max(30)
 	.regex(/^[a-zA-Z0-9-_]+$/)
 	.toLowerCase()
-
-export const ImageFieldsetSchema = z.object({
-	id: z.string().optional(),
-	file: z
-		.instanceof(File)
-		.optional()
-		.refine((file) => {
-			return !file || file.size <= MAX_UPLOAD_SIZE
-		}, 'File size must be less than 3MB'),
-	altText: z.string().optional(),
-})
 
 export const GeneralInfoSchema = z.object({
 	businessName: z.string().min(3, 'Business name is required'),
@@ -76,10 +59,6 @@ export const VenueDetailsSchema = z.object({
 		.min(1),
 })
 
-export const GallerySchema = z.object({
-	gallery: z.array(ImageFieldsetSchema).max(5),
-})
-
 export const LinksSchema = z.object({
 	phone: z.string().min(11).optional(),
 	website: z.string().url().optional(),
@@ -90,7 +69,7 @@ export const LinksSchema = z.object({
 })
 
 export const OnboardingVendorSignUpSchema = GeneralInfoSchema.merge(LinksSchema)
-	.merge(GallerySchema)
+	.merge(GalleryEditorSchema)
 	.merge(ServicesSchema)
 	.merge(z.object({ venueDetails: VenueDetailsSchema.optional() }))
 

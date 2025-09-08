@@ -20,7 +20,10 @@ import {
 } from '#app/utils/locations.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { generateSlug } from '#app/utils/slug.server.tsx'
-import { createToastHeaders } from '#app/utils/toast.server.ts'
+import {
+	createToastHeaders,
+	redirectWithToast,
+} from '#app/utils/toast.server.ts'
 import { type Route } from './+types/general'
 
 export const GeneralInfoSchema = z
@@ -58,6 +61,19 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const name = formData.get('businessName') ?? ''
 
+	const vendor = await prisma.vendor.findUnique({
+		where: { ownerId: userId },
+		select: { id: true, slug: true },
+	})
+
+	if (vendor) {
+		return redirectWithToast(`/vendors/${vendor.slug}/edit`, {
+			type: 'error',
+			title: 'Vendor Profile Exists',
+			description: `You have already created a vendor profile named "${name}". You can only create one vendor profile per account.`,
+		})
+	}
+
 	// business name: Studio by Fariha Borsha
 	// primary slug: studio-by-fariha-borsha
 	// check if slug exists in db
@@ -72,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
 			{ success: false, result: submission.reply() },
 			{
 				headers: await createToastHeaders({
-					description: 'There was an error creating the review',
+					description: 'There was an error creating your vendor profile',
 					type: 'error',
 				}),
 			},
@@ -90,19 +106,19 @@ export async function action({ request }: Route.ActionArgs) {
 	} = submission.value
 	const slug = await generateSlug(businessName)
 
-	// await prisma.vendor.create({
-	// 	data: {
-	// 		businessName,
-	// 		slug,
-	// 		vendorTypeId,
-	// 		division,
-	// 		district,
-	// 		thana,
-	// 		address,
-	// 		description,
-	// 		ownerId: userId,
-	// 	},
-	// })
+	await prisma.vendor.create({
+		data: {
+			businessName,
+			slug,
+			vendorTypeId,
+			division,
+			district,
+			thana,
+			address,
+			description,
+			ownerId: userId,
+		},
+	})
 
 	return redirect('/vendors/onboarding/gallery')
 }

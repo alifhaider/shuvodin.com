@@ -35,8 +35,8 @@ export const ImageFieldsetSchema = z.object({
 
 export type ImageFieldset = z.infer<typeof ImageFieldsetSchema>
 
-const GallerySchema = z.object({
-	vendorId: z.string().optional(),
+export const GalleryEditorSchema = z.object({
+	id: z.string().optional(),
 	images: z.array(ImageFieldsetSchema).max(30, 'Maximum 30 images are allowed'),
 })
 
@@ -50,10 +50,10 @@ export function GalleryEditor({
 	const isPending = useIsPending()
 	const [form, fields] = useForm({
 		id: 'gallery-form',
-		constraint: getZodConstraint(GallerySchema),
+		constraint: getZodConstraint(GalleryEditorSchema),
 		lastResult: actionData?.result,
 		onValidate({ formData }) {
-			return parseWithZod(formData, { schema: GallerySchema })
+			return parseWithZod(formData, { schema: GalleryEditorSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
