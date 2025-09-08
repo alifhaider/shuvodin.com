@@ -246,7 +246,7 @@ export default function VendorsPage({
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
 					<div className="flex justify-between gap-6 py-12">
 						<div className="mr-6 flex-1">
-							<h1 className="font-serif text-4xl font-bold lg:text-5xl">
+							<h1 className="font-serif text-4xl font-bold capitalize lg:text-5xl">
 								{vendor.businessName}
 							</h1>
 
@@ -343,7 +343,11 @@ const Gallery = ({
 	uniqueName: string
 }) => {
 	if (!gallery || gallery.length === 0) {
-		return <p>No images available</p>
+		return (
+			<p className="text-muted-foreground border-muted-foreground mt-6 flex min-h-96 items-center justify-center rounded-2xl border">
+				No images available
+			</p>
+		)
 	}
 	const slicedImages = gallery.slice(0, 4)
 	const hasMoreImages = gallery.length > 4
