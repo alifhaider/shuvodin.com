@@ -203,7 +203,7 @@ function App() {
 			optimizerEndpoint="/resources/images"
 			getSrc={getImgSrc}
 		>
-			<header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full backdrop-blur">
+			<header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-accent sticky top-0 z-50 w-full border-b backdrop-blur">
 				<div className="container flex h-20 items-center justify-between">
 					<Link to="/" className="flex items-center space-x-2">
 						<Image
