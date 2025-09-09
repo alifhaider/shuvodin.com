@@ -3,10 +3,9 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { requireVendorId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { GalleryEditor } from '../__gallery-editor'
-
 import { type Route } from './+types/gallery'
 
-export { action } from '../__galler-editor.server'
+export { action } from '../__gallery-editor.server'
 
 export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3 // 3MB
 
