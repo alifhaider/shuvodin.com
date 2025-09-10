@@ -17,7 +17,7 @@ const navigationItems = [
 	},
 	{
 		title: 'Services and Amenities',
-		href: '/vendors/onboarding/services',
+		href: '/vendors/onboarding/details',
 		icon: 'settings',
 		description: 'Set up your services and amenities',
 	},

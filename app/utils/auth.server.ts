@@ -49,14 +49,14 @@ export async function getUserId(request: Request) {
 export async function requireVendor(request: Request) {
 	const userId = await requireUserId(request)
 	const vendor = await prisma.vendor.findUnique({
-		select: { id: true },
+		select: { id: true, vendorType: { select: { name: true } } },
 		where: { ownerId: userId },
 	})
 
 	if (!vendor) {
 		throw redirect('/vendors/onboarding')
 	}
-	return { userId, vendorId: vendor.id }
+	return { userId, vendorId: vendor.id, vendorType: vendor.vendorType.name }
 }
 
 export async function requireVendorId(request: Request) {

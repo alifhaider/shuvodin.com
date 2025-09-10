@@ -112,5 +112,5 @@ export async function action({ request }: ActionFunctionArgs) {
 		},
 	})
 
-	return redirect('/vendors/onboarding/services')
+	return redirect('/vendors/onboarding/details')
 }
