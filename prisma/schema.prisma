@@ -388,7 +388,7 @@ model VenueType {
   venues      VenueDetails[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  @@unique([name] )
+  @@unique([name])
 }
 
 model VenueAmenity {
@@ -398,7 +398,7 @@ model VenueAmenity {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([name] )
+  @@unique([name])
 }
 
 model VenueEventType {
@@ -408,7 +408,7 @@ model VenueEventType {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([name] )
+  @@unique([name])
 }
 
 
