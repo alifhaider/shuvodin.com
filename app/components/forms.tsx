@@ -10,17 +10,15 @@ import {
 } from './ui/input-otp.tsx'
 import { Input } from './ui/input.tsx'
 import { Label } from './ui/label.tsx'
-import { Textarea } from './ui/textarea.tsx'
 import {
 	Select,
 	SelectContent,
 	SelectGroup,
 	SelectItem,
-	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from './ui/select.tsx'
-import { vendorTypes } from '#app/utils/constants.ts'
+import { Textarea } from './ui/textarea.tsx'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
 
