@@ -32,7 +32,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const submission = await parseWithZod(formData, {
 		schema: GalleryEditorSchema.superRefine(async (data, ctx) => {
-			console.log('submission data', data)
 			if (!data.id) return
 
 			const vendor = await prisma.vendor.findUnique({
