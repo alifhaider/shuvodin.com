@@ -50,11 +50,11 @@ async function seed() {
 	await prisma.catererMenuItem.deleteMany({})
 	await prisma.catererServedCity.deleteMany({})
 
-	await prisma.venueEventType.deleteMany({})
-	await prisma.venueAmenity.deleteMany({})
+	await prisma.globalVenueAmenity.deleteMany({})
+	await prisma.globalVenueEventType.deleteMany({})
 	await prisma.venueType.deleteMany({})
-	await prisma.venueSpace.deleteMany({})
-	await prisma.venueService.deleteMany({})
+	await prisma.globalVenueSpace.deleteMany({})
+	await prisma.globalVenueService.deleteMany({})
 	await prisma.venueAvailability.deleteMany({})
 	await prisma.venueDetails.deleteMany({})
 
@@ -187,7 +187,7 @@ async function seed() {
 					address: faker.helpers.arrayElement(mockVendorLocations)?.address,
 					mapUrl:
 						'https://maps.google.com/?q=' +
-						encodeURIComponent(faker.address.streetAddress()),
+						encodeURIComponent(faker.location.streetAddress()),
 					isFeatured: faker.datatype.boolean(),
 					awards: {
 						create: faker.helpers
@@ -303,41 +303,14 @@ async function seed() {
 	]
 
 	const mockVenueSpaces = [
-		{
-			name: 'Main Hall',
-			sittingCapacity: 200,
-			standingCapacity: 300,
-			includeInTotalPrice: true,
-			description: faker.lorem.sentence({ max: 20, min: 10 }),
-		},
-		{
-			name: 'Garden',
-			sittingCapacity: 100,
-			standingCapacity: 150,
-			price: 15000,
-			description: 'Beautiful outdoor garden for weddings and events',
-		},
-		{
-			name: 'Rooftop',
-			sittingCapacity: 80,
-			standingCapacity: 120,
-			price: 20000,
-			description: faker.lorem.sentence({ max: 20, min: 10 }),
-		},
-		{
-			name: 'Conference Room',
-			sittingCapacity: 50,
-			standingCapacity: 70,
-			price: 10000,
-		},
-		{
-			name: 'Ballroom',
-			sittingCapacity: 300,
-			standingCapacity: 400,
-			price: 30000,
-		},
+		'Main Hall',
+		'Garden',
+		'Rooftop',
+		'Conference Room',
+		'Ballroom',
+		'Outdoor Patio',
+		'VIP Lounge',
 	]
-
 	const mockVenueAmenities = [
 		'Dance Floor',
 		'Stage',
@@ -352,28 +325,10 @@ async function seed() {
 	]
 
 	const mockVenueServices = [
-		{
-			name: 'Catering',
-			price: 1000,
-			description: 'Rice, lentils, vegetables, and salad',
-			isVeg: true,
-		},
-		{
-			name: 'Catering',
-			price: 1500,
-			description: 'Chicken, beef, and fish dishes',
-			isVeg: false,
-		},
-		{
-			name: 'Decoration',
-			price: 500,
-			description: 'Basic decoration with flowers and lights',
-		},
-		{
-			name: 'Decoration',
-			price: 1000,
-			description: 'Premium decoration with themes and custom designs',
-		},
+		'Catering Veg',
+		'Catering-NonVeg',
+		'Decoration Basic',
+		'Decoration Premium',
 	]
 
 	const mockVenueEventTypes = [
@@ -388,7 +343,7 @@ async function seed() {
 	]
 
 	console.time(`🏛️ Created ${mockVenueEventTypes.length} event types...`)
-	await prisma.venueEventType.createMany({
+	await prisma.globalVenueEventType.createMany({
 		data: mockVenueEventTypes.map((name) => ({ name })),
 	})
 	console.timeEnd(`🏛️ Created ${mockVenueEventTypes.length} event types...`)
@@ -400,10 +355,24 @@ async function seed() {
 	console.timeEnd(`🏛️ Created ${mockVenueTypes.length} venue types...`)
 
 	console.time(`🏛️ Created ${mockVenueAmenities.length} venue amenities...`)
-	await prisma.venueAmenity.createMany({
+	await prisma.globalVenueAmenity.createMany({
 		data: mockVenueAmenities.map((name) => ({ name })),
 	})
 	console.timeEnd(`🏛️ Created ${mockVenueAmenities.length} venue amenities...`)
+
+	console.time(`🏛️ Created ${mockVenueServices.length} venue services...`)
+	await prisma.globalVenueService.createMany({
+		data: mockVenueServices.map((name) => ({ name })),
+	})
+	console.timeEnd(`🏛️ Created ${mockVenueServices.length} venue services...`)
+
+	console.time(`🏛️ Created ${mockVenueSpaces.length} venue spaces...`)
+	await prisma.globalVenueSpace.createMany({
+		data: mockVenueSpaces.map((space) => ({
+			name: space,
+		})),
+	})
+	console.timeEnd(`🏛️ Created ${mockVenueSpaces.length} venue spaces...`)
 
 	if (vendors.length < totalVenues) {
 		throw new Error(
@@ -416,14 +385,14 @@ async function seed() {
 	for (let index = 0; index < uniqueVendors.length; index++) {
 		const vendor = uniqueVendors[index]
 		if (!vendor) continue
-
-		console.log(`Creating venue for vendor ${vendor.businessName}...`)
-
 		try {
 			const venueTypes = await prisma.venueType.findMany()
 			const eventTypes = await prisma.venueEventType.findMany()
 
-			// Generate a unique identifier for this vendor's venue
+			const globalServices = await prisma.globalVenueService.findMany()
+			const globalAmenities = await prisma.globalVenueAmenity.findMany()
+			const globalEventType = await prisma.globalVenueEventType.findMany()
+			const globalSpaces = await prisma.globalVenueSpace.findMany()
 
 			const venue = await prisma.venueDetails.create({
 				data: {
@@ -433,9 +402,14 @@ async function seed() {
 					spaces: {
 						createMany: {
 							data: faker.helpers
-								.arrayElements(mockVenueSpaces, { min: 1, max: 3 })
+								.uniqueArray(globalSpaces, faker.number.int({ min: 1, max: 3 }))
 								.map((space) => ({
-									...space,
+									globalSpaceId: space.id,
+									sittingCapacity: faker.number.int({ min: 50, max: 300 }),
+									standingCapacity: faker.number.int({ min: 100, max: 500 }),
+									parkingCapacity: faker.number.int({ min: 20, max: 200 }),
+									price: faker.number.int({ min: 500, max: 5000 }),
+									description: faker.lorem.sentence({ max: 20, min: 10 }),
 								})),
 						},
 					},
@@ -443,10 +417,14 @@ async function seed() {
 					services: {
 						createMany: {
 							data: faker.helpers
-								.arrayElements(mockVenueServices, { min: 1, max: 3 })
-								.map((service, index) => ({
-									...service,
-									name: `${service.name} ${index + 1}`, // Make service names unique
+								.uniqueArray(
+									globalServices,
+									faker.number.int({ min: 1, max: 3 }),
+								)
+								.map((service) => ({
+									globalServiceId: service.id,
+									price: faker.number.int({ min: 500, max: 5000 }),
+									description: faker.lorem.sentence({ max: 20, min: 10 }),
 								})),
 						},
 					},
@@ -460,17 +438,29 @@ async function seed() {
 
 					// For amenities, use connect to existing ones only (don't create new ones)
 					amenities: {
-						connect: faker.helpers
-							.arrayElements(mockVenueAmenities, { min: 1, max: 8 })
-							.map((name) => ({ name }))
-							.filter((amenity) => amenity.name) // Filter out undefined
-							.slice(0, 3), // Limit to 3 to avoid constraint issues
+						createMany: {
+							data: faker.helpers
+								.uniqueArray(
+									globalAmenities,
+									faker.number.int({ min: 1, max: 5 }),
+								)
+								.map((amenity) => ({
+									globalAmenityId: amenity.id,
+								})),
+						},
 					},
 
 					eventTypes: {
-						connect: faker.helpers
-							.arrayElements(eventTypes, { min: 1, max: 3 })
-							.map((type) => ({ id: type.id })),
+						createMany: {
+							data: faker.helpers
+								.uniqueArray(
+									globalEventType,
+									faker.number.int({ min: 1, max: 3 }),
+								)
+								.map((eventType) => ({
+									globalEventTypeId: eventType.id,
+								})),
+						},
 					},
 				},
 			})

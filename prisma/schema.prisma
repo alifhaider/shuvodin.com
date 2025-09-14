@@ -320,66 +320,101 @@ model VenueDetails {
 
   spaces         VenueSpace[]
 
-  services       VenueService[]
-
   amenities        VenueAmenity[]
   eventTypes       VenueEventType[]
   availability     VenueAvailability[]
+  services         VenueService[]
 }
 
-model VenueService {
-  id          String    @id @default(cuid())
-  name        String    // "Catering", "Decoration", etc.
 
-  description String? // Optional description of the service
-  
-  price     Float?   // Optional price for the service
-  isVeg      Boolean? // Optional flag to indicate if the service is vegetarian
-  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId     String 
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model GlobalVenueSpace {
+  id          String   @id @default(cuid())
+  name        String   @unique 
 
-  @@unique([venueId, name] )
-  @@index([venueId, name] )
-}
-
-model VenueSpace {
-  id          String    @id @default(cuid())
-  name        String 
-  description String?
-
-
-  sittingCapacity Int
-  standingCapacity Int
-  parkingCapacity Int?
-
-  image    VenueSpaceImage? // Optional image for the space
-
-  price      Float?   // Price for renting this space
-  includeInTotalPrice Boolean @default(false) // Whether to include this space's price in total venue price
-
-  venue       VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  venueId     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // non-unique foreign key
-  @@index([venueId, name])
-}
-
-model VenueSpaceImage {
-  id        String  @id @default(cuid())
-  altText   String?
-  objectKey String
+  venueSpaces VenueSpace[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  venueSpace VenueSpace @relation(fields: [venueSpaceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  venueSpaceId String @unique
 }
+
+model GlobalVenueService {
+  id          String   @id @default(cuid())
+  name        String   @unique 
+
+  venueServices VenueService[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GlobalVenueAmenity {
+  id          String   @id @default(cuid())
+  name        String   @unique 
+
+  venueAmenities VenueAmenity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GlobalVenueEventType {
+  id          String   @id @default(cuid())
+  name        String   @unique 
+
+  venueEventTypes VenueEventType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model VenueSpace {
+  id               String             @id @default(cuid())
+  price            Float?  
+  description String?  
+  sittingCapacity  Int
+  standingCapacity Int
+  parkingCapacity  Int?
+  // Add other fields if needed, e.g., capacity Float?, sqFt Int?
+
+  venue            VenueDetails       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId          String
+
+  globalSpace      GlobalVenueSpace   @relation(fields: [globalSpaceId], references: [id], onDelete: Cascade)
+  globalSpaceId    String
+
+  @@unique([venueId, globalSpaceId]) 
+  @@index([venueId])
+}
+
+model VenueService {
+  id               String             @id @default(cuid())
+  price            Float?  
+  description String?  
+
+  venue            VenueDetails       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId          String
+
+  globalService    GlobalVenueService @relation(fields: [globalServiceId], references: [id], onDelete: Cascade)
+  globalServiceId  String
+
+  @@unique([venueId, globalServiceId]) 
+  @@index([venueId])
+}
+
+model VenueAmenity {
+  id               String             @id @default(cuid())
+
+  venue            VenueDetails       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId          String
+
+  globalAmenity    GlobalVenueAmenity @relation(fields: [globalAmenityId], references: [id], onDelete: Cascade)
+  globalAmenityId  String
+
+  @@unique([venueId, globalAmenityId]) 
+  @@index([venueId])
+}
+
 
 
 model VenueType {
@@ -391,24 +426,20 @@ model VenueType {
   @@unique([name])
 }
 
-model VenueAmenity {
-  id          String    @id @default(cuid())
-  name        String    
-  venues      VenueDetails[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@unique([name])
-}
 
 model VenueEventType {
-  id          String    @id @default(cuid())
-  name        String    
-  venues      VenueDetails[]
+  id         String    @id @default(cuid())
+
+  venue      VenueDetails @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId    String
+
+  globalEventType GlobalVenueEventType @relation(fields: [globalEventTypeId], references: [id], onDelete: Cascade)
+  globalEventTypeId String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([name])
+  @@unique([venueId, globalEventTypeId])
+  @@index([venueId])
 }
 
 
