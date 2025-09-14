@@ -70,33 +70,26 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			venueDetails: {
 				select: {
 					eventTypes: {
-						select: {
-							id: true,
-							name: true,
-						},
+						select: { globalEventType: { select: { id: true, name: true } } },
 					},
 					amenities: {
-						select: { id: true, name: true },
+						select: { globalAmenity: { select: { id: true, name: true } } },
 					},
 					services: {
 						select: {
-							id: true,
-							name: true,
+							globalService: { select: { id: true, name: true } },
 							description: true,
 							price: true,
 						},
 					},
 					spaces: {
 						select: {
-							id: true,
-							name: true,
-							includeInTotalPrice: true,
+							globalSpace: { select: { id: true, name: true } },
 							sittingCapacity: true,
 							standingCapacity: true,
 							parkingCapacity: true,
 							price: true,
 							description: true,
-							image: { select: { objectKey: true, altText: true } },
 						},
 					},
 				},
@@ -405,13 +398,15 @@ const VenueDetails = ({ venue }: VenueDetailsProps) => {
 				{venue?.spaces.map((space) => {
 					return (
 						<AccordionItem
-							value={`space-${space.id}`}
-							key={space.id}
+							value={`space-${space.globalSpace.id}`}
+							key={space.globalSpace.id}
 							className="border-primary/30 bg-background mb-4 rounded-2xl border px-6 py-4 shadow-sm"
 						>
 							<AccordionTrigger>
-								<h5 className="font-body flex-1 text-base">{space.name}</h5>
-								{space.includeInTotalPrice ? (
+								<h5 className="font-body flex-1 text-base">
+									{space.globalSpace.name}
+								</h5>
+								{Number(space.price) === 0 ? (
 									<p>Includes in Total Price</p>
 								) : (
 									<p className="font-body text-base">
@@ -455,13 +450,18 @@ const VenueDetails = ({ venue }: VenueDetailsProps) => {
 			{venue?.services && venue.services.length > 0 ? (
 				<ul className="border-primary/30 divide-accent bg-background mb-4 divide-y rounded-2xl border px-6 py-4 shadow-sm">
 					{venue?.services.map((service) => (
-						<li key={service.id} className="not-last:mb-4 first:pb-4">
+						<li
+							key={service.globalService.id}
+							className="not-last:mb-4 first:pb-4"
+						>
 							<span className="flex justify-between text-sm md:text-base">
-								<span className="font-medium">{service.name}</span>
+								<span className="font-medium">
+									{service.globalService.name}
+								</span>
 								<span className="font-bold">TK: {service.price}/-</span>
 							</span>
 							<span className="text-muted-foreground text-xs md:text-sm">
-								{service.description}s
+								{service.description}
 							</span>
 						</li>
 					))}
@@ -481,12 +481,12 @@ const VenueDetails = ({ venue }: VenueDetailsProps) => {
 			{venue?.amenities && venue.amenities.length > 0 ? (
 				<ul className="border-primary/30 bg-background divide-accent mb-4 grid grid-cols-2 gap-4 divide-x rounded-2xl border px-6 py-4 text-base shadow-sm md:grid-cols-3 md:text-lg lg:grid-cols-4">
 					{venue?.amenities.map((amenity) => (
-						<li key={amenity.id} className="">
+						<li key={amenity.globalAmenity.id} className="">
 							<Icon
 								name="check"
 								className="text-primary inline h-4 w-4 stroke-2 md:h-5 md:w-5"
 							/>
-							<span className="ml-2">{amenity.name}</span>
+							<span className="ml-2">{amenity.globalAmenity.name}</span>
 						</li>
 					))}
 				</ul>
@@ -503,12 +503,12 @@ const VenueDetails = ({ venue }: VenueDetailsProps) => {
 			{venue?.eventTypes && venue.eventTypes.length > 0 ? (
 				<ul className="border-primary/30 bg-background divide-accent mb-4 grid grid-cols-2 gap-4 divide-x rounded-2xl border px-6 py-4 text-base shadow-sm md:grid-cols-3 md:text-lg lg:grid-cols-4">
 					{venue?.eventTypes.map((eventType) => (
-						<li key={eventType.id} className="">
+						<li key={eventType.globalEventType.id} className="">
 							<Icon
 								name="check"
 								className="text-primary inline h-4 w-4 stroke-2 md:h-5 md:w-5"
 							/>
-							<span className="ml-2">{eventType.name}</span>
+							<span className="ml-2">{eventType.globalEventType.name}</span>
 						</li>
 					))}
 				</ul>
