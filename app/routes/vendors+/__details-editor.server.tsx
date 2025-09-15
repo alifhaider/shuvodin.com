@@ -1,5 +1,5 @@
 import { parseWithZod } from '@conform-to/zod'
-import { data, type ActionFunctionArgs } from 'react-router'
+import { data, redirect, type ActionFunctionArgs } from 'react-router'
 import { z } from 'zod'
 import { requireVendor } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -25,37 +25,8 @@ export async function action({ request }: ActionFunctionArgs) {
 			return {
 				...data,
 				id: vendorId,
-				serviceUpdates: await Promise.all(
-					details.filter(imageHasId).map(async (i) => {
-						if (imageHasFile(i)) {
-							return {
-								id: i.id,
-								altText: i.altText,
-								objectKey: await uploadVendorImage(userId, vendorId, i.file),
-							}
-						} else {
-							return {
-								id: i.id,
-								altText: i.altText,
-							}
-						}
-					}),
-				),
-				newServices: await Promise.all(
-					services
-						.filter(imageHasFile)
-						.filter((i) => !i.id)
-						.map(async (image) => {
-							return {
-								altText: image.altText,
-								objectKey: await uploadVendorImage(
-									userId,
-									vendorId,
-									image.file,
-								),
-							}
-						}),
-				),
+				serviceUpdates: await Promise.all([]),
+				newServices: await Promise.all([]),
 			}
 		}),
 		async: true,
@@ -67,4 +38,21 @@ export async function action({ request }: ActionFunctionArgs) {
 			{ status: submission.status === 'error' ? 400 : 200 },
 		)
 	}
+
+	const { id, serviceUpdates = [], newServices = [] } = submission.value
+
+	await prisma.vendor.update({
+		select: { id: true, owner: { select: { username: true } } },
+		where: { id, ownerId: userId },
+		data: {
+			gallery: {
+				deleteMany: { id: { notIn: [] } },
+				updateMany: serviceUpdates,
+				create: newServices,
+			},
+		},
+	})
+
+	console.log('Vendor updated successfully')
+	return redirect('/vendors/onboarding/details')
 }
