@@ -103,6 +103,7 @@ export function GalleryEditor({
 					<StatusButton
 						type="submit"
 						disabled={isPending}
+						size="wide"
 						status={isPending ? 'pending' : 'idle'}
 					>
 						<span>Next</span>

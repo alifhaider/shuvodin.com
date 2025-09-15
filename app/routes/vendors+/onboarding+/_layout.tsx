@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { type Route } from './+types/_layout'
+import { Separator } from '#app/components/ui/separator.tsx'
 
 const navigationItems = [
 	{
@@ -45,6 +46,8 @@ export default function OnboardingVendorLayout() {
 			<p className="text-muted-foreground mt-2 text-sm md:text-base">
 				Add and manage your vendor profile details.
 			</p>
+
+			<Separator className="bg-accent my-2" />
 
 			<div className="mt-10 grid grid-cols-1 gap-10 sm:gap-20 lg:grid-cols-4">
 				<nav className="flex flex-col gap-6 lg:col-span-1">
