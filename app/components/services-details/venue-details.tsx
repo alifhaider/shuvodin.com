@@ -1,17 +1,11 @@
-import { VenueOptions } from '#app/routes/vendors+/onboarding+/details.tsx'
-import { useIsPending } from '#app/utils/misc.tsx'
-import {
-	FormProvider,
-	getFormProps,
-	getInputProps,
-	useForm,
-} from '@conform-to/react'
-import { Route } from '../../routes/vendors+/onboarding+/+types/details'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { VenueDetailsSchema } from '#app/routes/vendors+/__vendor-types.ts'
+import { FormProvider, getFormProps, useForm } from '@conform-to/react'
+import { parseWithZod } from '@conform-to/zod'
 import { Form } from 'react-router'
-import { CheckboxField, Field } from '../forms'
-import React from 'react'
+import { VenueDetailsSchema } from '#app/routes/vendors+/__vendor-types.ts'
+import { type VenueOptions } from '#app/routes/vendors+/onboarding+/details.tsx'
+import { useIsPending } from '#app/utils/misc.tsx'
+import { type Route } from '../../routes/vendors+/onboarding+/+types/details'
+import { CheckboxField } from '../forms'
 import { Input } from '../ui/input'
 import { StatusButton } from '../ui/status-button'
 
