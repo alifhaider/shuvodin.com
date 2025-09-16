@@ -111,6 +111,12 @@ const VenueEventTypeSchema = z.object({
 		.min(1, 'Event Type ID is required.'),
 })
 
+const VenueTypeSchema = z.object({
+	globalVenueTypeId: z
+		.string({ required_error: 'Please select a venue type.' })
+		.min(1, 'Venue Type ID is required.'),
+})
+
 // amenities will be amenity ids
 export const VenueDetailsSchema = BaseDetailsSchema.extend({
 	vendorType: z.literal('venue'),
@@ -155,6 +161,8 @@ export const VenueDetailsSchema = BaseDetailsSchema.extend({
 			},
 			{ message: 'Duplicate amenities are not allowed.' },
 		),
+
+	venueType: VenueTypeSchema,
 })
 
 export const MakeupArtistDetailsSchema = BaseDetailsSchema.extend({

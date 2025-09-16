@@ -5,18 +5,21 @@ import {
 	type GlobalVenueSpace,
 } from '@prisma/client'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { VenueDetailsForm } from '#app/routes/resources+/venue-details-form.tsx'
 import { requireVendor } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { DetailsEditor } from '../__details-editor'
 import { type Route } from './+types/details'
-
-export { action } from '../__details-editor.server'
 
 export type VenueOptions = {
 	services: Pick<GlobalVenueService, 'id' | 'name'>[]
 	amenities: Pick<GlobalVenueAmenity, 'id' | 'name'>[]
 	eventTypes: Pick<GlobalVenueEventType, 'id' | 'name'>[]
 	spaces: Pick<GlobalVenueSpace, 'id' | 'name'>[]
+	venueTypes: { id: string; name: string }[]
+}
+
+export type PhotographyOptions = {
+	services: { id: string; name: string }[]
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -26,7 +29,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		select: {
 			id: true,
 			slug: true,
-			vendorType: { select: { name: true } },
+			vendorType: { select: { name: true, id: true } },
 			venueDetails: {
 				select: {
 					amenities: {
@@ -45,6 +48,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 					spaces: {
 						select: { globalSpace: { select: { id: true, name: true } } },
 					},
+					venueType: { select: { id: true, name: true } },
 				},
 			},
 			photographerDetails: {
@@ -57,9 +61,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 		throw new Response('Vendor not found', { status: 404 })
 	}
 
-	let availableOptions:
-		| VenueOptions
-		| { services: { id: string; name: string }[] }
+	let availableOptions: VenueOptions | PhotographyOptions
 	switch (vendor.vendorType.name) {
 		case 'venue':
 			availableOptions = await getVenueOptions()
@@ -78,14 +80,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 async function getVenueOptions() {
-	const [services, amenities, eventTypes, spaces] = await Promise.all([
-		prisma.globalVenueService.findMany({ select: { id: true, name: true } }),
-		prisma.globalVenueAmenity.findMany({ select: { id: true, name: true } }),
-		prisma.globalVenueEventType.findMany({ select: { id: true, name: true } }),
-		prisma.globalVenueSpace.findMany({ select: { id: true, name: true } }),
-	])
+	const [services, amenities, eventTypes, spaces, venueTypes] =
+		await Promise.all([
+			prisma.globalVenueService.findMany({ select: { id: true, name: true } }),
+			prisma.globalVenueAmenity.findMany({ select: { id: true, name: true } }),
+			prisma.globalVenueEventType.findMany({
+				select: { id: true, name: true },
+			}),
+			prisma.globalVenueSpace.findMany({ select: { id: true, name: true } }),
+			prisma.venueType.findMany({ select: { id: true, name: true } }),
+		])
 
-	return { services, amenities, eventTypes, spaces } as const
+	return { services, amenities, eventTypes, spaces, venueTypes } as const
 }
 
 async function getPhotographyOptions() {
@@ -97,9 +103,21 @@ async function getPhotographyOptions() {
 
 export default function OnboardingServices({
 	loaderData,
-	actionData,
 }: Route.ComponentProps) {
-	return <DetailsEditor loaderData={loaderData} actionData={actionData} />
+	if (loaderData.vendor.vendorType.name === 'venue') {
+		return (
+			<VenueDetailsForm
+				vendor={loaderData.vendor}
+				venueOptions={loaderData.availableOptions as VenueOptions}
+			/>
+		)
+	}
+	return (
+		<VenueDetailsForm
+			vendor={loaderData.vendor}
+			venueOptions={loaderData.availableOptions as VenueOptions}
+		/>
+	)
 }
 
 export function ErrorBoundary() {
