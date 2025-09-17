@@ -3,9 +3,13 @@
 
 <img src="https://github.com/alifhaider/shuvodin.com/blob/main/public/img/logo.png" width="400" height="auto" alt="shuvodin banner" /> 
 <p align="center">
+   
 *Celebrate your love story with elegance and ease.*
+
 </p>
+
 **ShuvoDin** is a modern, all-in-one wedding planning platform designed to help couples create their dream wedding with seamless tools and a touch of magic. From stunning wedding websites to guest management and vendor coordination, ShuvoDin is your partner in crafting unforgettable moments.
+
 </div>
 
 
