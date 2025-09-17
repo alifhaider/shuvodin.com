@@ -47,12 +47,25 @@ export const GeneralInfoSchema = z
 	.strict()
 
 export async function loader({ request }: Route.LoaderArgs) {
-	await requireUserId(request)
+	const userId = await requireUserId(request)
+	const vendor = await prisma.vendor.findFirst({
+		where: { ownerId: userId },
+		select: {
+			id: true,
+			businessName: true,
+			vendorTypeId: true,
+			district: true,
+			division: true,
+			thana: true,
+			address: true,
+			description: true,
+		},
+	})
 	const vendorTypes = await prisma.vendorType.findMany({
 		select: { id: true, name: true },
 		orderBy: { name: 'asc' },
 	})
-	return { vendorTypes }
+	return { vendorTypes, vendor }
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -63,7 +76,10 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const vendor = await prisma.vendor.findUnique({
 		where: { ownerId: userId },
-		select: { id: true, slug: true },
+		select: {
+			id: true,
+			slug: true,
+		},
 	})
 
 	if (vendor) {
@@ -120,7 +136,11 @@ export async function action({ request }: Route.ActionArgs) {
 		},
 	})
 
-	return redirect('/vendors/onboarding/gallery')
+	return redirectWithToast('/vendors/onboarding/gallery', {
+		type: 'success',
+		title: `Vendor ${businessName} Created Successfully`,
+		description: 'You can now add more details to your vendor profile.',
+	})
 }
 
 export default function OnboardingGeneral({
@@ -128,9 +148,13 @@ export default function OnboardingGeneral({
 	actionData,
 }: Route.ComponentProps) {
 	const isPending = useIsPending()
-	const { vendorTypes } = loaderData
-	const [selectedDivision, setSelectedDivision] = React.useState('')
-	const [selectedDistrict, setSelectedDistrict] = React.useState('')
+	const { vendorTypes, vendor } = loaderData
+	const [selectedDivision, setSelectedDivision] = React.useState(
+		vendor?.division ?? '',
+	)
+	const [selectedDistrict, setSelectedDistrict] = React.useState(
+		vendor?.district ?? '',
+	)
 
 	const districts = getDistrictsForDivision(selectedDivision)
 	const thanas = selectedDistrict ? thanaByDistrict[selectedDistrict] || [] : []
@@ -145,16 +169,15 @@ export default function OnboardingGeneral({
 		shouldRevalidate: 'onBlur',
 	})
 
-	console.log(fields.division.errors, fields.division.value)
-
 	return (
 		<Form method="post" {...getFormProps(form)}>
-			<div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+			<div className="grid grid-cols-1 gap-x-6 md:grid-cols-2">
 				<Field
 					labelProps={{ children: 'Business Name' }}
 					inputProps={{
 						autoFocus: true,
 						...getInputProps(fields.businessName, { type: 'text' }),
+						defaultValue: vendor?.businessName ?? '',
 					}}
 					errors={fields.businessName.errors}
 				/>
@@ -163,6 +186,7 @@ export default function OnboardingGeneral({
 					labelProps={{ children: 'Vendor Type' }}
 					selectProps={{
 						...getSelectProps(fields.vendorTypeId),
+						defaultValue: vendor?.vendorTypeId ?? '',
 					}}
 					options={vendorTypes.map((type) => ({
 						value: type.id,
@@ -181,6 +205,7 @@ export default function OnboardingGeneral({
 							form.update({ name: fields.district.name, value: '' })
 							form.update({ name: fields.thana.name, value: '' })
 						},
+						defaultValue: vendor?.division ?? '',
 					}}
 					options={Object.values(divisions).map((division) => ({
 						value: division,
@@ -193,6 +218,7 @@ export default function OnboardingGeneral({
 					labelProps={{ children: 'District' }}
 					selectProps={{
 						name: fields.district.name,
+						defaultValue: vendor?.district ?? '',
 						onValueChange: (value) => {
 							setSelectedDistrict(value)
 							form.update({ name: fields.thana.name, value: '' })
@@ -216,6 +242,7 @@ export default function OnboardingGeneral({
 						onValueChange: (value) => {
 							form.update({ name: fields.thana.name, value: value })
 						},
+						defaultValue: vendor?.thana ?? '',
 						disabled: !selectedDistrict,
 					}}
 					options={thanas.map((thana) => ({
@@ -232,14 +259,16 @@ export default function OnboardingGeneral({
 					labelProps={{ children: 'Address' }}
 					inputProps={{
 						...getInputProps(fields.address, { type: 'text' }),
+						defaultValue: vendor?.address ?? '',
 					}}
 					errors={fields.address.errors}
 				/>
 
 				<TextareaField
-					labelProps={{ children: 'Description' }}
+					labelProps={{ children: 'Bio' }}
 					textareaProps={{
 						...getTextareaProps(fields.description),
+						defaultValue: vendor?.description ?? '',
 					}}
 					errors={fields.description.errors}
 				/>

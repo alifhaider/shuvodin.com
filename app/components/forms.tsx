@@ -243,6 +243,7 @@ export function SelectField({
 			<Select
 				name={selectProps.name}
 				value={selectProps.value as string}
+				defaultValue={selectProps.defaultValue as string}
 				onValueChange={
 					selectProps.onValueChange ||
 					((value) => {
