@@ -70,7 +70,7 @@ Please read our Contributing Guidelines [CONTRIBUTING.md](https://github.com/ali
 
 ## 🪪 License
 
-This project is licensed under the `MIT Licens`e. 
+This project is licensed under the `MIT License`.
 
 See the [LICENSE.md](https://github.com/alifhaider/shuvodin.com/LICENSE.md) file for details.
 
