@@ -27,7 +27,7 @@ To run ShuvoDin locally or contribute to the project, ensure you have the follow
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/shuvodin.git
+   git clone https://github.com/alifhaider/shuvodin.git
    ```
 2. Navigate to the project directory:
    ```bash
