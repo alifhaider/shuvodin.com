@@ -1,54 +1,89 @@
 <div align="center">
-  <h1 align="center"><a href="https://www.epicweb.dev/epic-stack">The Epic Stack 🚀</a></h1>
-  <strong align="center">
-    Ditch analysis paralysis and start shipping Epic Web apps.
-  </strong>
-  <p>
-    This is an opinionated project starter and reference that allows teams to
-    ship their ideas to production faster and on a more stable foundation based
-    on the experience of <a href="https://kentcdodds.com">Kent C. Dodds</a> and
-    <a href="https://github.com/epicweb-dev/epic-stack/graphs/contributors">contributors</a>.
-  </p>
+<h1 align="center"> ShuvoDin 💍</h1>
+
+<img src="https://github.com/alifhaider/shuvodin.com/blob/main/public/img/logo.png" width="400" height="auto" alt="shuvodin banner" /> 
+<p align="center">
+*Celebrate your love story with elegance and ease.*
+</p>
+**ShuvoDin** is a modern, all-in-one wedding planning platform designed to help couples create their dream wedding with seamless tools and a touch of magic. From stunning wedding websites to guest management and vendor coordination, ShuvoDin is your partner in crafting unforgettable moments.
 </div>
 
-```sh
-npx epicli
-```
 
-[![The Epic Stack](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/246885449-1b00286c-aa3d-44b2-9ef2-04f694eb3592.png)](https://www.epicweb.dev/epic-stack)
 
-[The Epic Stack](https://www.epicweb.dev/epic-stack)
+## 🌟 Features
 
-<hr />
+- **Vendor Marketplace**: Connect with trusted vendors for venues, catering, photography, and more.
+- **Timeline & Checklist**: Stay organized with personalized timelines and task checklists.
+- **Mobile-Friendly**: Access ShuvoDin on any device, ensuring a smooth experience for you and your guests.
 
-## Watch Kent's Introduction to The Epic Stack
+## 🚀 Getting Started
 
-[![Epic Stack Talk slide showing Flynn Rider with knives, the text "I've been around and I've got opinions" and Kent speaking in the corner](https://github-production-user-asset-6210df.s3.amazonaws.com/1500684/277818553-47158e68-4efc-43ae-a477-9d1670d4217d.png)](https://www.epicweb.dev/talks/the-epic-stack)
+### Prerequisites
+To run ShuvoDin locally or contribute to the project, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v20 or higher)
+- [npm](https://www.npmjs.com/)
+- [Git](https://git-scm.com/)
 
-["The Epic Stack" by Kent C. Dodds](https://www.epicweb.dev/talks/the-epic-stack)
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/shuvodin.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd shuvodin.com
+   ```
+3. Run setup script:
+   ```bash
+   npm run setup
+   ```
+4. Run the project
+   ```bash
+   npm run dev
+   ```
+5. Open your browser and visit `http://localhost:3000` to see `ShuvoDin.com` in action!
 
-## Docs
+## 🛠️ Tech Stack
 
-[Read the docs](https://github.com/epicweb-dev/epic-stack/blob/main/docs)
-(please 🙏).
+- Remix as Full-Stack Framework
+- Database: Prisma, SQL
+- Deployment: Not yet decided.
 
-## Support
+## 🤝 Contributing
 
-- 🆘 Join the
-  [discussion on GitHub](https://github.com/epicweb-dev/epic-stack/discussions)
-  and the [KCD Community on Discord](https://kcd.im/discord).
-- 💡 Create an
-  [idea discussion](https://github.com/epicweb-dev/epic-stack/discussions/new?category=ideas)
-  for suggestions.
-- 🐛 Open a [GitHub issue](https://github.com/epicweb-dev/epic-stack/issues) to
-  report a bug.
+We’d love for you to contribute to ShuvoDin and help make it even better! To get started:
+1. Fork the repository.
+2. Create a new branch
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Make your changes and commit:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+4. Push to your fork:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+5. Open a Pull Request on GitHub.
+Please read our Contributing Guidelines [CONTRIBUTING.md](https://github.com/alifhaider/shuvodin.com/CONTRIBUTING.md) for more details
 
-## Branding
+## 🪪 License
 
-Want to talk about the Epic Stack in a blog post or talk? Great! Here are some
-assets you can use in your material:
-[EpicWeb.dev/brand](https://epicweb.dev/brand)
+This project is licensed under the `MIT Licens`e. 
 
-## Thanks
+See the [LICENSE.md](https://github.com/alifhaider/shuvodin.com/LICENSE.md) file for details.
 
-You rock 🪨
+## 🙏 Acknowledgments
+
+Inspired by the love and joy of weddings worldwide.
+
+Built with by the ShuvoDin team.
+
+Special thanks to our open-source contributors and the wedding community.
+
+*Let’s make your ShuvoDin unforgettable!*
+
+
+
+
