@@ -24,16 +24,41 @@ export const venueEventTypeNames = [
 ] as const
 
 export const venueServiceNames = [
-	'Catering',
-	'Decoration',
-	'Photography',
-	'Music/DJ',
-	'Lighting',
-	'Event Planning',
-	'Security',
-	'Transportation',
-	'Accommodation',
+	{
+		name: 'Catering Veg',
+		description: 'Rice, Bread, Salad, Drinks, Dessert, etc.',
+	},
+	{
+		name: 'Catering Non-Veg',
+		description:
+			'Chicken, Beef, Fish, Rice, Bread, Salad, Drinks, Dessert, etc.',
+	},
+	{
+		name: 'Decoration Basic',
+		description:
+			'Basic decoration with flowers and lights. Includes a stage setup. 1 sofa set.',
+	},
+	{
+		name: 'Decoration Premium',
+		description:
+			'Premium decoration with flowers, lights, and drapes. Includes a stage setup. 2 sofa sets. Photo booth.',
+	},
+	{
+		name: 'Music/DJ',
+		description: 'Professional DJ services with sound system and lighting.',
+	},
+	{
+		name: 'Event Planning',
+		description:
+			'Full event planning services including coordination on the event day.',
+	},
 ] as const
+
+export function getServiceDescriptionByServiceName(name: string) {
+	return venueServiceNames.find(
+		(service) => service.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+	)?.description
+}
 
 export const venueAmenityNames = [
 	'WiFi',
@@ -112,9 +137,7 @@ const VenueEventTypeSchema = z.object({
 })
 
 const VenueTypeSchema = z.object({
-	globalVenueTypeId: z
-		.string({ required_error: 'Please select a venue type.' })
-		.min(1, 'Venue Type ID is required.'),
+	id: z.string({ required_error: 'Please select a venue type.' }),
 })
 
 // amenities will be amenity ids
@@ -162,7 +185,7 @@ export const VenueDetailsSchema = BaseDetailsSchema.extend({
 			{ message: 'Duplicate amenities are not allowed.' },
 		),
 
-	venueType: VenueTypeSchema,
+	venueTypeId: z.string({ required_error: 'Please select a venue type.' }),
 })
 
 export const MakeupArtistDetailsSchema = BaseDetailsSchema.extend({

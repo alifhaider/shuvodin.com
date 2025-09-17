@@ -326,7 +326,7 @@ async function seed() {
 
 	const mockVenueServices = [
 		'Catering Veg',
-		'Catering-NonVeg',
+		'Catering Non-Veg',
 		'Decoration Basic',
 		'Decoration Premium',
 	]

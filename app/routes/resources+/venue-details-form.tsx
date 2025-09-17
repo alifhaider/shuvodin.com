@@ -1,20 +1,30 @@
-import { FormProvider, getFormProps, useForm } from '@conform-to/react'
+import {
+	FormProvider,
+	getFormProps,
+	getInputProps,
+	useForm,
+} from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
 import { useEffect } from 'react'
 import { data, Form, redirect } from 'react-router'
 import { z } from 'zod'
 import { CheckboxField, ErrorList } from '#app/components/forms.tsx'
 import { Input } from '#app/components/ui/input.tsx'
+import { RadioGroup, RadioGroupItem } from '#app/components/ui/radio-group.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireVendor } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
-import { VenueDetailsSchema } from '../vendors+/__vendor-types'
+import {
+	getServiceDescriptionByServiceName,
+	VenueDetailsSchema,
+} from '../vendors+/__vendor-utils'
 import { type Route as OnboardingDetailsRoute } from '../vendors+/onboarding+/+types/details'
 import { type VenueOptions } from '../vendors+/onboarding+/details'
 import { type Route } from './+types/venue-details-form'
 
 export async function action({ request }: Route.ActionArgs) {
+	console.log('action called')
 	const { userId, vendorId } = await requireVendor(request)
 	const formData = await request.formData()
 
@@ -35,7 +45,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 			const venueType = await prisma.venueType.findUnique({
 				select: { id: true },
-				where: { id: data.venueType.globalVenueTypeId },
+				where: { id: data.venueTypeId },
 			})
 			if (!venueType) {
 				ctx.addIssue({
@@ -129,7 +139,7 @@ export async function action({ request }: Route.ActionArgs) {
 		)
 	}
 
-	const { eventTypes, services, spaces, amenities, venueType } =
+	const { eventTypes, services, spaces, amenities, venueTypeId } =
 		submission.value
 
 	await prisma.vendor.update({
@@ -139,7 +149,7 @@ export async function action({ request }: Route.ActionArgs) {
 			venueDetails: {
 				upsert: {
 					create: {
-						venueTypeId: venueType.globalVenueTypeId,
+						venueTypeId: venueTypeId,
 						eventTypes: { createMany: { data: eventTypes } },
 						services: { createMany: { data: services } },
 						spaces: {
@@ -188,7 +198,7 @@ export async function action({ request }: Route.ActionArgs) {
 		},
 	})
 
-	return redirect('/vendors/onboarding/details')
+	return redirect('/vendors/onboarding/final')
 }
 
 export function VenueDetailsForm({
@@ -204,103 +214,135 @@ export function VenueDetailsForm({
 }) {
 	const isPending = useIsPending()
 
-	useEffect(() => {}, [])
+	const defaultServices = venueOptions.services.map((service) => {
+		const existingService = vendor?.venueDetails?.services?.find(
+			(s) => s.globalService.id === service.id,
+		)
+		return {
+			globalServiceId: existingService ? service.id : '',
+			price: existingService?.price,
+			description: existingService?.description ?? '',
+		}
+	})
 
 	const [form, fields] = useForm({
-		id: 'services-form',
+		id: 'onboarding-venue-details-form',
 		lastResult: actionData?.result,
+		defaultValue: {
+			vendorId: vendor?.id ?? '',
+			vendorType: vendor?.vendorType.id ?? 'venue',
+			venueTypeId: vendor?.venueDetails?.venueType?.id ?? '',
+			services: defaultServices,
+			spaces: [], // Add default values if needed
+			eventTypes: [], // Add default values if needed
+			amenities: [], // Add default values if needed
+		},
 		onValidate({ formData }) {
-			console.log('Validating form data:', Array.from(formData.entries()))
 			return parseWithZod(formData, { schema: VenueDetailsSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
 
+	const services = fields.services.getFieldList()
+
 	return (
 		<FormProvider context={form.context}>
 			<Form
-				method="post"
 				{...getFormProps(form)}
+				method="POST"
 				action="/resources/venue-details-form"
 			>
 				<input type="hidden" name="vendorId" value={vendor?.id} />
 				<input type="hidden" name="vendorType" value={vendor?.vendorType.id} />
-				<div className="space-y-8">
-					<h2 className="text-2xl font-bold">Select Venue Type</h2>
+				<div>
+					<h2 className="mb-2 text-2xl font-bold">Venue Type</h2>
 
-					<div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-						{venueOptions?.venueTypes.map((venueType) => {
-							const isChecked =
-								vendor?.venueDetails?.venueType?.id === venueType.id
-							return (
-								<CheckboxField
-									key={venueType.id}
-									labelProps={{ children: venueType.name }}
-									buttonProps={{
-										name: venueType.name,
-										form: form.id,
-										value: venueType.id,
-										defaultChecked: isChecked,
-									}}
-									errors={fields.venueType.errors}
-									className="mb-2"
-								/>
-							)
-						})}
+					<div className="mb-6">
+						<RadioGroup
+							name={fields.venueTypeId.name}
+							className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+							defaultValue={vendor?.venueDetails?.venueType?.id}
+						>
+							{venueOptions?.venueTypes.map((venueType) => {
+								return (
+									<div
+										key={venueType.id}
+										className="flex items-center space-x-2"
+									>
+										<RadioGroupItem
+											form={form.id}
+											value={venueType.id}
+											id={venueType.id}
+										/>
+
+										<label
+											htmlFor={venueType.id}
+											className="text-body-xs text-muted-foreground cursor-pointer self-center"
+										>
+											{venueType.name}
+										</label>
+									</div>
+								)
+							})}
+						</RadioGroup>
+						<ErrorList errors={fields.venueTypeId.errors} />
 					</div>
-					<ErrorList errors={fields.venueType.errors} />
-					<h2 className="text-2xl font-bold">Select the services you offer</h2>
+					<h2 className="mb-2 text-2xl font-bold">Services you offer</h2>
+					<ul className="mb-6">
+						<fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+							{services.map((service, index) => {
+								const serviceFields = service.getFieldset()
+								const serviceOption = venueOptions.services[index]
+								const isChecked = !!serviceFields.globalServiceId.value
 
-					<div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-8">
-						{venueOptions?.services.map((service) => {
-							const isChecked = !!vendor?.venueDetails?.services?.some(
-								(s) => s.globalService.id === service.id,
-							)
-							return (
-								<div key={service.id} className="space-y-2">
-									<CheckboxField
-										labelProps={{ children: service.name }}
-										buttonProps={{
-											name: service.name,
-											form: form.id,
-											value: service.id,
-											defaultChecked: isChecked,
-										}}
-										errors={fields.services.errors}
-										className="mb-2"
-									/>
+								return (
+									<li key={service.id} className="space-y-2">
+										<CheckboxField
+											labelProps={{
+												children: serviceOption?.name ?? 'Unnamed Service',
+											}}
+											buttonProps={{
+												name: serviceFields.globalServiceId.name,
+												form: form.id,
+												value: serviceOption?.id ?? '',
+												defaultChecked: isChecked,
+											}}
+										/>
 
-									<Input
-										form={form.id}
-										name={`${service.name}-input`}
-										placeholder="Price"
-										type="number"
-										defaultValue={
-											isChecked
-												? (vendor?.venueDetails?.services?.find(
-														(s) => s.globalService.id === service.id,
-													)?.price ?? '')
-												: ''
-										}
-									/>
+										{isChecked && (
+											<>
+												<Input
+													placeholder="Price"
+													defaultValue={serviceFields.price.value}
+													{...getInputProps(serviceFields.price, {
+														type: 'number',
+													})}
+												/>
+												<ErrorList errors={serviceFields.price.errors} />
+												<Input
+													placeholder="Description"
+													defaultValue={
+														serviceFields.description.value ??
+														getServiceDescriptionByServiceName(
+															serviceOption?.name ?? '',
+														)
+													}
+													{...getInputProps(serviceFields.description, {
+														type: 'text',
+													})}
+												/>
 
-									<Input
-										form={form.id}
-										name={`${service.name}-description`}
-										placeholder="Description"
-										type="text"
-										defaultValue={
-											isChecked
-												? (vendor?.venueDetails?.services?.find(
-														(s) => s.globalService.id === service.id,
-													)?.description ?? '')
-												: ''
-										}
-									/>
-								</div>
-							)
-						})}
-					</div>
+												<ErrorList errors={serviceFields.description.errors} />
+											</>
+										)}
+									</li>
+								)
+							})}
+						</fieldset>
+						<div className="mt-2">
+							<ErrorList errors={fields.services.errors} />
+						</div>
+					</ul>
 				</div>
 
 				<div className="mt-8 flex justify-end">
@@ -317,4 +359,3 @@ export function VenueDetailsForm({
 		</FormProvider>
 	)
 }
-1

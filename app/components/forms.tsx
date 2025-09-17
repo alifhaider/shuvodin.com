@@ -19,6 +19,7 @@ import {
 	SelectValue,
 } from './ui/select.tsx'
 import { Textarea } from './ui/textarea.tsx'
+import { RadioGroup, RadioGroupItem } from './ui/radio-group.tsx'
 
 export type ListOfErrors = Array<string | null | undefined> | null | undefined
 
@@ -206,9 +207,11 @@ export function CheckboxField({
 					className="text-body-xs text-muted-foreground self-center"
 				/>
 			</div>
-			<div className="pt-1 pb-3">
-				{errorId ? <ErrorList id={errorId} errors={errors} /> : null}
-			</div>
+			{errorId ? (
+				<div className="pt-1 pb-3">
+					<ErrorList id={errorId} errors={errors} />
+				</div>
+			) : null}
 		</div>
 	)
 }

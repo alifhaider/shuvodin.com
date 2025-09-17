@@ -1,16 +1,9 @@
-import { parseWithZod } from '@conform-to/zod'
-import { Outlet, redirect } from 'react-router'
+import { Outlet } from 'react-router'
 import { z } from 'zod'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { VendorType } from '#app/utils/misc.tsx'
 import { type Route } from '../+types/index'
-import { GalleryEditorSchema } from '../__gallery-editor'
-import {
-	venueAmenityNames,
-	venueEventSpaceNames,
-	venueEventTypeNames,
-	venueServiceNames,
-} from '../__vendor-types'
+import { venueEventSpaceNames } from '../__vendor-utils'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendor Onboarding / ShuvoDin' }]
@@ -34,12 +27,6 @@ export const GeneralInfoSchema = z.object({
 	thana: z.string().min(2, 'Thana is required'),
 	address: z.string().optional(),
 	description: z.string().min(10).max(500),
-})
-
-export const ServicesSchema = z.object({
-	amenities: z.array(z.enum(venueAmenityNames)).optional(),
-	services: z.array(z.enum(venueServiceNames)).optional(),
-	eventTypes: z.array(z.enum(venueEventTypeNames)).optional(),
 })
 
 export const VenueDetailsSchema = z.object({
@@ -68,32 +55,8 @@ export const LinksSchema = z.object({
 	longitude: z.number().optional(),
 })
 
-export const OnboardingVendorSignUpSchema = GeneralInfoSchema.merge(LinksSchema)
-	.merge(GalleryEditorSchema)
-	.merge(ServicesSchema)
-	.merge(z.object({ venueDetails: VenueDetailsSchema.optional() }))
-
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireUserId(request)
-}
-
-export async function action({ request }: Route.ActionArgs) {
-	const userId = await requireUserId(request)
-	const formData = await request.formData()
-
-	const submission = await parseWithZod(formData, {
-		schema: OnboardingVendorSignUpSchema,
-	})
-
-	if (submission.status !== 'success') {
-		return submission.reply()
-	}
-
-	// Save to database here
-	const vendorData = submission.value
-
-	// Redirect to success page
-	return redirect('/onboarding/success')
 }
 
 export default function OnboardingVendor() {
