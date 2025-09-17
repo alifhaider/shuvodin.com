@@ -78,7 +78,7 @@ See the [LICENSE.md](https://github.com/alifhaider/shuvodin.com/LICENSE.md) file
 
 Inspired by the love and joy of weddings worldwide.
 
-Built with by the ShuvoDin team.
+Built with ❤️ by the ShuvoDin team.
 
 Special thanks to our open-source contributors and the wedding community.
 
