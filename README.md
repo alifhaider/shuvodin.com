@@ -59,7 +59,7 @@ We’d love for you to contribute to ShuvoDin and help make it even better! To g
    ```
 3. Make your changes and commit:
    ```bash
-   git push origin feature/your-feature-name
+   git commit -m "Add your feature"
    ```
 4. Push to your fork:
    ```bash
