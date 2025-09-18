@@ -6,12 +6,14 @@ test('Users can create notes', async ({ page, login }) => {
 	const user = await login()
 	await page.goto(`/users/${user.username}/notes`)
 
-	const newNote = createNote()
+	const newNote = createVendor()
 	await page.getByRole('link', { name: /New Note/i }).click()
 
 	// fill in form and submit
-	await page.getByRole('textbox', { name: /title/i }).fill(newNote.title)
-	await page.getByRole('textbox', { name: /content/i }).fill(newNote.content)
+	await page.getByRole('textbox', { name: /title/i }).fill(newNote.businessName)
+	await page
+		.getByRole('textbox', { name: /content/i })
+		.fill(newNote.description)
 
 	await page.getByRole('button', { name: /submit/i }).click()
 	await expect(page).toHaveURL(new RegExp(`/users/${user.username}/notes/.*`))
@@ -20,33 +22,35 @@ test('Users can create notes', async ({ page, login }) => {
 test('Users can edit notes', async ({ page, login }) => {
 	const user = await login()
 
-	const note = await prisma.note.create({
+	const note = await prisma.vendor.create({
 		select: { id: true },
-		data: { ...createNote(), ownerId: user.id },
+		data: { ...createVendor(), ownerId: user.id },
 	})
 	await page.goto(`/users/${user.username}/notes/${note.id}`)
 
 	// edit the note
 	await page.getByRole('link', { name: 'Edit', exact: true }).click()
-	const updatedNote = createNote()
-	await page.getByRole('textbox', { name: /title/i }).fill(updatedNote.title)
+	const updatedNote = createVendor()
+	await page
+		.getByRole('textbox', { name: /title/i })
+		.fill(updatedNote.businessName)
 	await page
 		.getByRole('textbox', { name: /content/i })
-		.fill(updatedNote.content)
+		.fill(updatedNote.description)
 	await page.getByRole('button', { name: /submit/i }).click()
 
 	await expect(page).toHaveURL(`/users/${user.username}/notes/${note.id}`)
 	await expect(
-		page.getByRole('heading', { name: updatedNote.title }),
+		page.getByRole('heading', { name: updatedNote.businessName }),
 	).toBeVisible()
 })
 
 test('Users can delete notes', async ({ page, login }) => {
 	const user = await login()
 
-	const note = await prisma.note.create({
+	const note = await prisma.vendor.create({
 		select: { id: true },
-		data: { ...createNote(), ownerId: user.id },
+		data: { ...createVendor(), ownerId: user.id },
 	})
 	await page.goto(`/users/${user.username}/notes/${note.id}`)
 
@@ -65,9 +69,23 @@ test('Users can delete notes', async ({ page, login }) => {
 	await expect(noteLinks).toHaveCount(countBefore - 1)
 })
 
-function createNote() {
+function createVendor() {
 	return {
-		title: faker.lorem.words(3),
-		content: faker.lorem.paragraphs(3),
+		businessName: faker.lorem.words(3),
+		description: faker.lorem.paragraphs(3),
+		slug: faker.lorem.words(3).toLowerCase().replace(/\s+/g, '-'),
+		address: faker.location.streetAddress(),
+		division: 'Dhaka',
+		district: 'Dhaka',
+		thana: 'Dhanmondi',
+		vendorTypeId: '1',
+		mapUrl: '',
+		socialLinks: [],
+		phone: faker.phone.number(),
+		isFeatured: false,
+		website: faker.internet.url(),
+		rating: 0,
+		latitude: 0,
+		longitude: 0,
 	}
 }
