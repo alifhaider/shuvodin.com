@@ -14,11 +14,7 @@ import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import {
-	getNoteImgSrc,
-	getVendorImgSrc,
-	useIsPending,
-} from '#app/utils/misc.tsx'
+import { getNoteImgSrc, useIsPending } from '#app/utils/misc.tsx'
 import { requireUserWithPermission } from '#app/utils/permissions.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { userHasPermission, useOptionalUser } from '#app/utils/user.ts'
@@ -26,15 +22,15 @@ import { type Route } from './+types/notes.$noteId.ts'
 import { type Route as NotesRoute } from './+types/notes.ts'
 
 export async function loader({ params }: Route.LoaderArgs) {
-	const note = await prisma.vendor.findUnique({
+	const note = await prisma.note.findUnique({
 		where: { id: params.noteId },
 		select: {
 			id: true,
-			businessName: true,
-			description: true,
+			title: true,
+			content: true,
 			ownerId: true,
 			updatedAt: true,
-			gallery: {
+			images: {
 				select: {
 					altText: true,
 					objectKey: true,
@@ -71,7 +67,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const { noteId } = submission.value
 
-	const note = await prisma.vendor.findFirst({
+	const note = await prisma.note.findFirst({
 		select: { id: true, ownerId: true, owner: { select: { username: true } } },
 		where: { id: noteId },
 	})
@@ -83,7 +79,7 @@ export async function action({ request }: Route.ActionArgs) {
 		isOwner ? `delete:note:own` : `delete:note:any`,
 	)
 
-	// await prisma.note.delete({ where: { id: note.id } })
+	await prisma.note.delete({ where: { id: note.id } })
 
 	return redirectWithToast(`/users/${note.owner.username}/notes`, {
 		type: 'success',
@@ -122,15 +118,15 @@ export default function NoteRoute({
 			tabIndex={-1} // Make the section focusable without keyboard navigation
 		>
 			<h2 id="note-title" className="text-h2 mb-2 pt-12 lg:mb-6">
-				{loaderData.note.businessName}
+				{loaderData.note.title}
 			</h2>
 			<div className={`${displayBar ? 'pb-24' : 'pb-12'} overflow-y-auto`}>
 				<ul className="flex flex-wrap gap-5 py-5">
-					{loaderData.note.gallery.map((image) => (
+					{loaderData.note.images.map((image) => (
 						<li key={image.objectKey}>
-							<a href={getVendorImgSrc(image.objectKey)}>
+							<a href={getNoteImgSrc(image.objectKey)}>
 								<Img
-									src={getVendorImgSrc(image.objectKey)}
+									src={getNoteImgSrc(image.objectKey)}
 									alt={image.altText ?? ''}
 									className="size-32 rounded-lg object-cover"
 									width={512}
@@ -141,7 +137,7 @@ export default function NoteRoute({
 					))}
 				</ul>
 				<p className="text-sm whitespace-break-spaces md:text-lg">
-					{loaderData.note.description}
+					{loaderData.note.content}
 				</p>
 			</div>
 			{displayBar ? (
@@ -212,10 +208,10 @@ export const meta: Route.MetaFunction = ({ data, params, matches }) => {
 	) as { data: NotesRoute.ComponentProps['loaderData'] } | undefined
 
 	const displayName = notesMatch?.data?.owner.name ?? params.username
-	const noteTitle = data?.note.businessName ?? 'Note'
+	const noteTitle = data?.note.title ?? 'Note'
 	const noteContentsSummary =
-		data && data.note.description && data.note.description.length > 100
-			? data?.note.description?.slice(0, 97) + '...'
+		data && data.note.content.length > 100
+			? data?.note.content.slice(0, 97) + '...'
 			: 'No content'
 	return [
 		{ title: `${noteTitle} | ${displayName}'s Notes | Epic Notes` },

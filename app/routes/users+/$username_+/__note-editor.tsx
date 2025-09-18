@@ -66,10 +66,13 @@ export function NoteEditor({
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: NoteEditorSchema })
 		},
-
+		defaultValue: {
+			...note,
+			images: note?.images ?? [{}],
+		},
 		shouldRevalidate: 'onBlur',
 	})
-	// const imageList = fields.images.getFieldList()
+	const imageList = fields.images.getFieldList()
 
 	return (
 		<div className="absolute inset-0">
@@ -85,7 +88,7 @@ export function NoteEditor({
 					"enter" on an input field, the primary form function is submitted
 					rather than the first button in the form (which is delete/add image).
 				*/}
-					{/* <button type="submit" className="hidden" />
+					<button type="submit" className="hidden" />
 					{note ? <input type="hidden" name="id" value={note.id} /> : null}
 					<div className="flex flex-col gap-1">
 						<Field
@@ -148,7 +151,7 @@ export function NoteEditor({
 							</span>{' '}
 							<span className="sr-only">Add image</span>
 						</Button>
-					</div> */}
+					</div>
 					<ErrorList id={form.errorId} errors={form.errors} />
 				</Form>
 				<div className={floatingToolbarClassName}>

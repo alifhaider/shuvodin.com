@@ -4,7 +4,6 @@ import { invariantResponse } from '@epic-web/invariant'
 import { data, redirect, useFetcher, useFetchers } from 'react-router'
 import { ServerOnly } from 'remix-utils/server-only'
 import { z } from 'zod'
-import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { useHints, useOptionalHints } from '#app/utils/client-hints.tsx'
 import {
@@ -13,7 +12,7 @@ import {
 } from '#app/utils/request-info.ts'
 import { type Theme, setTheme } from '#app/utils/theme.server.ts'
 import { type Route } from './+types/theme-switch.ts'
-
+import { Button } from '#app/components/ui/button.tsx'
 const ThemeFormSchema = z.object({
 	theme: z.enum(['system', 'light', 'dark']),
 	// this is useful for progressive enhancement

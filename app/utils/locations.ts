@@ -597,7 +597,7 @@ export async function getLocations(request: Request) {
 				.filter((district) => district.toLocaleLowerCase().includes(query))
 				.map((district) => ({ division, district })),
 		)
-		.map(({ district }) => district)
+		.map(({ division, district }) => district)
 
 	if (matchingDivisions.length > 0) {
 		return {

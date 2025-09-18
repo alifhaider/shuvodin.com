@@ -1,6 +1,5 @@
 import { Image } from 'openimg/react'
-import { Form } from 'react-router'
-import { SearchBar } from '#app/components/search-bar.tsx'
+import { Form, useSearchParams } from 'react-router'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import {
@@ -18,12 +17,23 @@ import {
 	CarouselPrevious,
 } from '#app/components/ui/carousel.tsx'
 import { Icon, type IconName } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { type Route } from './+types/index.ts'
+import { LocationCombobox } from '../resources+/location-combobox.tsx'
+import { VendorCombobox } from '../resources+/vendor-combobox.tsx'
+import { SearchBar } from '#app/components/search-bar.tsx'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Home / ShuvoDin' }]
 }
+
+const stats = [
+	{ number: '10,000+', label: 'Happy Couples', icon: 'heart' },
+	{ number: '1,500+', label: 'Verified Vendors', icon: 'shield' },
+	{ number: '50+', label: 'Cities Covered', icon: 'map-pin' },
+	{ number: '98%', label: 'Satisfaction Rate', icon: 'star' },
+]
 
 const venueStyles = [
 	{
@@ -176,18 +186,19 @@ const popularLocations = [
 	},
 ]
 
-export async function loader() {
-	// const searchParams = new URL(request.url).searchParams
-	// const vendorType = searchParams.get('vendorType') ?? ''
-	// const city = searchParams.get('city') ?? ''
-	// const address = searchParams.get('address') ?? ''
-	// const minPrice = searchParams.get('minPrice') ?? ''
-	// const maxPrice = searchParams.get('maxPrice') ?? ''
-	// const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+export async function loader({ request }: Route.LoaderArgs) {
+	const searchParams = new URL(request.url).searchParams
+	const vendorType = searchParams.get('vendorType') ?? ''
+	const city = searchParams.get('city') ?? ''
+	const address = searchParams.get('address') ?? ''
+	const minPrice = searchParams.get('minPrice') ?? ''
+	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
 	return { vendors: [], testimonials: [], popularLocations: [] } as const
 }
 
-export default function Index() {
+export default function Index({ loaderData }: Route.ComponentProps) {
+	const [searchParams, setSearchParams] = useSearchParams()
 	return (
 		<>
 			<section className="relative overflow-hidden py-20 lg:py-32">

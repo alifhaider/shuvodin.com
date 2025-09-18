@@ -88,27 +88,27 @@ async function seed() {
 
 	const vendorTypes = await prisma.vendorType.findMany()
 
-	// const photographyStyles = [
-	// 	'Classic',
-	// 	'Editorial',
-	// 	'Fine Art',
-	// 	'Photojournalistic',
-	// 	'Vintage',
-	// 	'Dark & Moody',
-	// 	'Light & Airy',
-	// 	'Documentary',
-	// ]
-	// const photographyServices = [
-	// 	'Bride-only session',
-	// 	'Drone photography',
-	// 	'Engagement session',
-	// 	'Extra hours',
-	// 	'Image editing',
-	// 	'Online proofing',
-	// 	'Printing rights',
-	// 	'Same-day edits',
-	// 	'Second photographer',
-	// ]
+	const photographyStyles = [
+		'Classic',
+		'Editorial',
+		'Fine Art',
+		'Photojournalistic',
+		'Vintage',
+		'Dark & Moody',
+		'Light & Airy',
+		'Documentary',
+	]
+	const photographyServices = [
+		'Bride-only session',
+		'Drone photography',
+		'Engagement session',
+		'Extra hours',
+		'Image editing',
+		'Online proofing',
+		'Printing rights',
+		'Same-day edits',
+		'Second photographer',
+	]
 
 	await prisma.role.createMany({
 		data: [{ name: 'user' }, { name: 'vendor' }, { name: 'admin' }],
@@ -387,14 +387,14 @@ async function seed() {
 		if (!vendor) continue
 		try {
 			const venueTypes = await prisma.venueType.findMany()
-			// const eventTypes = await prisma.venueEventType.findMany()
+			const eventTypes = await prisma.venueEventType.findMany()
 
 			const globalServices = await prisma.globalVenueService.findMany()
 			const globalAmenities = await prisma.globalVenueAmenity.findMany()
 			const globalEventType = await prisma.globalVenueEventType.findMany()
 			const globalSpaces = await prisma.globalVenueSpace.findMany()
 
-			await prisma.venueDetails.create({
+			const venue = await prisma.venueDetails.create({
 				data: {
 					vendorId: vendor.id,
 					venueTypeId: faker.helpers.arrayElement(venueTypes)?.id,
@@ -499,7 +499,7 @@ async function seed() {
 
 	const totalBookings = 5
 	console.time(`📅 Created ${totalBookings} bookings...`)
-	await Promise.all(
+	const bookings = await Promise.all(
 		Array.from({ length: totalBookings }, async (_, index) => {
 			const user = users[index % users.length]
 			if (!user) {
