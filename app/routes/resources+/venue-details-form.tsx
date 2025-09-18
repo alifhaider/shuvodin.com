@@ -1,11 +1,5 @@
-import {
-	FormProvider,
-	getFormProps,
-	getInputProps,
-	useForm,
-} from '@conform-to/react'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
-import { useEffect } from 'react'
 import { data, Form, redirect } from 'react-router'
 import { z } from 'zod'
 import { CheckboxField, ErrorList } from '#app/components/forms.tsx'
@@ -212,6 +206,7 @@ export function VenueDetailsForm({
 	venueOptions: VenueOptions
 	actionData?: Route.ComponentProps['actionData']
 }) {
+	console.log('venueOptions', venueOptions.spaces)
 	const isPending = useIsPending()
 
 	const defaultServices = venueOptions.services.map((service) => {
@@ -225,6 +220,39 @@ export function VenueDetailsForm({
 		}
 	})
 
+	const defaultAmenities = venueOptions.amenities
+		.map((amenity) => {
+			const existingAmenity = vendor?.venueDetails?.amenities?.find(
+				(a) => a.globalAmenity.id === amenity.id,
+			)
+			return existingAmenity ? { globalAmenityId: amenity.id } : null
+		})
+		.filter((a): a is { globalAmenityId: string } => a !== null)
+
+	const defaultEventTypes = venueOptions.eventTypes
+		.map((eventType) => {
+			const existingEventType = vendor?.venueDetails?.eventTypes?.find(
+				(e) => e.globalEventType.id === eventType.id,
+			)
+
+			return existingEventType ? { globalEventTypeId: eventType.id } : null
+		})
+		.filter((e): e is { globalEventTypeId: string } => e !== null)
+
+	const defaultSpaces = venueOptions.spaces.map((space) => {
+		const existingSpace = vendor?.venueDetails?.spaces?.find(
+			(s) => s.globalSpace.id === space.id,
+		)
+		return {
+			globalSpaceId: existingSpace ? space.id : '',
+			sittingCapacity: existingSpace?.sittingCapacity,
+			standingCapacity: existingSpace?.standingCapacity,
+			parkingCapacity: existingSpace?.parkingCapacity,
+			price: existingSpace?.price,
+			description: existingSpace?.description ?? '',
+		}
+	})
+
 	const [form, fields] = useForm({
 		id: 'onboarding-venue-details-form',
 		lastResult: actionData?.result,
@@ -233,129 +261,217 @@ export function VenueDetailsForm({
 			vendorType: vendor?.vendorType.id ?? 'venue',
 			venueTypeId: vendor?.venueDetails?.venueType?.id ?? '',
 			services: defaultServices,
-			spaces: [], // Add default values if needed
-			eventTypes: [], // Add default values if needed
-			amenities: [], // Add default values if needed
+			spaces: defaultSpaces, // Add default values if needed
+			eventTypes: defaultEventTypes, // Add default values if needed
+			amenities: defaultAmenities, // Add default values if needed
 		},
 		onValidate({ formData }) {
+			console.log('Validating form data:', Array.from(formData.entries()))
 			return parseWithZod(formData, { schema: VenueDetailsSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
 
+	console.log('defaultSpaces', defaultSpaces)
+	console.log('defaultServices', defaultServices)
+
 	const services = fields.services.getFieldList()
+	const spaces = fields.spaces.getFieldList()
+	const eventTypes = fields.eventTypes.getFieldList()
+	const amenities = fields.amenities.getFieldList()
 
 	return (
-		<FormProvider context={form.context}>
-			<Form
-				{...getFormProps(form)}
-				method="POST"
-				action="/resources/venue-details-form"
-			>
-				<input type="hidden" name="vendorId" value={vendor?.id} />
-				<input type="hidden" name="vendorType" value={vendor?.vendorType.id} />
-				<div>
-					<h2 className="mb-2 text-2xl font-bold">Venue Type</h2>
+		<Form
+			{...getFormProps(form)}
+			method="POST"
+			action="/resources/venue-details-form"
+		>
+			<input type="hidden" name="vendorId" value={vendor?.id} />
+			<input type="hidden" name="vendorType" value={vendor?.vendorType.id} />
+			<div>
+				<h4 className="mb-2 text-2xl font-bold">Venue Type</h4>
 
-					<div className="mb-6">
-						<RadioGroup
-							name={fields.venueTypeId.name}
-							className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-							defaultValue={vendor?.venueDetails?.venueType?.id}
-						>
-							{venueOptions?.venueTypes.map((venueType) => {
-								return (
-									<div
-										key={venueType.id}
-										className="flex items-center space-x-2"
-									>
-										<RadioGroupItem
-											form={form.id}
-											value={venueType.id}
-											id={venueType.id}
-										/>
-
-										<label
-											htmlFor={venueType.id}
-											className="text-body-xs text-muted-foreground cursor-pointer self-center"
-										>
-											{venueType.name}
-										</label>
-									</div>
-								)
-							})}
-						</RadioGroup>
-						<ErrorList errors={fields.venueTypeId.errors} />
-					</div>
-					<h2 className="mb-2 text-2xl font-bold">Services you offer</h2>
-					<ul className="mb-6">
-						<fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-							{services.map((service, index) => {
-								const serviceFields = service.getFieldset()
-								const serviceOption = venueOptions.services[index]
-								const isChecked = !!serviceFields.globalServiceId.value
-
-								return (
-									<li key={service.id} className="space-y-2">
-										<CheckboxField
-											labelProps={{
-												children: serviceOption?.name ?? 'Unnamed Service',
-											}}
-											buttonProps={{
-												name: serviceFields.globalServiceId.name,
-												form: form.id,
-												value: serviceOption?.id ?? '',
-												defaultChecked: isChecked,
-											}}
-										/>
-
-										{isChecked && (
-											<>
-												<Input
-													placeholder="Price"
-													defaultValue={serviceFields.price.value}
-													{...getInputProps(serviceFields.price, {
-														type: 'number',
-													})}
-												/>
-												<ErrorList errors={serviceFields.price.errors} />
-												<Input
-													placeholder="Description"
-													defaultValue={
-														serviceFields.description.value ??
-														getServiceDescriptionByServiceName(
-															serviceOption?.name ?? '',
-														)
-													}
-													{...getInputProps(serviceFields.description, {
-														type: 'text',
-													})}
-												/>
-
-												<ErrorList errors={serviceFields.description.errors} />
-											</>
-										)}
-									</li>
-								)
-							})}
-						</fieldset>
-						<div className="mt-2">
-							<ErrorList errors={fields.services.errors} />
-						</div>
-					</ul>
-				</div>
-
-				<div className="mt-8 flex justify-end">
-					<StatusButton
-						type="submit"
-						disabled={isPending}
-						size="wide"
-						status={isPending ? 'pending' : 'idle'}
+				<div className="mb-6">
+					<RadioGroup
+						name={fields.venueTypeId.name}
+						className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+						defaultValue={vendor?.venueDetails?.venueType?.id}
 					>
-						<span>Next</span>
-					</StatusButton>
+						{venueOptions?.venueTypes.map((venueType) => {
+							return (
+								<div key={venueType.id} className="flex items-center space-x-2">
+									<RadioGroupItem
+										form={form.id}
+										value={venueType.id}
+										id={venueType.id}
+									/>
+
+									<label
+										htmlFor={venueType.id}
+										className="text-body-xs text-muted-foreground cursor-pointer self-center"
+									>
+										{venueType.name}
+									</label>
+								</div>
+							)
+						})}
+					</RadioGroup>
+					<ErrorList errors={fields.venueTypeId.errors} />
 				</div>
-			</Form>
-		</FormProvider>
+				<h4 className="mb-1 text-2xl font-bold">Services you offer</h4>
+				<p className="text-muted-foreground text-body-2xs mb-2">
+					<strong>Note: </strong>Keep the price field empty if you don't want to
+					charge for a service; it will be included in your event-space price.
+				</p>
+				<ul className="mb-6">
+					<fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+						{services.map((service, index) => {
+							const serviceFields = service.getFieldset()
+							const serviceOption = venueOptions.services[index]
+							const isChecked = !!serviceFields.globalServiceId.value
+
+							return (
+								<li key={service.id} className="space-y-2">
+									<CheckboxField
+										labelProps={{
+											children: serviceOption?.name ?? 'Unnamed Service',
+										}}
+										buttonProps={{
+											name: serviceFields.globalServiceId.name,
+											form: form.id,
+											value: serviceOption?.id ?? '',
+											defaultChecked: isChecked,
+										}}
+									/>
+
+									{isChecked && (
+										<>
+											<Input
+												placeholder="Price"
+												defaultValue={serviceFields.price.value}
+												{...getInputProps(serviceFields.price, {
+													type: 'number',
+												})}
+											/>
+											<ErrorList errors={serviceFields.price.errors} />
+											<Input
+												placeholder="Description"
+												defaultValue={
+													serviceFields.description.value ??
+													getServiceDescriptionByServiceName(
+														serviceOption?.name ?? '',
+													)
+												}
+												{...getInputProps(serviceFields.description, {
+													type: 'text',
+												})}
+											/>
+
+											<ErrorList errors={serviceFields.description.errors} />
+										</>
+									)}
+								</li>
+							)
+						})}
+					</fieldset>
+					<div className="mt-2">
+						<ErrorList errors={fields.services.errors} />
+					</div>
+				</ul>
+
+				<h4 className="mb-2 text-2xl font-bold">Event Spaces </h4>
+				<ul className="mb-6">
+					<fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+						{spaces.map((space, index) => {
+							const spaceFields = space.getFieldset()
+							const spaceOption = venueOptions.spaces[index]
+							const isChecked = !!spaceFields.globalSpaceId.value
+
+							return (
+								<li key={space.id} className="space-y-2">
+									<CheckboxField
+										labelProps={{
+											children: spaceOption?.name ?? 'Unnamed Space',
+										}}
+										buttonProps={{
+											name: spaceFields.globalSpaceId.name,
+											form: form.id,
+											value: spaceOption?.id ?? '',
+											defaultChecked: isChecked,
+										}}
+									/>
+
+									{isChecked && (
+										<>
+											<Input
+												placeholder="Price"
+												defaultValue={spaceFields.price.value}
+												{...getInputProps(spaceFields.price, {
+													type: 'number',
+												})}
+											/>
+											<ErrorList errors={spaceFields.price.errors} />
+											<Input
+												placeholder="Description"
+												defaultValue={
+													spaceFields.description.value ??
+													getServiceDescriptionByServiceName(
+														spaceOption?.name ?? '',
+													)
+												}
+												{...getInputProps(spaceFields.description, {
+													type: 'text',
+												})}
+											/>
+
+											<ErrorList errors={spaceFields.description.errors} />
+
+											<Input
+												placeholder="Sitting Capacity"
+												defaultValue={spaceFields.sittingCapacity.value ?? ''}
+												{...getInputProps(spaceFields.sittingCapacity, {
+													type: 'number',
+												})}
+											/>
+											<ErrorList errors={spaceFields.sittingCapacity.errors} />
+											<Input
+												placeholder="Standing Capacity"
+												defaultValue={spaceFields.standingCapacity.value ?? ''}
+												{...getInputProps(spaceFields.standingCapacity, {
+													type: 'number',
+												})}
+											/>
+											<ErrorList errors={spaceFields.standingCapacity.errors} />
+											<Input
+												placeholder="Parking Capacity"
+												defaultValue={spaceFields.parkingCapacity.value ?? ''}
+												{...getInputProps(spaceFields.parkingCapacity, {
+													type: 'number',
+												})}
+											/>
+											<ErrorList errors={spaceFields.parkingCapacity.errors} />
+										</>
+									)}
+								</li>
+							)
+						})}
+					</fieldset>
+					<div className="mt-2">
+						<ErrorList errors={fields.spaces.errors} />
+					</div>
+				</ul>
+			</div>
+
+			<div className="mt-8 flex justify-end">
+				<StatusButton
+					type="submit"
+					disabled={isPending}
+					size="wide"
+					status={isPending ? 'pending' : 'idle'}
+				>
+					<span>Next</span>
+				</StatusButton>
+			</div>
+		</Form>
 	)
 }

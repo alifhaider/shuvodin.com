@@ -98,10 +98,12 @@ const VenueSpaceSchema = z.object({
 		.string({ required_error: 'Please select a space.' })
 		.min(1, 'Space ID is required.'),
 	price: z
-		.number({ invalid_type_error: 'Price must be a number.' })
-		.min(0, 'Price cannot be negative.')
-		.optional()
-		.nullable(),
+		.number({
+			invalid_type_error: 'Price must be a number.',
+			message: 'Price for an event space is required',
+		})
+		.min(0, 'Price cannot be negative.'),
+
 	description: z
 		.string()
 		.max(500, 'Description cannot exceed 500 characters.')
@@ -134,10 +136,6 @@ const VenueEventTypeSchema = z.object({
 	globalEventTypeId: z
 		.string({ required_error: 'Please select an event type.' })
 		.min(1, 'Event Type ID is required.'),
-})
-
-const VenueTypeSchema = z.object({
-	id: z.string({ required_error: 'Please select a venue type.' }),
 })
 
 // amenities will be amenity ids
