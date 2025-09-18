@@ -18,11 +18,8 @@ import { type VenueOptions } from '../vendors+/onboarding+/details'
 import { type Route } from './+types/venue-details-form'
 
 export async function action({ request }: Route.ActionArgs) {
-	console.log('action called')
 	const { userId, vendorId } = await requireVendor(request)
 	const formData = await request.formData()
-
-	console.log('Form Data:', Array.from(formData.entries()))
 
 	const submission = await parseWithZod(formData, {
 		schema: VenueDetailsSchema.superRefine(async (data, ctx) => {
@@ -209,7 +206,6 @@ export function VenueDetailsForm({
 	venueOptions: VenueOptions
 	actionData?: Route.ComponentProps['actionData']
 }) {
-	console.log('venueOptions', venueOptions.spaces)
 	const isPending = useIsPending()
 
 	const defaultServices = venueOptions.services.map((service) => {
@@ -260,34 +256,21 @@ export function VenueDetailsForm({
 			vendorType: vendor?.vendorType.id ?? 'venue',
 			venueTypeId: vendor?.venueDetails?.venueType?.id ?? '',
 			services: defaultServices,
-			spaces: defaultSpaces, // Add default values if needed
-			eventTypes: defaultEventTypes, // Add default values if needed
-			amenities: defaultAmenities, // Add default values if needed
+			spaces: defaultSpaces,
+			eventTypes: defaultEventTypes,
+			amenities: defaultAmenities,
 		},
 		onValidate({ formData }) {
-			console.log('Validating form data:', Array.from(formData.entries()))
-			const result = parseWithZod(formData, { schema: VenueDetailsSchema })
-			console.log('Validation result:', result) // Log the validation result
-			return result
-		},
-		onSubmit(event, { submission }) {
-			console.log('Form submission:', submission)
-			if (submission?.status !== 'success') {
-				console.log('Validation errors:', submission?.error)
-			}
+			return parseWithZod(formData, { schema: VenueDetailsSchema })
 		},
 		shouldRevalidate: 'onBlur',
 	})
-
-	console.log('defaultSpaces', defaultSpaces)
-	console.log('defaultServices', defaultServices)
 
 	const services = fields.services.getFieldList()
 	const spaces = fields.spaces.getFieldList()
 	const eventTypes = fields.eventTypes.getFieldList()
 	const amenities = fields.amenities.getFieldList()
 
-	console.log('formPops', getFormProps(form))
 	return (
 		<Form
 			{...getFormProps(form)}
