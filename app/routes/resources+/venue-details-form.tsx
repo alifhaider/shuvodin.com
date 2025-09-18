@@ -161,6 +161,7 @@ export async function action({ request }: Route.ActionArgs) {
 							: undefined,
 					},
 					update: {
+						venueTypeId,
 						eventTypes: {
 							deleteMany: {},
 							createMany: { data: eventTypes },
@@ -177,6 +178,8 @@ export async function action({ request }: Route.ActionArgs) {
 									sittingCapacity: s.sittingCapacity || 0,
 									standingCapacity: s.standingCapacity || 0,
 									parkingCapacity: s.parkingCapacity || 0,
+									price: s.price,
+									description: s.description,
 								})),
 							},
 						},
@@ -263,24 +266,36 @@ export function VenueDetailsForm({
 		},
 		onValidate({ formData }) {
 			console.log('Validating form data:', Array.from(formData.entries()))
-			return parseWithZod(formData, { schema: VenueDetailsSchema })
+			const result = parseWithZod(formData, { schema: VenueDetailsSchema })
+			console.log('Validation result:', result) // Log the validation result
+			return result
+		},
+		onSubmit(event, { submission }) {
+			console.log('Form submission:', submission)
+			if (submission?.status !== 'success') {
+				console.log('Validation errors:', submission?.error)
+			}
 		},
 		shouldRevalidate: 'onBlur',
 	})
+
+	console.log('defaultSpaces', defaultSpaces)
+	console.log('defaultServices', defaultServices)
 
 	const services = fields.services.getFieldList()
 	const spaces = fields.spaces.getFieldList()
 	const eventTypes = fields.eventTypes.getFieldList()
 	const amenities = fields.amenities.getFieldList()
 
+	console.log('formPops', getFormProps(form))
 	return (
 		<Form
 			{...getFormProps(form)}
-			method="POST"
 			action="/resources/venue-details-form"
+			method="POST"
 		>
 			<input type="hidden" name="vendorId" value={vendor?.id} />
-			<input type="hidden" name="vendorType" value={vendor?.vendorType.id} />
+			<input type="hidden" name="vendorType" value={vendor?.vendorType.name} />
 			<div>
 				<h4 className="mb-2 text-2xl font-bold">Venue Type</h4>
 
@@ -410,9 +425,7 @@ export function VenueDetailsForm({
 												<div>
 													<Input
 														placeholder="Sitting Capacity"
-														defaultValue={
-															spaceFields.sittingCapacity.value ?? ''
-														}
+														defaultValue={spaceFields.sittingCapacity.value}
 														{...getInputProps(spaceFields.sittingCapacity, {
 															type: 'number',
 														})}
@@ -424,9 +437,7 @@ export function VenueDetailsForm({
 												<div>
 													<Input
 														placeholder="Standing Capacity"
-														defaultValue={
-															spaceFields.standingCapacity.value ?? ''
-														}
+														defaultValue={spaceFields.standingCapacity.value}
 														{...getInputProps(spaceFields.standingCapacity, {
 															type: 'number',
 														})}
@@ -438,9 +449,7 @@ export function VenueDetailsForm({
 												<div>
 													<Input
 														placeholder="Parking Capacity"
-														defaultValue={
-															spaceFields.parkingCapacity.value ?? ''
-														}
+														defaultValue={spaceFields.parkingCapacity.value}
 														{...getInputProps(spaceFields.parkingCapacity, {
 															type: 'number',
 														})}
@@ -538,17 +547,14 @@ export function VenueDetailsForm({
 			<ErrorList errors={form.errors} />
 
 			<div className="mt-8 flex justify-end">
-				<button type="submit" className="cursor-pointer">
-					next
-				</button>
-				{/* <StatusButton
+				<StatusButton
 					type="submit"
 					disabled={isPending}
 					size="wide"
 					status={isPending ? 'pending' : 'idle'}
 				>
 					<span>Next</span>
-				</StatusButton> */}
+				</StatusButton>
 			</div>
 		</Form>
 	)

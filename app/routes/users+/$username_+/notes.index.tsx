@@ -15,13 +15,13 @@ export const meta: Route.MetaFunction = ({ params, matches }) => {
 	) as { data: NotesRoute.ComponentProps['loaderData'] }
 
 	const displayName = notesMatch?.data?.owner.name ?? params.username
-	const noteCount = notesMatch?.data?.owner.notes.length ?? 0
-	const notesText = noteCount === 1 ? 'note' : 'notes'
+	// const noteCount = notesMatch?.data?.owner.notes.length ?? 0
+	// const notesText = noteCount === 1 ? 'note' : 'notes'
 	return [
 		{ title: `${displayName}'s Notes | Epic Notes` },
 		{
 			name: 'description',
-			content: `Checkout ${displayName}'s ${noteCount} ${notesText} on Epic Notes`,
+			content: `Checkout ${displayName}'s  on Epic Notes`,
 		},
 	]
 }

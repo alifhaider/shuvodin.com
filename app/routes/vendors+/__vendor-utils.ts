@@ -81,11 +81,7 @@ const VenueServiceSchema = z.object({
 	globalServiceId: z
 		.string({ required_error: 'Please select a service.' })
 		.min(1, 'Service ID is required.'),
-	price: z
-		.number({ invalid_type_error: 'Price must be a number.' })
-		.min(0, 'Price cannot be negative.')
-		.optional()
-		.nullable(),
+	price: z.number().min(0, 'Price cannot be negative.').optional(),
 	description: z
 		.string()
 		.max(500, 'Description cannot exceed 500 characters.')
@@ -183,7 +179,9 @@ export const VenueDetailsSchema = BaseDetailsSchema.extend({
 			{ message: 'Duplicate amenities are not allowed.' },
 		),
 
-	venueTypeId: z.string({ required_error: 'Please select a venue type.' }),
+	venueTypeId: z
+		.string({ required_error: 'Venue type is required' })
+		.min(1, 'Venue type is required'),
 })
 
 export const MakeupArtistDetailsSchema = BaseDetailsSchema.extend({
