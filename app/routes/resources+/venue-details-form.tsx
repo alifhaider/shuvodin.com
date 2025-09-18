@@ -220,24 +220,20 @@ export function VenueDetailsForm({
 		}
 	})
 
-	const defaultAmenities = venueOptions.amenities
-		.map((amenity) => {
-			const existingAmenity = vendor?.venueDetails?.amenities?.find(
-				(a) => a.globalAmenity.id === amenity.id,
-			)
-			return existingAmenity ? { globalAmenityId: amenity.id } : null
-		})
-		.filter((a): a is { globalAmenityId: string } => a !== null)
+	const defaultAmenities = venueOptions.amenities.map((amenity) => {
+		const existingAmenity = vendor?.venueDetails?.amenities?.find(
+			(a) => a.globalAmenity.id === amenity.id,
+		)
+		return existingAmenity ? { globalAmenityId: amenity.id } : null
+	})
 
-	const defaultEventTypes = venueOptions.eventTypes
-		.map((eventType) => {
-			const existingEventType = vendor?.venueDetails?.eventTypes?.find(
-				(e) => e.globalEventType.id === eventType.id,
-			)
+	const defaultEventTypes = venueOptions.eventTypes.map((eventType) => {
+		const existingEventType = vendor?.venueDetails?.eventTypes?.find(
+			(e) => e.globalEventType.id === eventType.id,
+		)
 
-			return existingEventType ? { globalEventTypeId: eventType.id } : null
-		})
-		.filter((e): e is { globalEventTypeId: string } => e !== null)
+		return existingEventType ? { globalEventTypeId: eventType.id } : null
+	})
 
 	const defaultSpaces = venueOptions.spaces.map((space) => {
 		const existingSpace = vendor?.venueDetails?.spaces?.find(
@@ -271,9 +267,6 @@ export function VenueDetailsForm({
 		},
 		shouldRevalidate: 'onBlur',
 	})
-
-	console.log('defaultSpaces', defaultSpaces)
-	console.log('defaultServices', defaultServices)
 
 	const services = fields.services.getFieldList()
 	const spaces = fields.spaces.getFieldList()
@@ -403,14 +396,60 @@ export function VenueDetailsForm({
 
 									{isChecked && (
 										<>
-											<Input
-												placeholder="Price"
-												defaultValue={spaceFields.price.value}
-												{...getInputProps(spaceFields.price, {
-													type: 'number',
-												})}
-											/>
-											<ErrorList errors={spaceFields.price.errors} />
+											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+												<div>
+													<Input
+														placeholder="Price Per Day"
+														defaultValue={spaceFields.price.value}
+														{...getInputProps(spaceFields.price, {
+															type: 'number',
+														})}
+													/>
+													<ErrorList errors={spaceFields.price.errors} />
+												</div>
+												<div>
+													<Input
+														placeholder="Sitting Capacity"
+														defaultValue={
+															spaceFields.sittingCapacity.value ?? ''
+														}
+														{...getInputProps(spaceFields.sittingCapacity, {
+															type: 'number',
+														})}
+													/>
+													<ErrorList
+														errors={spaceFields.sittingCapacity.errors}
+													/>
+												</div>
+												<div>
+													<Input
+														placeholder="Standing Capacity"
+														defaultValue={
+															spaceFields.standingCapacity.value ?? ''
+														}
+														{...getInputProps(spaceFields.standingCapacity, {
+															type: 'number',
+														})}
+													/>
+													<ErrorList
+														errors={spaceFields.standingCapacity.errors}
+													/>
+												</div>
+												<div>
+													<Input
+														placeholder="Parking Capacity"
+														defaultValue={
+															spaceFields.parkingCapacity.value ?? ''
+														}
+														{...getInputProps(spaceFields.parkingCapacity, {
+															type: 'number',
+														})}
+													/>
+													<ErrorList
+														errors={spaceFields.parkingCapacity.errors}
+													/>
+												</div>
+											</div>
 											<Input
 												placeholder="Description"
 												defaultValue={
@@ -425,31 +464,6 @@ export function VenueDetailsForm({
 											/>
 
 											<ErrorList errors={spaceFields.description.errors} />
-
-											<Input
-												placeholder="Sitting Capacity"
-												defaultValue={spaceFields.sittingCapacity.value ?? ''}
-												{...getInputProps(spaceFields.sittingCapacity, {
-													type: 'number',
-												})}
-											/>
-											<ErrorList errors={spaceFields.sittingCapacity.errors} />
-											<Input
-												placeholder="Standing Capacity"
-												defaultValue={spaceFields.standingCapacity.value ?? ''}
-												{...getInputProps(spaceFields.standingCapacity, {
-													type: 'number',
-												})}
-											/>
-											<ErrorList errors={spaceFields.standingCapacity.errors} />
-											<Input
-												placeholder="Parking Capacity"
-												defaultValue={spaceFields.parkingCapacity.value ?? ''}
-												{...getInputProps(spaceFields.parkingCapacity, {
-													type: 'number',
-												})}
-											/>
-											<ErrorList errors={spaceFields.parkingCapacity.errors} />
 										</>
 									)}
 								</li>
@@ -460,17 +474,81 @@ export function VenueDetailsForm({
 						<ErrorList errors={fields.spaces.errors} />
 					</div>
 				</ul>
+
+				<h4 className="mb-2 text-2xl font-bold">Amenities</h4>
+				<ul className="mb-6">
+					<fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+						{amenities.map((amenity, index) => {
+							const amenityFields = amenity.getFieldset()
+							const amenityOption = venueOptions.amenities[index]
+							const isChecked = !!amenityFields.globalAmenityId.value
+
+							return (
+								<li key={amenity.id} className="space-y-2">
+									<CheckboxField
+										labelProps={{
+											children: amenityOption?.name ?? 'Unnamed Amenity',
+										}}
+										buttonProps={{
+											name: amenityFields.globalAmenityId.name,
+											form: form.id,
+											value: amenityOption?.id ?? '',
+											defaultChecked: isChecked,
+										}}
+									/>
+								</li>
+							)
+						})}
+					</fieldset>
+					<div className="mt-2">
+						<ErrorList errors={fields.amenities.errors} />
+					</div>
+				</ul>
+				<h4 className="mb-2 text-2xl font-bold">Event Types</h4>
+				<ul className="mb-6">
+					<fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+						{eventTypes.map((eventType, index) => {
+							const eventTypeFields = eventType.getFieldset()
+							const eventTypeOption = venueOptions.eventTypes[index]
+							const isChecked = !!eventTypeFields.globalEventTypeId.value
+
+							return (
+								<li key={eventType.id} className="space-y-2">
+									<CheckboxField
+										labelProps={{
+											children: eventTypeOption?.name ?? 'Unnamed Event Type',
+										}}
+										buttonProps={{
+											name: eventTypeFields.globalEventTypeId.name,
+											form: form.id,
+											value: eventTypeOption?.id ?? '',
+											defaultChecked: isChecked,
+										}}
+									/>
+								</li>
+							)
+						})}
+					</fieldset>
+					<div className="mt-2">
+						<ErrorList errors={fields.eventTypes.errors} />
+					</div>
+				</ul>
 			</div>
 
+			<ErrorList errors={form.errors} />
+
 			<div className="mt-8 flex justify-end">
-				<StatusButton
+				<button type="submit" className="cursor-pointer">
+					next
+				</button>
+				{/* <StatusButton
 					type="submit"
 					disabled={isPending}
 					size="wide"
 					status={isPending ? 'pending' : 'idle'}
 				>
 					<span>Next</span>
-				</StatusButton>
+				</StatusButton> */}
 			</div>
 		</Form>
 	)
