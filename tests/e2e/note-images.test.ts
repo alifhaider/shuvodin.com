@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { type NoteImage, type Note } from '@prisma/client'
+import { type Vendor, type VendorImage } from '@prisma/client'
 import { prisma } from '#app/utils/db.server.ts'
 import { expect, test } from '#tests/playwright-utils.ts'
 
@@ -7,13 +7,13 @@ test('Users can create note with an image', async ({ page, login }) => {
 	const user = await login()
 	await page.goto(`/users/${user.username}/notes`)
 
-	const newNote = createNote()
+	const newNote = createVendor()
 	const altText = 'cute koala'
 	await page.getByRole('link', { name: 'new note' }).click()
 
 	// fill in form and submit
-	await page.getByRole('textbox', { name: 'title' }).fill(newNote.title)
-	await page.getByRole('textbox', { name: 'content' }).fill(newNote.content)
+	await page.getByRole('textbox', { name: 'title' }).fill(newNote.businessName)
+	await page.getByRole('textbox', { name: 'content' }).fill(newNote.description)
 	await page
 		.getByLabel('image')
 		.nth(0)
@@ -22,9 +22,13 @@ test('Users can create note with an image', async ({ page, login }) => {
 
 	await page.getByRole('button', { name: 'submit' }).click()
 	await expect(page).toHaveURL(new RegExp(`/users/${user.username}/notes/.*`))
-	await expect(page.getByRole('heading', { name: newNote.title })).toBeVisible()
 	await expect(
-		page.getByRole('region', { name: newNote.title }).getByAltText(altText),
+		page.getByRole('heading', { name: newNote.businessName }),
+	).toBeVisible()
+	await expect(
+		page
+			.getByRole('region', { name: newNote.businessName })
+			.getByAltText(altText),
 	).toBeVisible()
 })
 
@@ -32,14 +36,14 @@ test('Users can create note with multiple images', async ({ page, login }) => {
 	const user = await login()
 	await page.goto(`/users/${user.username}/notes`)
 
-	const newNote = createNote()
+	const newNote = createVendor()
 	const altText1 = 'cute koala'
 	const altText2 = 'koala coder'
 	await page.getByRole('link', { name: 'new note' }).click()
 
 	// fill in form and submit
-	await page.getByRole('textbox', { name: 'title' }).fill(newNote.title)
-	await page.getByRole('textbox', { name: 'content' }).fill(newNote.content)
+	await page.getByRole('textbox', { name: 'title' }).fill(newNote.businessName)
+	await page.getByRole('textbox', { name: 'content' }).fill(newNote.description)
 	await page
 		.getByLabel('image')
 		.nth(0)
@@ -55,7 +59,9 @@ test('Users can create note with multiple images', async ({ page, login }) => {
 
 	await page.getByRole('button', { name: 'submit' }).click()
 	await expect(page).toHaveURL(new RegExp(`/users/${user.username}/notes/.*`))
-	await expect(page.getByRole('heading', { name: newNote.title })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: newNote.businessName }),
+	).toBeVisible()
 	await expect(page.getByAltText(altText1)).toBeVisible()
 	await expect(page.getByAltText(altText2)).toBeVisible()
 })
@@ -63,10 +69,10 @@ test('Users can create note with multiple images', async ({ page, login }) => {
 test('Users can edit note image', async ({ page, login }) => {
 	const user = await login()
 
-	const note = await prisma.note.create({
+	const note = await prisma.vendor.create({
 		select: { id: true },
 		data: {
-			...createNoteWithImage(),
+			...createVendorWithImage(),
 			ownerId: user.id,
 		},
 	})
@@ -89,18 +95,20 @@ test('Users can edit note image', async ({ page, login }) => {
 test('Users can delete note image', async ({ page, login }) => {
 	const user = await login()
 
-	const note = await prisma.note.create({
-		select: { id: true, title: true },
+	const note = await prisma.vendor.create({
+		select: { id: true, businessName: true },
 		data: {
-			...createNoteWithImage(),
+			...createVendorWithImage(),
 			ownerId: user.id,
 		},
 	})
 	await page.goto(`/users/${user.username}/notes/${note.id}`)
 
-	await expect(page.getByRole('heading', { name: note.title })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: note.businessName }),
+	).toBeVisible()
 	const images = page
-		.getByRole('region', { name: note.title })
+		.getByRole('region', { name: note.businessName })
 		.getByRole('list')
 		.getByRole('listitem')
 		.getByRole('img')
@@ -112,27 +120,45 @@ test('Users can delete note image', async ({ page, login }) => {
 	await expect(images).toHaveCount(0)
 })
 
-function createNote() {
+function createVendor() {
 	return {
-		title: faker.lorem.words(3),
-		content: faker.lorem.paragraphs(3),
-	} satisfies Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'type' | 'ownerId'>
+		businessName: faker.lorem.words(3),
+		description: faker.lorem.paragraphs(3),
+		slug: faker.lorem.words(3).toLowerCase().replace(/\s+/g, '-'),
+		address: faker.location.streetAddress(),
+		division: 'Dhaka',
+		district: 'Dhaka',
+		thana: 'Dhanmondi',
+		vendorTypeId: '1',
+		mapUrl: '',
+		socialLinks: [],
+		phone: faker.phone.number(),
+		isFeatured: false,
+		website: faker.internet.url(),
+		rating: 0,
+		latitude: 0,
+		longitude: 0,
+	} satisfies Omit<
+		Vendor,
+		'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'type'
+	>
 }
-function createNoteWithImage() {
+
+function createVendorWithImage() {
 	return {
-		...createNote(),
-		images: {
+		...createVendor(),
+		gallery: {
 			create: {
 				altText: 'cute koala',
 				objectKey: 'kody-notes/cute-koala.png',
 			},
 		},
 	} satisfies Omit<
-		Note,
+		Vendor,
 		'id' | 'createdAt' | 'updatedAt' | 'type' | 'ownerId'
 	> & {
-		images: {
-			create: Pick<NoteImage, 'altText' | 'objectKey'>
+		gallery: {
+			create: Pick<VendorImage, 'altText' | 'objectKey'>
 		}
 	}
 }

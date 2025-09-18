@@ -15,7 +15,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 			name: true,
 			username: true,
 			image: { select: { objectKey: true } },
-			notes: { select: { id: true, title: true } },
+			// notes: { select: { id: true, title: true } },
 		},
 		where: { username: params.username },
 	})
@@ -64,7 +64,7 @@ export default function NotesRoute({ loaderData }: Route.ComponentProps) {
 									</NavLink>
 								</li>
 							) : null}
-							{loaderData.owner.notes.map((note) => (
+							{/* {loaderData.owner.notes.map((note) => (
 								<li key={note.id} className="p-1 pr-0">
 									<NavLink
 										to={note.id}
@@ -77,7 +77,7 @@ export default function NotesRoute({ loaderData }: Route.ComponentProps) {
 										{note.title}
 									</NavLink>
 								</li>
-							))}
+							))} */}
 						</ul>
 					</div>
 				</div>

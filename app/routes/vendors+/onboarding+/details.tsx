@@ -46,7 +46,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 						select: { globalEventType: { select: { id: true, name: true } } },
 					},
 					spaces: {
-						select: { globalSpace: { select: { id: true, name: true } } },
+						select: {
+							globalSpace: { select: { id: true, name: true } },
+							sittingCapacity: true,
+							parkingCapacity: true,
+							standingCapacity: true,
+							price: true,
+							description: true,
+						},
 					},
 					venueType: { select: { id: true, name: true } },
 				},

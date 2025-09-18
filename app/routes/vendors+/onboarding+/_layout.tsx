@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router'
+import { Separator } from '#app/components/ui/separator.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { type Route } from './+types/_layout'
-import { Separator } from '#app/components/ui/separator.tsx'
 
 const navigationItems = [
 	{
