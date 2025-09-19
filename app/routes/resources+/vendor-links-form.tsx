@@ -3,17 +3,17 @@ import { parseWithZod } from '@conform-to/zod'
 import { AnimatePresence, motion } from 'framer-motion'
 import { data, Form } from 'react-router'
 import { z } from 'zod'
+import { ErrorList } from '#app/components/forms.tsx'
+import { buttonVariants } from '#app/components/ui/button.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
+import { Input } from '#app/components/ui/input.tsx'
+import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireVendor } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { cn, useIsPending } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { type Route as OnboardingLinksRoute } from '../vendors+/onboarding+/+types/links'
 import { type Route } from './+types/vendor-links-form'
-import { Input } from '#app/components/ui/input.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { cn, useIsPending } from '#app/utils/misc.tsx'
-import { buttonVariants } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
-import { ErrorList } from '#app/components/forms.tsx'
 
 const LinksSchema = z.object({
 	vendorId: z.string(),
@@ -30,14 +30,9 @@ const LinksSchema = z.object({
 		.refine((val) => val === '' || !isNaN(Number(val)), {
 			message: 'Latitude must be a number',
 		})
-		.refine(
-			(val) =>
-				val === '' ||
-				(Number(val) >= -90 && Number(val) <= 90),
-			{
-				message: 'Latitude must be between -90 and 90',
-			},
-		)
+		.refine((val) => val === '' || (Number(val) >= -90 && Number(val) <= 90), {
+			message: 'Latitude must be between -90 and 90',
+		})
 		.optional(),
 	longitude: z
 		.string()
@@ -45,9 +40,7 @@ const LinksSchema = z.object({
 			message: 'Longitude must be a number',
 		})
 		.refine(
-			(val) =>
-				val === '' ||
-				(Number(val) >= -180 && Number(val) <= 180),
+			(val) => val === '' || (Number(val) >= -180 && Number(val) <= 180),
 			{
 				message: 'Longitude must be between -180 and 180',
 			},
