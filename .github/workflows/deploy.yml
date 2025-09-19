@@ -143,51 +143,51 @@ jobs:
   #         path: playwright-report/
   #         retention-days: 30
 
-  container:
-    name: 📦 Prepare Container
-    runs-on: ubuntu-24.04
-    # only prepare container on pushes
-    if: ${{ github.event_name == 'push' }}
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 50
+  # container:
+  #   name: 📦 Prepare Container
+  #   runs-on: ubuntu-24.04
+  #   # only prepare container on pushes
+  #   if: ${{ github.event_name == 'push' }}
+  #   steps:
+  #     - name: ⬇️ Checkout repo
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 50
 
-      - name: 👀 Read app name
-        uses: SebRollen/toml-action@v1.2.0
-        id: app_name
-        with:
-          file: 'fly.toml'
-          field: 'app'
+  #     - name: 👀 Read app name
+  #       uses: SebRollen/toml-action@v1.2.0
+  #       id: app_name
+  #       with:
+  #         file: 'fly.toml'
+  #         field: 'app'
 
-      - name: 🎈 Setup Fly
-        uses: superfly/flyctl-actions/setup-flyctl@1.5
+  #     - name: 🎈 Setup Fly
+  #       uses: superfly/flyctl-actions/setup-flyctl@1.5
 
-      - name: 📦 Build Staging Container
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run: |
-          flyctl deploy \
-            --build-only \
-            --push \
-            --image-label ${{ github.sha }} \
-            --build-arg COMMIT_SHA=${{ github.sha }} \
-            --app ${{ steps.app_name.outputs.value }}-staging
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  #     - name: 📦 Build Staging Container
+  #       if: ${{ github.ref == 'refs/heads/dev' }}
+  #       run: |
+  #         flyctl deploy \
+  #           --build-only \
+  #           --push \
+  #           --image-label ${{ github.sha }} \
+  #           --build-arg COMMIT_SHA=${{ github.sha }} \
+  #           --app ${{ steps.app_name.outputs.value }}-staging
+  #       env:
+  #         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: 📦 Build Production Container
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          flyctl deploy \
-            --build-only \
-            --push \
-            --image-label ${{ github.sha }} \
-            --build-arg COMMIT_SHA=${{ github.sha }} \
-            --build-secret SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} \
-            --app ${{ steps.app_name.outputs.value }}
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  #     - name: 📦 Build Production Container
+  #       if: ${{ github.ref == 'refs/heads/main' }}
+  #       run: |
+  #         flyctl deploy \
+  #           --build-only \
+  #           --push \
+  #           --image-label ${{ github.sha }} \
+  #           --build-arg COMMIT_SHA=${{ github.sha }} \
+  #           --build-secret SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} \
+  #           --app ${{ steps.app_name.outputs.value }}
+  #       env:
+  #         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   # deploy:
   #   name: 🚀 Deploy
