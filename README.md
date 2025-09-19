@@ -1,6 +1,4 @@
 <div align="center">
-<h1 align="center"> ShuvoDin 💍</h1>
-
 <img src="https://github.com/alifhaider/shuvodin.com/blob/main/public/img/logo.png" width="400" height="auto" alt="shuvodin banner" /> 
 <p align="center">
    
@@ -8,7 +6,7 @@
 
 </p>
 
-**ShuvoDin** is a modern, all-in-one wedding planning platform designed to help couples create their dream wedding with seamless tools and a touch of magic. From stunning wedding websites to guest management and vendor coordination, ShuvoDin is your partner in crafting unforgettable moments.
+**ShuvoDin** is a modern, all-in-one wedding planning platform designed to help couples create their dream wedding with seamless tools and a touch of magic. Find most popular Venues, Makeup Artists, Photographers and other wedding vendors, know their pricing, and book for your **ShuvoDin**
 
 </div>
 
@@ -28,55 +26,21 @@ To run ShuvoDin locally or contribute to the project, ensure you have the follow
 - [npm](https://www.npmjs.com/)
 - [Git](https://git-scm.com/)
 
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/alifhaider/shuvodin.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd shuvodin.com
-   ```
-3. Run setup script:
-   ```bash
-   npm run setup
-   ```
-4. Run the project
-   ```bash
-   npm run dev
-   ```
-5. Open your browser and visit `http://localhost:3000` to see `ShuvoDin.com` in action!
-
 ## 🛠️ Tech Stack
 
 - Remix as Full-Stack Framework
-- Database: Prisma, SQL
-- Deployment: Not yet decided.
+- Database: SQL, With Prisma ORM
+- Deployment: Not yet decided but maybe Fly.io
 
 ## 🤝 Contributing
 
-We’d love for you to contribute to ShuvoDin and help make it even better! To get started:
-1. Fork the repository.
-2. Create a new branch
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. Make your changes and commit:
-   ```bash
-   git commit -m "Add your feature"
-   ```
-4. Push to your fork:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-5. Open a Pull Request on GitHub.
-Please read our Contributing Guidelines [CONTRIBUTING.md](https://github.com/alifhaider/shuvodin.com/CONTRIBUTING.md) for more details
+Please read our Contributing Guidelines [CONTRIBUTING.md](https://github.com/alifhaider/shuvodin.com/blob/main/CONTRIBUTING.md)
 
 ## 🪪 License
 
 This project is licensed under the `MIT License`.
 
-See the [LICENSE.md](https://github.com/alifhaider/shuvodin.com/LICENSE.md) file for details.
+See the [LICENSE.md](https://github.com/alifhaider/shuvodin.com/blob/main/LICENSE.md) file for details.
 
 ## 🙏 Acknowledgments
 
