@@ -30,12 +30,28 @@ const LinksSchema = z.object({
 		.refine((val) => val === '' || !isNaN(Number(val)), {
 			message: 'Latitude must be a number',
 		})
+		.refine(
+			(val) =>
+				val === '' ||
+				(Number(val) >= -90 && Number(val) <= 90),
+			{
+				message: 'Latitude must be between -90 and 90',
+			},
+		)
 		.optional(),
 	longitude: z
 		.string()
 		.refine((val) => val === '' || !isNaN(Number(val)), {
 			message: 'Longitude must be a number',
 		})
+		.refine(
+			(val) =>
+				val === '' ||
+				(Number(val) >= -180 && Number(val) <= 180),
+			{
+				message: 'Longitude must be between -180 and 180',
+			},
+		)
 		.optional(),
 })
 
