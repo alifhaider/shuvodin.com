@@ -48,8 +48,6 @@ const LinksSchema = z.object({
 		.optional(),
 })
 
-export type LinksFormValues = z.infer<typeof LinksSchema>
-
 export async function action({ request }: Route.ActionArgs) {
 	const { userId, vendorId, slug } = await requireVendor(request)
 	const formData = await request.formData()
@@ -130,27 +128,36 @@ export function VendorLinksForm({
 			<input type="hidden" name="vendorId" value={loaderData.vendorId} />
 
 			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-				<Input
-					placeholder="Website URL"
-					defaultValue={fields.website.value}
-					{...getInputProps(fields.website, {
-						type: 'url',
-					})}
-				/>
-				<Input
-					placeholder="Latitude"
-					defaultValue={fields.latitude.value}
-					{...getInputProps(fields.latitude, {
-						type: 'text',
-					})}
-				/>
-				<Input
-					placeholder="Longitude"
-					defaultValue={fields.longitude.value}
-					{...getInputProps(fields.longitude, {
-						type: 'text',
-					})}
-				/>
+				<div>
+					<Input
+						placeholder="Website URL"
+						defaultValue={fields.website.value}
+						{...getInputProps(fields.website, {
+							type: 'url',
+						})}
+					/>
+					<ErrorList errors={fields.website.errors} />
+				</div>
+				<div>
+					<Input
+						placeholder="Latitude"
+						defaultValue={fields.latitude.value}
+						{...getInputProps(fields.latitude, {
+							type: 'text',
+						})}
+					/>
+					<ErrorList errors={fields.latitude.errors} />
+				</div>
+				<div>
+					<Input
+						placeholder="Longitude"
+						defaultValue={fields.longitude.value}
+						{...getInputProps(fields.longitude, {
+							type: 'text',
+						})}
+					/>
+					<ErrorList errors={fields.longitude.errors} />
+				</div>
 			</div>
 
 			<div className="mt-4">
@@ -163,9 +170,8 @@ export function VendorLinksForm({
 						return (
 							<AnimateHeight key={index}>
 								<fieldset className="mt-1 grid grid-cols-1 items-center gap-4 md:grid-cols-5">
-									<div>
+									<div className="md:col-span-2">
 										<Input
-											className="md:col-span-2"
 											placeholder="Platform (e.g., Instagram)"
 											defaultValue={linkFields.platform.value || ''}
 											{...getInputProps(linkFields.platform, {
@@ -174,9 +180,8 @@ export function VendorLinksForm({
 										/>
 										<ErrorList errors={linkFields.platform.errors} />
 									</div>
-									<div>
+									<div className="md:col-span-2">
 										<Input
-											className="md:col-span-2"
 											placeholder="URL"
 											defaultValue={linkFields.url.value || ''}
 											{...getInputProps(linkFields.url, {
