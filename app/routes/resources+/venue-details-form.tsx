@@ -192,7 +192,7 @@ export async function action({ request }: Route.ActionArgs) {
 		},
 	})
 
-	return redirect('/vendors/onboarding/final')
+	return redirect('/vendors/onboarding/links')
 }
 
 export function VenueDetailsForm({
