@@ -17,7 +17,7 @@ import { ErrorList } from '#app/components/forms.tsx'
 
 const LinksSchema = z.object({
 	vendorId: z.string(),
-	website: z.string().url('Invalid URL').optional().or(z.literal('')),
+	website: z.union([z.string().url('Invalid URL'), z.literal('')]),
 	socialLinks: z
 		.object({
 			platform: z.string(),
