@@ -154,24 +154,28 @@ export function VendorLinksForm({
 						return (
 							<AnimateHeight key={index}>
 								<fieldset className="mt-1 grid grid-cols-1 items-center gap-4 md:grid-cols-5">
-									<Input
-										className="md:col-span-2"
-										placeholder="Platform (e.g., Instagram)"
-										defaultValue={linkFields.platform.value || ''}
-										{...getInputProps(linkFields.platform, {
-											type: 'text',
-										})}
-									/>
-									<ErrorList errors={linkFields.platform.errors} />
-									<Input
-										className="md:col-span-2"
-										placeholder="URL"
-										defaultValue={linkFields.url.value || ''}
-										{...getInputProps(linkFields.url, {
-											type: 'url',
-										})}
-									/>
-									<ErrorList errors={linkFields.url.errors} />
+									<div>
+										<Input
+											className="md:col-span-2"
+											placeholder="Platform (e.g., Instagram)"
+											defaultValue={linkFields.platform.value || ''}
+											{...getInputProps(linkFields.platform, {
+												type: 'text',
+											})}
+										/>
+										<ErrorList errors={linkFields.platform.errors} />
+									</div>
+									<div>
+										<Input
+											className="md:col-span-2"
+											placeholder="URL"
+											defaultValue={linkFields.url.value || ''}
+											{...getInputProps(linkFields.url, {
+												type: 'url',
+											})}
+										/>
+										<ErrorList errors={linkFields.url.errors} />
+									</div>
 									<div className="flex items-center justify-end md:col-span-1">
 										<button
 											className={cn(
