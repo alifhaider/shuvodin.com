@@ -1,12 +1,22 @@
 import { searchUsers } from '@prisma/client/sql'
 import { Img } from 'openimg/react'
-import { redirect, Link } from 'react-router'
+import { Link, redirect } from 'react-router'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList } from '#app/components/forms.tsx'
 import { SearchBar } from '#app/components/search-bar.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { cn, getUserImgSrc, useDelayedIsPending } from '#app/utils/misc.tsx'
-import { type Route } from './+types/index.ts'
+import { type Route } from './+types'
+
+export const meta = () => {
+	return [
+		{ title: `Profile / ShuvoDin` },
+		{
+			name: 'description',
+			content: `ShuvoDin User Profile!`,
+		},
+	]
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const searchTerm = new URL(request.url).searchParams.get('search')
@@ -27,7 +37,7 @@ export default function UsersRoute({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<div className="container mt-36 mb-48 flex flex-col items-center justify-center gap-6">
-			<h1 className="text-h1">Epic Notes Users</h1>
+			<h1 className="text-h1">Daktar Bari Profiles</h1>
 			<div className="w-full max-w-[700px]">
 				<SearchBar status={loaderData.status} autoFocus autoSubmit />
 			</div>
@@ -49,7 +59,7 @@ export default function UsersRoute({ loaderData }: Route.ComponentProps) {
 										<Img
 											alt={user.name ?? user.username}
 											src={getUserImgSrc(user.imageObjectKey)}
-											className="size-16 rounded-full"
+											className="h-16 w-16 rounded-full"
 											width={256}
 											height={256}
 										/>
