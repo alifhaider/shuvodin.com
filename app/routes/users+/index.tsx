@@ -10,10 +10,11 @@ import { type Route } from './+types'
 
 export const meta = () => {
 	return [
-		{ title: `Profile / ShuvoDin` },
+		{ title: 'Users / ShuvoDin' },
 		{
 			name: 'description',
-			content: `ShuvoDin User Profile!`,
+			content:
+				'ShuvoDin Users - Find and connect with users on ShuvoDin, the premier event planning platform.',
 		},
 	]
 }
@@ -37,7 +38,7 @@ export default function UsersRoute({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<div className="container mt-36 mb-48 flex flex-col items-center justify-center gap-6">
-			<h1 className="text-h1">Daktar Bari Profiles</h1>
+			<h1 className="text-h1">Shuvodin Users</h1>
 			<div className="w-full max-w-[700px]">
 				<SearchBar status={loaderData.status} autoFocus autoSubmit />
 			</div>

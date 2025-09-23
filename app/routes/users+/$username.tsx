@@ -4,48 +4,39 @@ import { invariantResponse } from '@epic-web/invariant'
 import { formatDate } from 'date-fns'
 import { data, Link, useFetcher } from 'react-router'
 import { z } from 'zod'
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Progress } from '#app/components/ui/progress.tsx'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route } from './+types/$username'
+import { Img } from 'openimg/react'
 
-const getStatusColor = (status: string) => {
+// Helper function for status color
+function getStatusColor(status: string) {
 	switch (status) {
-		case 'confirmed':
-			return 'bg-green-100 text-green-800 border-green-200'
-		case 'pending':
-			return 'bg-yellow-100 text-yellow-800 border-yellow-200'
 		case 'completed':
-			return 'bg-blue-100 text-blue-800 border-blue-200'
+			return 'bg-green-500'
+		case 'upcoming':
+			return 'bg-blue-500'
 		case 'cancelled':
-			return 'bg-red-100 text-red-800 border-red-200'
+			return 'bg-red-500'
 		default:
-			return 'bg-gray-100 text-gray-800 border-gray-200'
-	}
-}
-
-const getStatusIcon = (status: string) => {
-	switch (status) {
-		case 'confirmed':
-			return <Icon name="circle-check" className="h-3 w-3" />
-		case 'pending':
-			return <Icon name="clock" className="h-3 w-3" />
-		case 'completed':
-			return <Icon name="circle-check" className="h-3 w-3" />
-		case 'cancelled':
-			return <Icon name="x" className="h-3 w-3" />
-		default:
-			return <Icon name="circle-alert" className="h-3 w-3" />
+			return 'bg-gray-500'
 	}
 }
 
 export const meta = ({ data }: Route.MetaArgs) => {
 	return [
-		{ title: `${data?.user.username} / DB` },
+		{ title: `${data?.user.username} / ShuvoDin` },
 		{
 			name: 'description',
 			content: `Daktar Bari ${data?.user.username} Profile!`,
@@ -53,22 +44,29 @@ export const meta = ({ data }: Route.MetaArgs) => {
 	]
 }
 
-const ReviewSchema = z.object({
-	rating: z
-		.number({ message: 'Please provide a rating' })
-		.int({ message: 'Rating must be a whole number' })
-		.min(1, 'Rating must be between 1 and 5')
-		.max(5, 'Rating must be between 1 and 5'),
-	doctorId: z.string(),
-	userId: z.string(),
-	comment: z.string().min(10, 'Comment must be at least 10 characters'),
-})
-
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const page = url.searchParams.get('page')
 	const user = await prisma.user.findFirst({
 		include: {
+			image: {
+				select: {
+					objectKey: true,
+					altText: true,
+				},
+			},
+			favorites: {
+				select: {
+					slug: true,
+					businessName: true,
+					district: true,
+					thana: true,
+					address: true,
+					division: true,
+					rating: true,
+					vendorType: { select: { name: true } },
+				},
+			},
 			reviews: {
 				orderBy: { createdAt: 'desc' },
 				take: 3,
@@ -78,9 +76,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					rating: true,
 					comment: true,
 					createdAt: true,
-					vendor: {
-						select: { businessName: true, slug: true },
-					},
+					vendor: { select: { businessName: true, slug: true } },
 				},
 			},
 			vendor: {
@@ -218,7 +214,6 @@ export default function DoctorRoute({
 		isVendor,
 		user,
 		userJoinedDisplay,
-
 		totalBookings,
 		totalFavorites,
 		totalReviewsCount,
@@ -234,41 +229,99 @@ export default function DoctorRoute({
 
 	const userDisplayName = user.name ?? user.username
 	const initials = getInitials(userDisplayName)
+	const userImgSrc = getUserImgSrc(user.image?.objectKey)
 	return (
 		<main className="container py-6">
 			{/* User Header */}
-			<div className="mb-6 flex flex-col items-start justify-between md:flex-row md:items-center">
-				<div className="flex items-center gap-4">
-					<div className="bg-primary text-primary-foreground flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full text-xl font-bold">
-						{initials}
+			<section className="mb-8 flex flex-col gap-6 lg:flex-row">
+				{/* Left Column - User Info */}
+				<div className="flex-1">
+					<div className="mb-6 flex items-start gap-4">
+						<Avatar className="h-16 w-16 rounded-full">
+							{userImgSrc ? (
+								<Img
+									alt={user.name ?? user.username}
+									src={userImgSrc}
+									className="h-16 w-16 rounded-full"
+									width={256}
+									height={256}
+								/>
+							) : (
+								<AvatarFallback className="bg-muted flex h-full w-full items-center justify-center rounded-full">
+									<span className="text-xl font-medium">{initials}</span>
+								</AvatarFallback>
+							)}
+						</Avatar>
+						<div className="flex-1">
+							<h1 className="mb-1 text-2xl font-bold">{user.name}</h1>
+							<div className="text-muted-foreground mb-2 flex flex-wrap items-center gap-3 text-sm">
+								<div className="flex items-center gap-1">
+									<Icon name="calendar-days" className="h-3.5 w-3.5" />
+									<span>Joined {userJoinedDisplay}</span>
+								</div>
+							</div>
+							<div className="text-muted-foreground flex flex-wrap items-center gap-1 text-sm">
+								<Icon name="mail" className="h-3.5 w-3.5" />
+								<span>{user.email}</span>
+								<span className="mx-1">•</span>
+								<Icon name="phone" className="h-3.5 w-3.5" />
+								<span>{user.phone}</span>
+							</div>
+						</div>
 					</div>
-					<div>
-						<h1 className="text-2xl font-bold">{user.name}</h1>
-						<div className="text-muted-foreground flex items-center gap-2 text-sm md:text-lg">
-							<Icon name="calendar-days" className="h-3.5 w-3.5" />
-							<span>Joined {userJoinedDisplay}</span>
-							<span className="mx-1">•</span>
-							<Icon name="star" className="h-3.5 w-3.5" />
-							<span>{totalReviewsCount} reviews</span>
+
+					{/* Quick Stats */}
+					<div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+						<div className="bg-muted/30 rounded-lg p-3 text-center">
+							<div className="text-primary text-lg font-bold">
+								{totalBookings}
+							</div>
+							<div className="text-muted-foreground text-xs">
+								Total Bookings
+							</div>
+						</div>
+						<div className="bg-muted/30 rounded-lg p-3 text-center">
+							<div className="text-primary text-lg font-bold">
+								{totalReviewsCount}
+							</div>
+							<div className="text-muted-foreground text-xs">
+								Reviews Written
+							</div>
+						</div>
+						<div className="bg-muted/30 rounded-lg p-3 text-center">
+							<div className="text-primary text-lg font-bold">
+								{totalFavorites}
+							</div>
+							<div className="text-muted-foreground text-xs">Favorites</div>
 						</div>
 					</div>
 				</div>
-				<Button
-					asChild
-					size="sm"
-					variant="outline"
-					className="mt-4 bg-transparent md:mt-0"
-				>
-					<Link to="/profile/settings">
-						<Icon name="settings" className="mr-1.5 h-3.5 w-3.5" />
-						Settings
-					</Link>
-				</Button>
-			</div>
+
+				{/* Right Column - Actions */}
+				<div className="space-y-3 lg:w-64">
+					<Button asChild size="sm" className="w-full">
+						<Link to="/profile/settings">
+							<Icon name="settings" className="mr-1.5 h-3.5 w-3.5" />
+							Account Settings
+						</Link>
+					</Button>
+					<Button
+						asChild
+						size="sm"
+						variant="outline"
+						className="w-full bg-transparent"
+					>
+						<Link to="/vendors">
+							<Icon name="trending-up" className="mr-1.5 h-3.5 w-3.5" />
+							Browse Venues
+						</Link>
+					</Button>
+				</div>
+			</section>
 
 			{/* Vendor Section (if user is a vendor) */}
 			{isVendor && (
-				<div className="from-primary/10 to-primary/5 relative mb-8 overflow-hidden rounded-lg border bg-gradient-to-r p-4">
+				<section className="from-primary/10 to-primary/5 relative mb-8 overflow-hidden rounded-lg border bg-gradient-to-r p-4">
 					<div className="flex flex-col justify-between md:flex-row md:items-center">
 						<div>
 							<div className="flex items-center gap-2">
@@ -284,12 +337,6 @@ export default function DoctorRoute({
 							</div>
 
 							<div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
-								<div>
-									<p className="text-muted-foreground text-xs md:text-base">
-										Listings
-									</p>
-									<p className="text-sm font-medium md:text-lg">3</p>
-								</div>
 								<div>
 									<p className="text-muted-foreground text-xs md:text-base">
 										Rating
@@ -337,11 +384,11 @@ export default function DoctorRoute({
 						</div>
 						<Progress value={65} className="mt-1.5 h-1.5" />
 					</div>
-				</div>
+				</section>
 			)}
 
 			{/* Bookings Section */}
-			<div className="mb-8">
+			<section className="mb-8">
 				<div className="mb-4 flex items-center justify-between">
 					<h2 className="text-lg font-semibold md:text-2xl">Your Bookings</h2>
 					<Link
@@ -361,35 +408,36 @@ export default function DoctorRoute({
 							>
 								{/* Status indicator */}
 								<div
-									className={`absolute top-0 left-[-5px] h-2.5 w-2.5 rounded-full ${getStatusColor(booking.status)}`}
+									className={cn(
+										'absolute top-0 left-[-5px] h-2.5 w-2.5 rounded-full',
+										getStatusColor(booking.status),
+									)}
 								/>
 
 								<div className="flex flex-col justify-between pb-4 md:flex-row md:items-center">
-									<div>
-										<div className="flex items-center gap-2">
-											<h3 className="text-sm font-medium md:text-lg">
-												{booking.vendor.businessName}
-											</h3>
-											<Badge
-												variant={
-													booking.status === 'completed'
-														? 'secondary'
-														: booking.status === 'upcoming'
-															? 'outline'
-															: 'destructive'
-												}
-												className="text-xs md:text-base"
-											>
-												{booking.status.charAt(0).toUpperCase() +
-													booking.status.slice(1)}
-											</Badge>
-										</div>
+									<div className="flex items-center gap-2">
+										<h3 className="text-sm font-medium md:text-lg">
+											{booking.vendor.businessName}
+										</h3>
+										<Badge
+											variant={
+												booking.status === 'completed'
+													? 'secondary'
+													: booking.status === 'upcoming'
+														? 'outline'
+														: 'destructive'
+											}
+											className="text-xs md:text-base"
+										>
+											{booking.status.charAt(0).toUpperCase() +
+												booking.status.slice(1)}
+										</Badge>
+									</div>
 
-										<div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs md:text-base">
-											<div className="flex items-center gap-1">
-												<Icon name="calendar-days" className="h-3 w-3" />
-												<span>{formatDate(booking.date, 'PPP')}</span>
-											</div>
+									<div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs md:text-base">
+										<div className="flex items-center gap-1">
+											<Icon name="calendar-days" className="h-3 w-3" />
+											<span>{formatDate(booking.date, 'PPP')}</span>
 										</div>
 									</div>
 
@@ -428,7 +476,7 @@ export default function DoctorRoute({
 						</Button>
 					</div>
 				)}
-			</div>
+			</section>
 
 			{/* Reviews Section */}
 			<div>
