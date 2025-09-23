@@ -19,6 +19,7 @@ import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route } from './+types/$username'
 import { Img } from 'openimg/react'
+import Breadcrumb from '#app/components/breadcrumb.tsx'
 
 // Helper function for status color
 function getStatusColor(status: string) {
@@ -85,6 +86,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					slug: true,
 					businessName: true,
 					rating: true,
+					vendorType: { select: { name: true } },
 					_count: { select: { bookings: true } },
 				},
 			},
@@ -212,6 +214,7 @@ export default function DoctorRoute({
 }: Route.ComponentProps) {
 	const {
 		isVendor,
+		isOwner,
 		user,
 		userJoinedDisplay,
 		totalBookings,
@@ -230,165 +233,207 @@ export default function DoctorRoute({
 	const userDisplayName = user.name ?? user.username
 	const initials = getInitials(userDisplayName)
 	const userImgSrc = getUserImgSrc(user.image?.objectKey)
+	const hasPendingBookings = user.bookings.some((b) => b.status === 'upcoming')
 	return (
-		<main className="container py-6">
+		<>
+			<section className="container mb-8 flex flex-col gap-6 pt-6 lg:flex-row">
+				<Breadcrumb
+					items={[
+						{ to: '/', label: 'Home' },
+						{ to: `/users`, label: 'Users' },
+						{
+							to: `/users/${user.username}`,
+							label: user.name ?? user.username,
+							isCurrent: true,
+						},
+					]}
+				/>
+			</section>
 			{/* User Header */}
-			<section className="mb-8 flex flex-col gap-6 lg:flex-row">
+			<section className="container">
 				{/* Left Column - User Info */}
-				<div className="flex-1">
-					<div className="mb-6 flex items-start gap-4">
-						<Avatar className="h-16 w-16 rounded-full">
-							{userImgSrc ? (
-								<Img
-									alt={user.name ?? user.username}
-									src={userImgSrc}
-									className="h-16 w-16 rounded-full"
-									width={256}
-									height={256}
-								/>
-							) : (
-								<AvatarFallback className="bg-muted flex h-full w-full items-center justify-center rounded-full">
-									<span className="text-xl font-medium">{initials}</span>
-								</AvatarFallback>
-							)}
-						</Avatar>
-						<div className="flex-1">
-							<h1 className="mb-1 text-2xl font-bold">{user.name}</h1>
-							<div className="text-muted-foreground mb-2 flex flex-wrap items-center gap-3 text-sm">
-								<div className="flex items-center gap-1">
-									<Icon name="calendar-days" className="h-3.5 w-3.5" />
-									<span>Joined {userJoinedDisplay}</span>
+				<div className="mb-8 border-b-4 p-8 shadow-sm">
+					<div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center">
+						<div className="flex flex-1 items-center gap-6">
+							<Avatar className="h-20 w-20 border-2">
+								{user.image ? (
+									<Img
+										src={userImgSrc}
+										alt={user.image.altText || userDisplayName}
+										className="h-full w-full"
+										width={80}
+										height={80}
+									/>
+								) : (
+									<AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+										{initials}
+									</AvatarFallback>
+								)}
+							</Avatar>
+
+							<div className="flex-1">
+								<div className="mb-3 flex items-center gap-3">
+									<h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
+										{user.name}
+									</h1>
+									{isVendor && (
+										<Badge className="bg-accent text-primary border-accent">
+											<Icon name="award" className="mr-1 h-3 w-3" />
+											Vendor
+										</Badge>
+									)}
+								</div>
+
+								<div className="mb-4 flex flex-wrap items-center gap-4 text-slate-600 dark:text-slate-200">
+									<div className="flex items-center gap-1">
+										<Icon
+											name="calendar-days"
+											className="text-primary h-4 w-4"
+										/>
+										<span>Joined {userJoinedDisplay}</span>
+									</div>
+
+									{isOwner && (
+										<>
+											{user.email && (
+												<div className="flex items-center gap-1">
+													<Icon name="mail" className="text-primary h-4 w-4" />
+													<span>{user.email}</span>
+												</div>
+											)}
+											{user.phone && (
+												<div className="flex items-center gap-1">
+													<Icon name="phone" className="text-primary h-4 w-4" />
+													<span>{user.phone}</span>
+												</div>
+											)}
+										</>
+									)}
+								</div>
+
+								{/* Stats Row */}
+								<div className="flex flex-wrap gap-8">
+									<div>
+										<div className="text-primary text-2xl font-bold">
+											{totalBookings}
+										</div>
+										<div className="text-sm text-slate-600 dark:text-slate-200">
+											Bookings
+										</div>
+									</div>
+									<div>
+										<div className="text-primary text-2xl font-bold">
+											{totalReviewsCount}
+										</div>
+										<div className="text-sm text-slate-600 dark:text-slate-200">
+											Reviews
+										</div>
+									</div>
+									<div>
+										<div className="text-primary text-2xl font-bold">
+											{totalFavorites}
+										</div>
+										<div className="text-sm text-slate-600 dark:text-slate-200">
+											Favorites
+										</div>
+									</div>
 								</div>
 							</div>
-							<div className="text-muted-foreground flex flex-wrap items-center gap-1 text-sm">
-								<Icon name="mail" className="h-3.5 w-3.5" />
-								<span>{user.email}</span>
-								<span className="mx-1">•</span>
-								<Icon name="phone" className="h-3.5 w-3.5" />
-								<span>{user.phone}</span>
-							</div>
+						</div>
+
+						<div className="flex gap-3">
+							<Button asChild variant="outline" size="sm">
+								<Link to="/profile/settings">
+									<Icon name="settings" className="mr-2 h-4 w-4" />
+									Settings
+								</Link>
+							</Button>
+							<Button asChild size="sm">
+								<Link to="/vendors">
+									<Icon name="trending-up" className="mr-2 h-4 w-4" />
+									Browse Venues
+								</Link>
+							</Button>
 						</div>
 					</div>
-
-					{/* Quick Stats */}
-					<div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-						<div className="bg-muted/30 rounded-lg p-3 text-center">
-							<div className="text-primary text-lg font-bold">
-								{totalBookings}
-							</div>
-							<div className="text-muted-foreground text-xs">
-								Total Bookings
-							</div>
-						</div>
-						<div className="bg-muted/30 rounded-lg p-3 text-center">
-							<div className="text-primary text-lg font-bold">
-								{totalReviewsCount}
-							</div>
-							<div className="text-muted-foreground text-xs">
-								Reviews Written
-							</div>
-						</div>
-						<div className="bg-muted/30 rounded-lg p-3 text-center">
-							<div className="text-primary text-lg font-bold">
-								{totalFavorites}
-							</div>
-							<div className="text-muted-foreground text-xs">Favorites</div>
-						</div>
-					</div>
-				</div>
-
-				{/* Right Column - Actions */}
-				<div className="space-y-3 lg:w-64">
-					<Button asChild size="sm" className="w-full">
-						<Link to="/profile/settings">
-							<Icon name="settings" className="mr-1.5 h-3.5 w-3.5" />
-							Account Settings
-						</Link>
-					</Button>
-					<Button
-						asChild
-						size="sm"
-						variant="outline"
-						className="w-full bg-transparent"
-					>
-						<Link to="/vendors">
-							<Icon name="trending-up" className="mr-1.5 h-3.5 w-3.5" />
-							Browse Venues
-						</Link>
-					</Button>
 				</div>
 			</section>
 
 			{/* Vendor Section (if user is a vendor) */}
 			{isVendor && (
-				<section className="from-primary/10 to-primary/5 relative mb-8 overflow-hidden rounded-lg border bg-gradient-to-r p-4">
-					<div className="flex flex-col justify-between md:flex-row md:items-center">
-						<div>
-							<div className="flex items-center gap-2">
-								<Badge
-									variant="outline"
-									className="bg-primary/10 text-xs font-medium md:text-base"
-								>
-									Vendor
-								</Badge>
-								<h2 className="text-lg font-semibold md:text-2xl">
-									{user.vendor?.businessName}
-								</h2>
-							</div>
+				<section className="container mb-8">
+					<h4 className="mb-4 text-lg font-semibold md:text-2xl">
+						Your Vendor Profile
+					</h4>
+					<div className="from-primary/10 to-primary/5 relative overflow-hidden rounded-lg border bg-gradient-to-r p-4">
+						<div className="flex flex-col justify-between md:flex-row md:items-center">
+							<div>
+								<div className="flex items-center gap-2">
+									<Badge
+										variant="outline"
+										className="bg-primary/10 text-xs font-medium capitalize md:text-base"
+									>
+										{user.vendor?.vendorType?.name}
+									</Badge>
+									<h2 className="text-lg font-semibold md:text-2xl">
+										{user.vendor?.businessName}
+									</h2>
+								</div>
 
-							<div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
-								<div>
-									<p className="text-muted-foreground text-xs md:text-base">
-										Rating
-									</p>
-									<div className="flex items-center gap-1">
-										<Icon
-											name="star"
-											className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
-										/>
+								<div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-3">
+									<div>
+										<p className="text-muted-foreground text-xs md:text-base">
+											Avg Rating
+										</p>
+										<div className="flex items-center gap-1">
+											<Icon
+												name="star"
+												className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
+											/>
+											<p className="text-sm font-medium md:text-lg">
+												{user.vendor?.rating}
+											</p>
+										</div>
+									</div>
+									<div>
+										<p className="text-muted-foreground text-xs md:text-base">
+											Total Bookings
+										</p>
 										<p className="text-sm font-medium md:text-lg">
-											{user.vendor?.rating}
+											{user.vendor?._count.bookings}
 										</p>
 									</div>
 								</div>
-								<div>
-									<p className="text-muted-foreground text-xs md:text-base">
-										Total Bookings
-									</p>
-									<p className="text-sm font-medium md:text-lg">
-										{user.vendor?._count.bookings}
-									</p>
-								</div>
+							</div>
+
+							<div className="mt-4 md:mt-0">
+								<Button asChild size="sm">
+									<Link to="/dashboard">
+										Go to Dashboard
+										<Icon name="chevron-right" className="ml-1 h-3.5 w-3.5" />
+									</Link>
+								</Button>
 							</div>
 						</div>
 
-						<div className="mt-4 md:mt-0">
-							<Button asChild size="sm">
-								<Link to="/dashboard">
-									Go to Dashboard
-									<Icon name="chevron-right" className="ml-1 h-3.5 w-3.5" />
-								</Link>
-							</Button>
-						</div>
-					</div>
-
-					<div className="mt-4">
-						<p className="text-muted-foreground text-xs md:text-base">
-							Revenue this month
-						</p>
-						<div className="mt-1 flex items-center justify-between">
-							<p className="text-sm font-medium md:text-lg">৳40000</p>
-							<p className="text-xs text-green-600 md:text-base">
-								+12% from last month
+						<div className="mt-4">
+							<p className="text-muted-foreground text-xs md:text-base">
+								Revenue this month
 							</p>
+							<div className="mt-1 flex items-center justify-between">
+								<p className="text-sm font-medium md:text-lg">৳40000</p>
+								<p className="text-xs text-green-600 md:text-base">
+									+12% from last month
+								</p>
+							</div>
+							<Progress value={65} className="mt-1.5 h-1.5" />
 						</div>
-						<Progress value={65} className="mt-1.5 h-1.5" />
 					</div>
 				</section>
 			)}
 
 			{/* Bookings Section */}
-			<section className="mb-8">
+			<section className="container mb-8">
 				<div className="mb-4 flex items-center justify-between">
 					<h2 className="text-lg font-semibold md:text-2xl">Your Bookings</h2>
 					<Link
@@ -479,7 +524,7 @@ export default function DoctorRoute({
 			</section>
 
 			{/* Reviews Section */}
-			<div>
+			<section className="container mb-8">
 				<h2 className="mb-4 text-lg font-semibold md:text-2xl">Your Reviews</h2>
 
 				{user.reviews.length > 0 ? (
@@ -521,8 +566,8 @@ export default function DoctorRoute({
 						</p>
 					</div>
 				)}
-			</div>
-		</main>
+			</section>
+		</>
 	)
 }
 
