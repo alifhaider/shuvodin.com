@@ -2,24 +2,21 @@ import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
 import { formatDate } from 'date-fns'
+import { Img } from 'openimg/react'
 import { data, Link, useFetcher } from 'react-router'
 import { z } from 'zod'
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from '#app/components/ui/avatar.tsx'
+import Breadcrumb from '#app/components/breadcrumb.tsx'
+import { Avatar, AvatarFallback } from '#app/components/ui/avatar.tsx'
 import { Badge } from '#app/components/ui/badge.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Progress } from '#app/components/ui/progress.tsx'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
+import { getUserImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
+import { VendorBookingAction } from '../resources+/vendor-booking-action'
 import { type Route } from './+types/$username'
-import { Img } from 'openimg/react'
-import Breadcrumb from '#app/components/breadcrumb.tsx'
 
 // Helper function for status color
 function getStatusColor(status: string) {
@@ -87,6 +84,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					businessName: true,
 					rating: true,
 					vendorType: { select: { name: true } },
+					bookings: {
+						select: {
+							id: true,
+							status: true,
+							date: true,
+							user: { select: { username: true, name: true } },
+							totalPrice: true,
+							vendor: { select: { businessName: true, slug: true } },
+						},
+					},
 					_count: { select: { bookings: true } },
 				},
 			},
@@ -105,6 +112,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 							address: true,
 							division: true,
 							rating: true,
+							vendorType: { select: { name: true } },
 							venueDetails: {
 								select: {
 									spaces: {
@@ -134,18 +142,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 	})
 
 	invariantResponse(user, 'User not found', { status: 404 })
+
 	const loggedInUserId = await getUserId(request)
 	const isOwner = loggedInUserId === user.id
 	const isVendor = !!user.vendor
-	const totalReviewsCount = user._count.reviews
-	const totalFavorites = user._count.favorites
-	const totalBookings = user._count.bookings
 	return {
 		user,
 		userJoinedDisplay: user.createdAt.toLocaleDateString(),
-		totalReviewsCount,
-		totalFavorites,
-		totalBookings,
 		isOwner,
 		loggedInUserId,
 		isVendor,
@@ -208,19 +211,11 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-export default function DoctorRoute({
+export default function VendorRoute({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const {
-		isVendor,
-		isOwner,
-		user,
-		userJoinedDisplay,
-		totalBookings,
-		totalFavorites,
-		totalReviewsCount,
-	} = loaderData
+	const { isVendor, isOwner, user, userJoinedDisplay } = loaderData
 
 	function getInitials(name: string) {
 		return name
@@ -233,7 +228,9 @@ export default function DoctorRoute({
 	const userDisplayName = user.name ?? user.username
 	const initials = getInitials(userDisplayName)
 	const userImgSrc = getUserImgSrc(user.image?.objectKey)
-	const hasPendingBookings = user.bookings.some((b) => b.status === 'upcoming')
+	const pendingBookings = user.vendor?.bookings.filter(
+		(b) => b.status === 'pending',
+	)
 	return (
 		<>
 			<section className="container mb-8 flex flex-col gap-6 pt-6 lg:flex-row">
@@ -249,10 +246,8 @@ export default function DoctorRoute({
 					]}
 				/>
 			</section>
-			{/* User Header */}
 			<section className="container">
-				{/* Left Column - User Info */}
-				<div className="mb-8 border-b-4 p-8 shadow-sm">
+				<div className="mb-8 border-b-4 p-8 shadow-sm md:mb-12">
 					<div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center">
 						<div className="flex flex-1 items-center gap-6">
 							<Avatar className="h-20 w-20 border-2">
@@ -315,7 +310,7 @@ export default function DoctorRoute({
 								<div className="flex flex-wrap gap-8">
 									<div>
 										<div className="text-primary text-2xl font-bold">
-											{totalBookings}
+											{user._count.bookings}
 										</div>
 										<div className="text-sm text-slate-600 dark:text-slate-200">
 											Bookings
@@ -323,7 +318,7 @@ export default function DoctorRoute({
 									</div>
 									<div>
 										<div className="text-primary text-2xl font-bold">
-											{totalReviewsCount}
+											{user._count.reviews}
 										</div>
 										<div className="text-sm text-slate-600 dark:text-slate-200">
 											Reviews
@@ -331,7 +326,7 @@ export default function DoctorRoute({
 									</div>
 									<div>
 										<div className="text-primary text-2xl font-bold">
-											{totalFavorites}
+											{user._count.favorites}
 										</div>
 										<div className="text-sm text-slate-600 dark:text-slate-200">
 											Favorites
@@ -361,7 +356,7 @@ export default function DoctorRoute({
 
 			{/* Vendor Section (if user is a vendor) */}
 			{isVendor && (
-				<section className="container mb-8">
+				<section className="container mb-8 md:mb-12">
 					<h4 className="mb-4 text-lg font-semibold md:text-2xl">
 						Your Vendor Profile
 					</h4>
@@ -432,64 +427,134 @@ export default function DoctorRoute({
 				</section>
 			)}
 
-			{/* Bookings Section */}
-			<section className="container mb-8">
-				<div className="mb-4 flex items-center justify-between">
-					<h2 className="text-lg font-semibold md:text-2xl">Your Bookings</h2>
-					<Link
-						to="/bookings"
-						className="text-primary text-xs hover:underline md:text-base"
-					>
-						View all
-					</Link>
-				</div>
+			{/* Pending Bookings */}
+			{pendingBookings && pendingBookings?.length > 0 && isOwner && (
+				<section className="container mb-8">
+					<div className="mb-4 flex items-center gap-3">
+						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2">
+							<Icon name="circle-alert" className="h-5 w-5 text-amber-600" />
+						</div>
+						<div>
+							<h3 className="text-lg font-semibold text-slate-900">
+								Pending Bookings
+							</h3>
+							<p className="text-sm text-slate-600">
+								{user.vendor?.bookings.length} awaiting booking confirmation
+							</p>
+						</div>
+					</div>
 
-				{user.bookings.length > 0 ? (
 					<div className="space-y-4">
-						{user.bookings.map((booking) => (
+						{pendingBookings.map((booking) => (
 							<div
 								key={booking.id}
-								className="border-muted relative border-l-2 pl-6"
+								className="border-l-4 border-amber-400 bg-white p-4 shadow-sm"
 							>
-								{/* Status indicator */}
+								<div className="mb-3 flex items-start justify-between">
+									<div>
+										<div className="mb-1 flex items-center gap-2">
+											<Icon name="user" className="h-4 w-4 text-slate-600" />
+											<span className="font-semibold text-slate-900">
+												{booking.user.name || booking.user.username}
+											</span>
+										</div>
+										<div className="space-y-1 text-sm text-slate-600">
+											<div className="flex items-center gap-4">
+												<span className="flex items-center gap-1">
+													<Icon
+														name="calendar-days"
+														className="h-3 w-3 text-blue-500"
+													/>
+													{formatDate(booking.date, 'PPP')}
+												</span>
+											</div>
+											<div className="flex items-center gap-4">
+												<span className="font-semibold text-slate-900">
+													৳{booking.totalPrice.toLocaleString()}
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div className="flex gap-2">
+									<VendorBookingAction
+										bookingId={booking.id}
+										vendorId={user.vendor?.id!}
+									/>
+								</div>
+							</div>
+						))}
+					</div>
+				</section>
+			)}
+
+			{/* Bookings Section */}
+			<section className="container mb-8 md:mb-12">
+				<div className="mb-6 flex items-center gap-4">
+					<div className="rounded-lg border border-blue-200 bg-blue-100 p-2">
+						<Icon name="calendar-days" className="text-primary h-5 w-5" />
+					</div>
+					<div>
+						<h2 className="text-2xl font-bold text-slate-900">
+							Booking History
+						</h2>
+						<p className="text-secondary-foreground">
+							Your recent and upcoming bookings
+						</p>
+					</div>
+				</div>
+
+				<div className="relative">
+					{/* Timeline Line */}
+					<div className="absolute top-0 bottom-0 left-6 w-0.5 bg-slate-300"></div>
+
+					<div className="space-y-6">
+						{user.bookings.map((booking) => (
+							<div key={booking.id} className="relative flex items-start gap-6">
 								<div
-									className={cn(
-										'absolute top-0 left-[-5px] h-2.5 w-2.5 rounded-full',
-										getStatusColor(booking.status),
-									)}
+									className={`relative z-10 h-3 w-3 rounded-full ${getStatusColor(booking.status)} shadow-sm ring-4 ring-white`}
 								/>
 
-								<div className="flex flex-col justify-between pb-4 md:flex-row md:items-center">
-									<div className="flex items-center gap-2">
-										<h3 className="text-sm font-medium md:text-lg">
-											{booking.vendor.businessName}
-										</h3>
-										<Badge
-											variant={
-												booking.status === 'completed'
-													? 'secondary'
-													: booking.status === 'upcoming'
-														? 'outline'
-														: 'destructive'
-											}
-											className="text-xs md:text-base"
-										>
-											{booking.status.charAt(0).toUpperCase() +
-												booking.status.slice(1)}
-										</Badge>
-									</div>
+								{/* Booking Content */}
+								<div className="from-primary/10 to-primary/5 hover:border-primary flex-1 rounded-lg border bg-gradient-to-r p-4 transition-all duration-200 hover:shadow-sm">
+									<div className="mb-3 flex items-center justify-between">
+										<div>
+											<h3 className="font-semibold text-slate-900 dark:text-slate-50">
+												{booking.vendor.businessName}
+											</h3>
+											<div className="text-secondary-foreground mt-1 flex items-center gap-4 text-sm">
+												<span className="flex items-center gap-1">
+													<Icon
+														name="calendar-days"
+														className="text-primary h-3 w-3"
+													/>
+													{formatDate(booking.date, 'PPP')}
+												</span>
+											</div>
+										</div>
 
-									<div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs md:text-base">
-										<div className="flex items-center gap-1">
-											<Icon name="calendar-days" className="h-3 w-3" />
-											<span>{formatDate(booking.date, 'PPP')}</span>
+										<div className="text-right">
+											<div className="font-semibold text-slate-900">
+												৳{booking.totalPrice.toLocaleString()}
+											</div>
+											<Badge
+												variant={
+													booking.status === 'completed'
+														? 'secondary'
+														: booking.status === 'upcoming'
+															? 'outline'
+															: 'destructive'
+												}
+												className="mt-1 text-xs"
+											>
+												{booking.status.charAt(0).toUpperCase() +
+													booking.status.slice(1)}
+											</Badge>
 										</div>
 									</div>
 
-									<div className="mt-2 flex items-center gap-2 md:mt-0">
-										<p className="text-sm font-medium md:text-lg">
-											৳{booking.totalPrice.toLocaleString()}
-										</p>
+									<div className="flex gap-2">
 										{booking.status === 'upcoming' && (
 											<CancelBookingButton
 												bookingId={booking.id}
@@ -499,11 +564,11 @@ export default function DoctorRoute({
 										<Button
 											size="sm"
 											variant="outline"
-											className="h-7 bg-transparent text-xs md:text-base"
+											className="h-7 border-blue-200 bg-transparent text-xs text-blue-600 hover:bg-blue-50"
 											asChild
 										>
 											<Link to={`/vendors/${booking.vendor.slug}`}>
-												View Vendor
+												View {booking.vendor.vendorType?.name || 'Venue'}
 											</Link>
 										</Button>
 									</div>
@@ -511,16 +576,7 @@ export default function DoctorRoute({
 							</div>
 						))}
 					</div>
-				) : (
-					<div className="bg-muted/20 rounded-lg border py-8 text-center">
-						<p className="text-muted-foreground text-sm md:text-lg">
-							You don't have any bookings yet.
-						</p>
-						<Button asChild size="sm" className="mt-2">
-							<Link to="/vendors">Browse Vendors</Link>
-						</Button>
-					</div>
-				)}
+				</div>
 			</section>
 
 			{/* Reviews Section */}
