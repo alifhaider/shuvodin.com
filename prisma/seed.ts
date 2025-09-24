@@ -517,6 +517,18 @@ async function seed() {
 					date: bookingDate,
 					status: 'confirmed',
 					totalPrice: faker.number.int({ min: 100, max: 1000 }),
+					items: {
+						create: [
+							{
+								name: 'Sample Item 1',
+								price: faker.number.int({ min: 50, max: 500 }),
+							},
+							{
+								name: 'Sample Item 2',
+								price: faker.number.int({ min: 50, max: 500 }),
+							},
+						],
+					},
 				},
 			})
 		}),
