@@ -13,9 +13,8 @@ import { Icon } from '#app/components/ui/icon.tsx'
 import { Progress } from '#app/components/ui/progress.tsx'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { getUserImgSrc } from '#app/utils/misc.tsx'
+import { getUserImgSrc, getVendorImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
-import { VendorBookingAction } from '../resources+/vendor-booking-action'
 import { type Route } from './+types/$username'
 import { type IconName } from '@/icon-name'
 
@@ -59,6 +58,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					businessName: true,
 					district: true,
 					thana: true,
+					gallery: { select: { objectKey: true, altText: true } },
 					address: true,
 					division: true,
 					rating: true,
@@ -571,6 +571,7 @@ export default function VendorRoute({
 						</ul>
 					</section>
 				)}
+
 			{vendorUpcomingBookingCount &&
 				vendorUpcomingBookingCount > 0 &&
 				isOwner && (
@@ -644,7 +645,86 @@ export default function VendorRoute({
 					</section>
 				)}
 
-			{/* Bookings Section */}
+			{/* User Profile Section */}
+			<section className="container mb-8 md:mb-12">
+				<div className="mb-6 flex items-center justify-between">
+					<div className="flex items-center gap-4">
+						<div className="rounded-lg border border-rose-200 bg-rose-100 p-2">
+							<Icon name="heart" className="h-5 w-5 text-rose-600" />
+						</div>
+						<div>
+							<h4 className="text-lg font-semibold text-slate-900 md:text-2xl dark:text-slate-100">
+								Favorite Venues
+							</h4>
+							<p className="text-sm text-slate-600 dark:text-slate-400">
+								Your saved venues for quick access
+							</p>
+						</div>
+					</div>
+					<Link
+						to="/favorites"
+						className="text-primary text-sm font-medium hover:underline md:text-base"
+					>
+						View all &rarr;
+					</Link>
+				</div>
+
+				<ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+					{user.favorites.slice(0, 8).map((fvrt) => (
+						<li
+							key={fvrt.slug}
+							className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:border-blue-300 hover:shadow-md"
+						>
+							<div className="aspect-[4/3] overflow-hidden">
+								<Img
+									width={400}
+									height={300}
+									src={
+										getVendorImgSrc(fvrt.gallery[0]?.objectKey) ||
+										'/images/placeholder.png'
+									}
+									alt={fvrt.gallery[0]?.altText || fvrt.businessName}
+									className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+								/>
+								<div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+								<Button
+									size="sm"
+									variant="ghost"
+									className="absolute top-2 right-2 h-8 w-8 bg-white/90 p-0 text-rose-600 hover:bg-white hover:text-rose-700"
+								>
+									<Icon name="heart" className="h-4 w-4 fill-current" />
+								</Button>
+							</div>
+
+							<div className="absolute right-0 bottom-0 left-0 bg-white/95 p-3 backdrop-blur-sm">
+								<h3 className="mb-1 line-clamp-1 text-sm font-semibold text-slate-900">
+									{fvrt.businessName}
+								</h3>
+								<div className="mb-2 flex items-center justify-between text-xs">
+									<div className="flex items-center gap-1">
+										<Icon
+											name="star"
+											className="h-3 w-3 fill-amber-400 text-amber-400"
+										/>
+										<span className="font-medium text-slate-700">
+											{fvrt.rating}
+										</span>
+									</div>
+									<div className="flex items-center gap-1 text-slate-600">
+										<Icon name="map-pin" className="h-3 w-3" />
+										<span>
+											{fvrt.address}, {fvrt.thana}, {fvrt.district},{' '}
+											{fvrt.division}
+										</span>
+									</div>
+								</div>
+							</div>
+
+							<Link to={`/vendors/${fvrt.slug}`} className="absolute inset-0" />
+						</li>
+					))}
+				</ul>
+			</section>
 			<section className="container mb-8 md:mb-12">
 				<SectionHeader
 					title="Booking History"

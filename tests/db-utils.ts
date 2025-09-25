@@ -39,51 +39,12 @@ let vendorImages: Array<{ altText: string; objectKey: string }> | undefined
 export async function getVendorImages() {
 	if (vendorImages) return vendorImages
 
-	vendorImages = await Promise.all([
-		{
-			altText: 'a nice country house',
-			objectKey: 'notes/0.png',
-		},
-		{
-			altText: 'a city scape',
-			objectKey: 'notes/1.png',
-		},
-		{
-			altText: 'a sunrise',
-			objectKey: 'notes/2.png',
-		},
-		{
-			altText: 'a group of friends',
-			objectKey: 'notes/3.png',
-		},
-		{
-			altText: 'friends being inclusive of someone who looks lonely',
-			objectKey: 'notes/4.png',
-		},
-		{
-			altText: 'an illustration of a hot air balloon',
-			objectKey: 'notes/5.png',
-		},
-		{
-			altText:
-				'an office full of laptops and other office equipment that look like it was abandoned in a rush out of the building in an emergency years ago.',
-			objectKey: 'notes/6.png',
-		},
-		{
-			altText: 'a rusty lock',
-			objectKey: 'notes/7.png',
-		},
-		{
-			altText: 'something very happy in nature',
-			objectKey: 'notes/8.png',
-		},
-		{
-			altText: `someone at the end of a cry session who's starting to feel a little better.`,
-			objectKey: 'notes/9.png',
-		},
-	])
-
-	return vendorImages
+	return (vendorImages = await Promise.all(
+		Array.from({ length: 10 }, (_, index) => ({
+			altText: `Vendor Image ${index + 1}`,
+			objectKey: `vendor/${index}.jpg`,
+		})),
+	))
 }
 
 let userImages: Array<{ objectKey: string }> | undefined
