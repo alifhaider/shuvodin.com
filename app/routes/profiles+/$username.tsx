@@ -524,17 +524,20 @@ export default function VendorRoute({
 							{vendorPendingBookings.map((booking) => (
 								<li
 									key={booking.id}
-									className="border-l-4 border-amber-400 bg-white p-4 shadow-sm"
+									className="border-l-4 border-amber-500 bg-gradient-to-r from-amber-50 to-amber-100 p-4 shadow-sm dark:from-amber-950 dark:to-amber-900"
 								>
 									<div className="mb-3 flex items-start justify-between">
 										<div>
 											<div className="mb-1 flex items-center gap-2">
-												<Icon name="user" className="h-4 w-4 text-slate-600" />
-												<span className="font-semibold text-slate-900">
+												<Icon
+													name="user"
+													className="h-4 w-4 text-slate-600 dark:text-slate-400"
+												/>
+												<span className="font-semibold text-slate-900 dark:text-slate-100">
 													{booking.user.name || booking.user.username}
 												</span>
 											</div>
-											<div className="space-y-1 text-sm text-slate-600">
+											<div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
 												<div className="flex items-center gap-4">
 													<span className="flex items-center gap-1">
 														<Icon
@@ -545,7 +548,7 @@ export default function VendorRoute({
 													</span>
 												</div>
 												<div className="flex items-center gap-4">
-													<span className="font-semibold text-slate-900">
+													<span className="font-semibold text-slate-900 dark:text-slate-100">
 														৳{booking.totalPrice.toLocaleString()}
 													</span>
 												</div>
@@ -553,12 +556,16 @@ export default function VendorRoute({
 										</div>
 									</div>
 
-									<div className="flex gap-2">
-										<VendorBookingAction
-											bookingId={booking.id}
-											vendorId={user.vendor?.id!}
-										/>
-									</div>
+									<Button
+										size="sm"
+										variant="outline"
+										className="text-primary h-7 border-amber-400 bg-transparent text-xs hover:bg-amber-50 dark:border-amber-800 hover:dark:bg-amber-900"
+										asChild
+									>
+										<Link to={`/dashboard/bookings/${booking.id}`}>
+											View Details
+										</Link>
+									</Button>
 								</li>
 							))}
 						</ul>
