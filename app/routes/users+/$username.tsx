@@ -22,6 +22,7 @@ import { type Route } from './+types/$username'
 function getStatusColor(status: string) {
 	switch (status) {
 		case 'completed':
+		case 'confirmed':
 			return 'bg-green-500'
 		case 'upcoming':
 			return 'bg-blue-500'
@@ -492,11 +493,11 @@ export default function VendorRoute({
 			{/* Bookings Section */}
 			<section className="container mb-8 md:mb-12">
 				<div className="mb-6 flex items-center gap-4">
-					<div className="rounded-lg border border-blue-200 bg-blue-100 p-2">
+					<div className="border-accent aspect-square rounded-lg border bg-amber-700 p-2 dark:bg-amber-50">
 						<Icon name="calendar-days" className="text-primary h-5 w-5" />
 					</div>
 					<div>
-						<h2 className="text-2xl font-bold text-slate-900">
+						<h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
 							Booking History
 						</h2>
 						<p className="text-secondary-foreground">
@@ -507,13 +508,13 @@ export default function VendorRoute({
 
 				<div className="relative">
 					{/* Timeline Line */}
-					<div className="absolute top-0 bottom-0 left-6 w-0.5 bg-slate-300"></div>
+					<div className="absolute top-0 bottom-0 left-6 w-0.5 bg-slate-300 dark:bg-slate-600"></div>
 
 					<div className="space-y-6">
 						{user.bookings.map((booking) => (
 							<div key={booking.id} className="relative flex items-start gap-6">
 								<div
-									className={`relative z-10 h-3 w-3 rounded-full ${getStatusColor(booking.status)} shadow-sm ring-4 ring-white`}
+									className={`relative z-10 h-3 w-3 rounded-full ${getStatusColor(booking.status)} shadow-sm ring-4 ring-white dark:ring-slate-900`}
 								/>
 
 								{/* Booking Content */}
@@ -540,7 +541,8 @@ export default function VendorRoute({
 											</div>
 											<Badge
 												variant={
-													booking.status === 'completed'
+													booking.status === 'completed' ||
+													booking.status === 'confirmed'
 														? 'secondary'
 														: booking.status === 'upcoming'
 															? 'outline'
@@ -564,7 +566,7 @@ export default function VendorRoute({
 										<Button
 											size="sm"
 											variant="outline"
-											className="h-7 border-blue-200 bg-transparent text-xs text-blue-600 hover:bg-blue-50"
+											className="text-primary h-7 border-amber-400 bg-transparent text-xs hover:bg-amber-50 dark:border-amber-800"
 											asChild
 										>
 											<Link to={`/vendors/${booking.vendor.slug}`}>
