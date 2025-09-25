@@ -21,7 +21,7 @@ export function UserDropdown() {
 			<DropdownMenuTrigger asChild>
 				<Button asChild variant="secondary">
 					<Link
-						to={`/users/${user.username}`}
+						to={`/profiles/${user.username}`}
 						// this is for progressive enhancement
 						onClick={(e) => e.preventDefault()}
 						className="flex items-center gap-2"
@@ -42,7 +42,7 @@ export function UserDropdown() {
 			<DropdownMenuPortal>
 				<DropdownMenuContent sideOffset={8} align="end">
 					<DropdownMenuItem asChild>
-						<Link prefetch="intent" to={`/users/${user.username}`}>
+						<Link prefetch="intent" to={`/profiles/${user.username}`}>
 							<Icon className="text-body-md" name="avatar">
 								Profile
 							</Icon>

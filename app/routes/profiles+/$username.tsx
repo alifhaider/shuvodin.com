@@ -17,7 +17,7 @@ import { getUserImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { VendorBookingAction } from '../resources+/vendor-booking-action'
 import { type Route } from './+types/$username'
-import { IconName } from '@/icon-name'
+import { type IconName } from '@/icon-name'
 
 // Helper function for status color
 function getStatusColor(status: string) {
@@ -45,8 +45,6 @@ export const meta = ({ data }: Route.MetaArgs) => {
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-	const url = new URL(request.url)
-	const page = url.searchParams.get('page')
 	const user = await prisma.user.findFirst({
 		include: {
 			image: {
@@ -70,7 +68,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			reviews: {
 				orderBy: { createdAt: 'desc' },
 				take: 3,
-				skip: page ? (Number(page) - 1) * 3 : 0,
 				select: {
 					id: true,
 					rating: true,
@@ -86,17 +83,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					businessName: true,
 					rating: true,
 					vendorType: { select: { name: true } },
-					bookings: {
+					_count: {
 						select: {
-							id: true,
-							status: true,
-							date: true,
-							user: { select: { username: true, name: true } },
-							totalPrice: true,
-							vendor: { select: { businessName: true, slug: true } },
+							bookings: {
+								where: {
+									status: { in: ['confirmed'] },
+									date: { lt: new Date() },
+								},
+							},
 						},
 					},
-					_count: { select: { bookings: true } },
 				},
 			},
 			bookings: {
@@ -145,15 +141,73 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 	invariantResponse(user, 'User not found', { status: 404 })
 
+	const vendorId = user.vendor?.id
 	const loggedInUserId = await getUserId(request)
 	const isOwner = loggedInUserId === user.id
 	const isVendor = !!user.vendor
+	if (!vendorId) {
+		return {
+			user,
+			userJoinedDisplay: user.createdAt.toLocaleDateString(),
+			isOwner,
+			loggedInUserId,
+			isVendor,
+		}
+	}
+
+	const [vendorBookings, groupedCounts] = await Promise.all([
+		prisma.booking.findMany({
+			where: {
+				vendorId,
+				status: { in: ['pending', 'confirmed'] },
+				date: { gte: new Date() },
+			},
+			orderBy: [{ status: 'asc' }, { date: 'asc' }],
+			take: 20, // fetch enough to slice 2 per status
+			select: {
+				id: true,
+				status: true,
+				date: true,
+				totalPrice: true,
+				user: { select: { username: true, name: true } },
+				vendor: { select: { businessName: true, slug: true } },
+			},
+		}),
+		prisma.booking.groupBy({
+			by: ['status'],
+			where: {
+				vendorId,
+				status: { in: ['pending', 'confirmed'] },
+				date: { gte: new Date() },
+			},
+			_count: { status: true },
+		}),
+	])
+
+	// split into 2 pending + 2 confirmed
+	const vendorPendingBookings = vendorBookings
+		.filter((b) => b.status === 'pending')
+		.slice(0, 2)
+
+	const vendorUpcomingBookings = vendorBookings
+		.filter((b) => b.status === 'confirmed')
+		.slice(0, 2)
+
+	const vendorPendingBookingCount =
+		groupedCounts.find((g) => g.status === 'pending')?._count.status ?? 0
+	const vendorUpcomingBookingCount =
+		groupedCounts.find((g) => g.status === 'confirmed')?._count.status ?? 0
+
 	return {
 		user,
 		userJoinedDisplay: user.createdAt.toLocaleDateString(),
 		isOwner,
 		loggedInUserId,
 		isVendor,
+		vendorPendingBookings,
+		vendorUpcomingBookings,
+		vendorPendingBookingCount,
+		vendorUpcomingBookingCount,
 	}
 }
 
@@ -217,7 +271,16 @@ export default function VendorRoute({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const { isVendor, isOwner, user, userJoinedDisplay } = loaderData
+	const {
+		isVendor,
+		isOwner,
+		user,
+		userJoinedDisplay,
+		vendorPendingBookings,
+		vendorUpcomingBookings,
+		vendorPendingBookingCount,
+		vendorUpcomingBookingCount,
+	} = loaderData
 
 	function getInitials(name: string) {
 		return name
@@ -230,9 +293,7 @@ export default function VendorRoute({
 	const userDisplayName = user.name ?? user.username
 	const initials = getInitials(userDisplayName)
 	const userImgSrc = getUserImgSrc(user.image?.objectKey)
-	const pendingBookings = user.vendor?.bookings.filter(
-		(b) => b.status === 'pending',
-	)
+
 	return (
 		<>
 			<section className="container mb-8 flex flex-col gap-6 pt-6 lg:flex-row">
@@ -364,10 +425,10 @@ export default function VendorRoute({
 							<Icon name="building" className="h-5 w-5 text-amber-600" />
 						</div>
 						<div>
-							<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
+							<h3 className="text-lg font-bold text-slate-900 md:text-2xl dark:text-slate-50">
 								Vendor Profile
 							</h3>
-							<p className="text-slate-600 dark:text-slate-400">
+							<p className="text-sm text-slate-600 md:text-base dark:text-slate-400">
 								Glance at your vendor profile and manage your business.
 							</p>
 						</div>
@@ -441,66 +502,135 @@ export default function VendorRoute({
 			)}
 
 			{/* Pending Bookings */}
-			{pendingBookings && pendingBookings?.length > 0 && isOwner && (
-				<section className="container mb-8">
-					<div className="mb-4 flex items-center gap-3">
-						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
-							<Icon name="circle-alert" className="h-5 w-5 text-amber-600" />
+			{vendorPendingBookings &&
+				vendorPendingBookings?.length > 0 &&
+				isOwner && (
+					<section className="container mb-8">
+						<div className="mb-4 flex items-center gap-3">
+							<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
+								<Icon name="circle-alert" className="h-5 w-5 text-amber-600" />
+							</div>
+							<div>
+								<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
+									Pending Booking Requests
+								</h3>
+								<p className="text-slate-600 dark:text-slate-400">
+									{vendorPendingBookingCount} awaiting booking confirmation
+								</p>
+							</div>
 						</div>
-						<div>
-							<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
-								Pending Bookings
-							</h3>
-							<p className="text-slate-600 dark:text-slate-400">
-								{user.vendor?.bookings.length} awaiting booking confirmation
-							</p>
-						</div>
-					</div>
 
-					<div className="space-y-4">
-						{pendingBookings.map((booking) => (
-							<div
-								key={booking.id}
-								className="border-l-4 border-amber-400 bg-white p-4 shadow-sm"
-							>
-								<div className="mb-3 flex items-start justify-between">
-									<div>
-										<div className="mb-1 flex items-center gap-2">
-											<Icon name="user" className="h-4 w-4 text-slate-600" />
-											<span className="font-semibold text-slate-900">
-												{booking.user.name || booking.user.username}
-											</span>
-										</div>
-										<div className="space-y-1 text-sm text-slate-600">
-											<div className="flex items-center gap-4">
-												<span className="flex items-center gap-1">
-													<Icon
-														name="calendar-days"
-														className="h-3 w-3 text-blue-500"
-													/>
-													{formatDate(booking.date, 'PPP')}
+						<ul className="space-y-4">
+							{vendorPendingBookings.map((booking) => (
+								<li
+									key={booking.id}
+									className="border-l-4 border-amber-400 bg-white p-4 shadow-sm"
+								>
+									<div className="mb-3 flex items-start justify-between">
+										<div>
+											<div className="mb-1 flex items-center gap-2">
+												<Icon name="user" className="h-4 w-4 text-slate-600" />
+												<span className="font-semibold text-slate-900">
+													{booking.user.name || booking.user.username}
 												</span>
 											</div>
-											<div className="flex items-center gap-4">
-												<span className="font-semibold text-slate-900">
-													৳{booking.totalPrice.toLocaleString()}
-												</span>
+											<div className="space-y-1 text-sm text-slate-600">
+												<div className="flex items-center gap-4">
+													<span className="flex items-center gap-1">
+														<Icon
+															name="calendar-days"
+															className="h-3 w-3 text-blue-500"
+														/>
+														{formatDate(booking.date, 'PPP')}
+													</span>
+												</div>
+												<div className="flex items-center gap-4">
+													<span className="font-semibold text-slate-900">
+														৳{booking.totalPrice.toLocaleString()}
+													</span>
+												</div>
 											</div>
 										</div>
 									</div>
-								</div>
 
-								<div className="flex gap-2">
-									<VendorBookingAction
-										bookingId={booking.id}
-										vendorId={user.vendor?.id!}
-									/>
-								</div>
+									<div className="flex gap-2">
+										<VendorBookingAction
+											bookingId={booking.id}
+											vendorId={user.vendor?.id!}
+										/>
+									</div>
+								</li>
+							))}
+						</ul>
+					</section>
+				)}
+			{vendorUpcomingBookingCount &&
+				vendorUpcomingBookingCount > 0 &&
+				isOwner && (
+					<section className="container mb-8 md:mb-12">
+						<div className="mb-4 flex items-center gap-3">
+							<div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2">
+								<Icon
+									name="circle-check"
+									className="h-5 w-5 text-emerald-600"
+								/>
 							</div>
-						))}
-					</div>
-				</section>
-			)}
+							<div>
+								<h3 className="text-lg font-semibold text-slate-900 md:text-2xl">
+									Upcoming Events
+								</h3>
+								<p className="text-sm text-slate-600">
+									{vendorUpcomingBookingCount} confirmed bookings
+								</p>
+							</div>
+						</div>
+
+						<ul className="space-y-4">
+							{vendorUpcomingBookings.map((booking) => (
+								<li
+									key={booking.id}
+									className="border-l-4 border-emerald-500 bg-white p-4 shadow-sm"
+								>
+									<div className="mb-3 flex items-start justify-between">
+										<div>
+											<div className="mb-1 flex items-center gap-2">
+												<Icon name="user" className="h-4 w-4 text-slate-600" />
+												<span className="font-semibold text-slate-900">
+													{booking.user.name || booking.user.username}
+												</span>
+											</div>
+											<div className="space-y-1 text-sm text-slate-600">
+												<div className="flex items-center gap-4">
+													<span className="flex items-center gap-1">
+														<Icon
+															name="calendar-days"
+															className="h-3 w-3 text-blue-500"
+														/>
+														{formatDate(booking.date, 'PPP')}
+													</span>
+												</div>
+												<div className="flex items-center gap-4">
+													<span className="font-semibold text-slate-900">
+														৳{booking.totalPrice.toLocaleString()}
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<Button
+										size="sm"
+										variant="outline"
+										className="text-primary h-7 border-emerald-400 bg-transparent text-xs hover:bg-emerald-50 dark:border-emerald-800"
+										asChild
+									>
+										<Link to={`/dashboard/${booking.id}`}>View Details</Link>
+									</Button>
+								</li>
+							))}
+						</ul>
+					</section>
+				)}
 
 			{/* Bookings Section */}
 			<section className="container mb-8 md:mb-12">
