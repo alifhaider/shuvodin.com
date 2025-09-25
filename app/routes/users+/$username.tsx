@@ -17,6 +17,7 @@ import { getUserImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { VendorBookingAction } from '../resources+/vendor-booking-action'
 import { type Route } from './+types/$username'
+import { IconName } from '@/icon-name'
 
 // Helper function for status color
 function getStatusColor(status: string) {
@@ -38,7 +39,7 @@ export const meta = ({ data }: Route.MetaArgs) => {
 		{ title: `${data?.user.username} / ShuvoDin` },
 		{
 			name: 'description',
-			content: `Daktar Bari ${data?.user.username} Profile!`,
+			content: `ShuvoDin ${data?.user.name || data?.user.username} Profile!`,
 		},
 	]
 }
@@ -358,9 +359,20 @@ export default function VendorRoute({
 			{/* Vendor Section (if user is a vendor) */}
 			{isVendor && (
 				<section className="container mb-8 md:mb-12">
-					<h4 className="mb-4 text-lg font-semibold md:text-2xl">
-						Your Vendor Profile
-					</h4>
+					<div className="mb-4 flex items-center gap-3">
+						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
+							<Icon name="building" className="h-5 w-5 text-amber-600" />
+						</div>
+						<div>
+							<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
+								Vendor Profile
+							</h3>
+							<p className="text-slate-600 dark:text-slate-400">
+								Glance at your vendor profile and manage your business.
+							</p>
+						</div>
+					</div>
+
 					<div className="from-primary/10 to-primary/5 relative overflow-hidden rounded-lg border bg-gradient-to-r p-4">
 						<div className="flex flex-col justify-between md:flex-row md:items-center">
 							<div>
@@ -432,14 +444,14 @@ export default function VendorRoute({
 			{pendingBookings && pendingBookings?.length > 0 && isOwner && (
 				<section className="container mb-8">
 					<div className="mb-4 flex items-center gap-3">
-						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2">
+						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
 							<Icon name="circle-alert" className="h-5 w-5 text-amber-600" />
 						</div>
 						<div>
-							<h3 className="text-lg font-semibold text-slate-900">
+							<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
 								Pending Bookings
 							</h3>
-							<p className="text-sm text-slate-600">
+							<p className="text-slate-600 dark:text-slate-400">
 								{user.vendor?.bookings.length} awaiting booking confirmation
 							</p>
 						</div>
@@ -492,19 +504,11 @@ export default function VendorRoute({
 
 			{/* Bookings Section */}
 			<section className="container mb-8 md:mb-12">
-				<div className="mb-6 flex items-center gap-4">
-					<div className="border-accent aspect-square rounded-lg border bg-amber-700 p-2 dark:bg-amber-50">
-						<Icon name="calendar-days" className="text-primary h-5 w-5" />
-					</div>
-					<div>
-						<h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-							Booking History
-						</h2>
-						<p className="text-secondary-foreground">
-							Your recent and upcoming bookings
-						</p>
-					</div>
-				</div>
+				<SectionHeader
+					title="Booking History"
+					iconName="calendar-days"
+					description="Your recent and upcoming bookings"
+				/>
 
 				<div className="relative">
 					{/* Timeline Line */}
@@ -662,5 +666,29 @@ function CancelBookingButton({
 				Cancel Booking
 			</button>
 		</deleteFetcher.Form>
+	)
+}
+
+const SectionHeader = ({
+	title,
+	iconName,
+	description,
+}: {
+	title: string
+	iconName: string
+	description: string
+}) => {
+	return (
+		<div className="mb-4 flex items-center gap-3">
+			<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
+				<Icon name={iconName as IconName} className="h-5 w-5 text-amber-600" />
+			</div>
+			<div>
+				<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
+					{title}
+				</h3>
+				<p className="text-slate-600 dark:text-slate-400">{description}</p>
+			</div>
+		</div>
 	)
 }

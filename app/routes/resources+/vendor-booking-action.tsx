@@ -16,7 +16,9 @@ const BookingDeclineSchema = z.object({
 
 function CreateBookingAcceptSchema(
 	intent: Intent | null,
-	options?: { doesAlreadyHaveBooking: (bookingId: string) => Promise<boolean> },
+	options?: {
+		doesAlreadyHaveBookingOnSameDate: (bookingId: string) => Promise<boolean>
+	},
 ) {
 	return z
 		.object({
@@ -39,7 +41,7 @@ function CreateBookingAcceptSchema(
 						return
 					}
 
-					if (typeof options?.doesAlreadyHaveBooking !== 'function') {
+					if (typeof options?.doesAlreadyHaveBookingOnSameDate !== 'function') {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
 							message: 'Booking validation function is not provided.',
@@ -48,9 +50,8 @@ function CreateBookingAcceptSchema(
 					}
 
 					try {
-						const alreadyHasBooking = await options.doesAlreadyHaveBooking(
-							data.bookingId,
-						)
+						const alreadyHasBooking =
+							await options.doesAlreadyHaveBookingOnSameDate(data.bookingId)
 						if (alreadyHasBooking) {
 							ctx.addIssue({
 								code: z.ZodIssueCode.custom,
@@ -120,10 +121,24 @@ export async function action({ request }: Route.ActionArgs) {
 		await requireVendorId(request)
 		const submission = parseWithZod(formData, {
 			schema: CreateBookingAcceptSchema(null, {
-				doesAlreadyHaveBooking: async (bookingId) => {
-					const existingBooking = await prisma.booking.findUnique({
-						where: { id: bookingId, date: new Date(), status: 'ACCEPTED' },
+				doesAlreadyHaveBookingOnSameDate: async (bookingId) => {
+					// if a vendor already has confirmed a booking on the same date, they cannot accept another booking on that date
+					// this is to prevent double booking
+					// we check for bookings that are in the future and have been accepted
+					// if a booking is found, we return true, otherwise false
+					const bookingDate = await prisma.booking.findUnique({
+						where: { id: bookingId },
+						select: { date: true },
 					})
+					if (!bookingDate) return false
+
+					const existingBooking = await prisma.booking.findFirst({
+						where: {
+							date: bookingDate.date,
+							status: 'ACCEPTED',
+						},
+					})
+
 					return !!existingBooking
 				},
 			}),
