@@ -45,77 +45,100 @@ export const meta = ({ data }: Route.MetaArgs) => {
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-	const user = await prisma.user.findFirst({
+	const loggedInUserId = await getUserId(request)
+
+	// Base query - always include public information
+	const baseSelect = {
 		include: {
-			image: { select: { objectKey: true, altText: true } },
-			favorites: {
-				select: {
-					id: true,
-					slug: true,
-					businessName: true,
-					district: true,
-					thana: true,
-					gallery: { select: { objectKey: true, altText: true } },
-					address: true,
-					division: true,
-					rating: true,
-					vendorType: { select: { name: true } },
-				},
-				orderBy: { createdAt: 'desc' },
-			},
-			reviews: {
-				orderBy: { createdAt: 'desc' },
-				take: 3,
-				select: {
-					id: true,
-					rating: true,
-					comment: true,
-					createdAt: true,
-					vendor: { select: { businessName: true, slug: true } },
-				},
-			},
 			vendor: {
 				select: {
 					id: true,
-					slug: true,
 					businessName: true,
-					rating: true,
 					vendorType: { select: { name: true } },
-					_count: {
-						select: {
-							bookings: {
-								where: {
-									status: { in: ['confirmed'] },
-									date: { lt: new Date() },
+					rating: true,
+					_count: { select: { bookings: true } },
+				},
+			},
+			image: { select: { objectKey: true, altText: true } },
+			_count: { select: { reviews: true, favorites: true, bookings: true } },
+		},
+		where: { username: params.username },
+	}
+
+	// If user is viewing their own profile, include private data
+	if (loggedInUserId) {
+		const user = await prisma.user.findFirst({
+			include: {
+				...baseSelect.include,
+				favorites: {
+					select: {
+						id: true,
+						slug: true,
+						businessName: true,
+						district: true,
+						thana: true,
+						gallery: { select: { objectKey: true, altText: true } },
+						address: true,
+						division: true,
+						rating: true,
+						vendorType: { select: { name: true } },
+					},
+					orderBy: { createdAt: 'desc' },
+				},
+				reviews: {
+					orderBy: { createdAt: 'desc' },
+					take: 3,
+					select: {
+						id: true,
+						rating: true,
+						comment: true,
+						createdAt: true,
+						vendor: { select: { businessName: true, slug: true } },
+					},
+				},
+				vendor: {
+					select: {
+						id: true,
+						slug: true,
+						businessName: true,
+						rating: true,
+						vendorType: { select: { name: true } },
+						_count: {
+							select: {
+								bookings: {
+									where: {
+										status: { in: ['confirmed'] },
+										date: { lt: new Date() },
+									},
 								},
 							},
 						},
 					},
 				},
-			},
-			bookings: {
-				select: {
-					id: true,
-					totalPrice: true,
-					status: true,
-					date: true,
-					vendor: {
-						select: {
-							businessName: true,
-							slug: true,
-							district: true,
-							thana: true,
-							address: true,
-							division: true,
-							rating: true,
-							vendorType: { select: { name: true } },
-							venueDetails: {
-								select: {
-									spaces: {
-										select: {
-											sittingCapacity: true,
-											standingCapacity: true,
-											parkingCapacity: true,
+				bookings: {
+					select: {
+						id: true,
+						totalPrice: true,
+						status: true,
+						date: true,
+						vendor: {
+							select: {
+								businessName: true,
+								slug: true,
+								district: true,
+								thana: true,
+								address: true,
+								division: true,
+								rating: true,
+								vendorType: { select: { name: true } },
+								venueDetails: {
+									select: {
+										spaces: {
+											select: {
+												sittingCapacity: true,
+												standingCapacity: true,
+												parkingCapacity: true,
+											},
 										},
 									},
 								},
@@ -124,82 +147,103 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					},
 				},
 			},
+			where: baseSelect.where,
+		})
 
-			_count: { select: { reviews: true, favorites: true, bookings: true } },
-		},
+		invariantResponse(user, 'User not found', { status: 404 })
 
-		where: { username: params.username },
-	})
+		const vendorId = user.vendor?.id
+		const isOwner = loggedInUserId === user.id
+		const isVendor = !!user.vendor
 
-	invariantResponse(user, 'User not found', { status: 404 })
+		if (!vendorId) {
+			return {
+				user,
+				userJoinedDisplay: user.createdAt.toLocaleDateString(),
+				isOwner,
+				loggedInUserId,
+				isVendor,
+			}
+		}
 
-	const vendorId = user.vendor?.id
-	const loggedInUserId = await getUserId(request)
-	const isOwner = loggedInUserId === user.id
-	const isVendor = !!user.vendor
-	if (!vendorId) {
+		const [vendorBookings, groupedCounts] = await Promise.all([
+			prisma.booking.findMany({
+				where: {
+					vendorId,
+					status: { in: ['pending', 'confirmed'] },
+					date: { gte: new Date() },
+				},
+				orderBy: [{ status: 'asc' }, { date: 'asc' }],
+				take: 20,
+				select: {
+					id: true,
+					status: true,
+					date: true,
+					totalPrice: true,
+					user: { select: { username: true, name: true } },
+					vendor: { select: { businessName: true, slug: true } },
+				},
+			}),
+			prisma.booking.groupBy({
+				by: ['status'],
+				where: {
+					vendorId,
+					status: { in: ['pending', 'confirmed'] },
+					date: { gte: new Date() },
+				},
+				_count: { status: true },
+			}),
+		])
+
+		const vendorPendingBookings = vendorBookings
+			.filter((b) => b.status === 'pending')
+			.slice(0, 2)
+
+		const vendorUpcomingBookings = vendorBookings
+			.filter((b) => b.status === 'confirmed')
+			.slice(0, 2)
+
+		const vendorPendingBookingCount =
+			groupedCounts.find((g) => g.status === 'pending')?._count.status ?? 0
+		const vendorUpcomingBookingCount =
+			groupedCounts.find((g) => g.status === 'confirmed')?._count.status ?? 0
+
 		return {
 			user,
 			userJoinedDisplay: user.createdAt.toLocaleDateString(),
 			isOwner,
 			loggedInUserId,
 			isVendor,
+			vendorPendingBookings,
+			vendorUpcomingBookings,
+			vendorPendingBookingCount,
+			vendorUpcomingBookingCount,
 		}
 	}
 
-	const [vendorBookings, groupedCounts] = await Promise.all([
-		prisma.booking.findMany({
-			where: {
-				vendorId,
-				status: { in: ['pending', 'confirmed'] },
-				date: { gte: new Date() },
-			},
-			orderBy: [{ status: 'asc' }, { date: 'asc' }],
-			take: 20, // fetch enough to slice 2 per status
-			select: {
-				id: true,
-				status: true,
-				date: true,
-				totalPrice: true,
-				user: { select: { username: true, name: true } },
-				vendor: { select: { businessName: true, slug: true } },
-			},
-		}),
-		prisma.booking.groupBy({
-			by: ['status'],
-			where: {
-				vendorId,
-				status: { in: ['pending', 'confirmed'] },
-				date: { gte: new Date() },
-			},
-			_count: { status: true },
-		}),
-	])
+	// For non-logged-in users or users viewing other profiles
+	const user = await prisma.user.findFirst(baseSelect)
 
-	// split into 2 pending + 2 confirmed
-	const vendorPendingBookings = vendorBookings
-		.filter((b) => b.status === 'pending')
-		.slice(0, 2)
+	invariantResponse(user, 'User not found', { status: 404 })
 
-	const vendorUpcomingBookings = vendorBookings
-		.filter((b) => b.status === 'confirmed')
-		.slice(0, 2)
-
-	const vendorPendingBookingCount =
-		groupedCounts.find((g) => g.status === 'pending')?._count.status ?? 0
-	const vendorUpcomingBookingCount =
-		groupedCounts.find((g) => g.status === 'confirmed')?._count.status ?? 0
+	const isVendor = !!user.vendor
 
 	return {
-		user,
+		user: {
+			...user,
+			favorites: [],
+			reviews: [],
+			vendor: user.vendor,
+			bookings: [],
+		},
 		userJoinedDisplay: user.createdAt.toLocaleDateString(),
-		isOwner,
-		loggedInUserId,
+		isOwner: false,
+		loggedInUserId: null,
 		isVendor,
-		vendorPendingBookings,
-		vendorUpcomingBookings,
-		vendorPendingBookingCount,
-		vendorUpcomingBookingCount,
+		vendorPendingBookings: [],
+		vendorUpcomingBookings: [],
+		vendorPendingBookingCount: 0,
+		vendorUpcomingBookingCount: 0,
 	}
 }
 
@@ -273,6 +317,8 @@ export default function VendorRoute({
 		vendorPendingBookingCount,
 		vendorUpcomingBookingCount,
 	} = loaderData
+
+	console.log('isVendor', isVendor)
 
 	function getInitials(name: string) {
 		return name
@@ -411,19 +457,11 @@ export default function VendorRoute({
 			{/* Vendor Section (if user is a vendor) */}
 			{isVendor && (
 				<section className="container mb-8 md:mb-12">
-					<div className="mb-4 flex items-center gap-3">
-						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
-							<Icon name="building" className="h-5 w-5 text-amber-600" />
-						</div>
-						<div>
-							<h3 className="text-lg font-bold text-slate-900 md:text-2xl dark:text-slate-50">
-								Vendor Profile
-							</h3>
-							<p className="text-sm text-slate-600 md:text-base dark:text-slate-400">
-								Glance at your vendor profile and manage your business.
-							</p>
-						</div>
-					</div>
+					<SectionHeader
+						title="Vendor Profile"
+						description="Overview of vendor stats"
+						iconName="building"
+					/>
 
 					<div className="from-primary/10 to-primary/5 relative overflow-hidden rounded-lg border bg-gradient-to-r p-4">
 						<div className="flex flex-col justify-between md:flex-row md:items-center">
@@ -466,14 +504,16 @@ export default function VendorRoute({
 								</div>
 							</div>
 
-							<div className="mt-4 md:mt-0">
-								<Button asChild size="sm">
-									<Link to="/dashboard">
-										Go to Dashboard
-										<Icon name="chevron-right" className="ml-1 h-3.5 w-3.5" />
-									</Link>
-								</Button>
-							</div>
+							{isOwner && (
+								<div className="mt-4 md:mt-0">
+									<Button asChild size="sm">
+										<Link to="/dashboard">
+											Go to Dashboard
+											<Icon name="chevron-right" className="ml-1 h-3.5 w-3.5" />
+										</Link>
+									</Button>
+								</div>
+							)}
 						</div>
 
 						<div className="mt-4">
@@ -497,19 +537,11 @@ export default function VendorRoute({
 				vendorPendingBookings?.length > 0 &&
 				isOwner && (
 					<section className="container mb-8">
-						<div className="mb-4 flex items-center gap-3">
-							<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
-								<Icon name="circle-alert" className="h-5 w-5 text-amber-600" />
-							</div>
-							<div>
-								<h3 className="text-lg font-bold text-slate-900 md:text-2xl dark:text-slate-50">
-									Pending Booking Requests
-								</h3>
-								<p className="text-slate-600 dark:text-slate-400">
-									{vendorPendingBookingCount} awaiting booking confirmation
-								</p>
-							</div>
-						</div>
+						<SectionHeader
+							title="Pending Booking Requests"
+							description={`${vendorPendingBookingCount} awaiting booking confirmation`}
+							iconName="circle-alert"
+						/>
 
 						<ul className="space-y-4">
 							{vendorPendingBookings.map((booking) => (
@@ -568,7 +600,7 @@ export default function VendorRoute({
 				isOwner && (
 					<section className="container mb-8 md:mb-12">
 						<div className="mb-4 flex items-center gap-3">
-							<div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2 dark:border-emerald-800 dark:bg-emerald-900">
+							<div className="rounded-lg border border-emerald-200 bg-emerald-100 px-3 py-2 dark:border-emerald-800 dark:bg-emerald-900">
 								<Icon
 									name="circle-check"
 									className="h-5 w-5 text-emerald-600"
@@ -639,22 +671,11 @@ export default function VendorRoute({
 			{/* User Profile Section */}
 			<section className="container mb-8 md:mb-12">
 				<div className="mb-6 flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<div className="rounded-lg border border-rose-200 bg-rose-100 p-2">
-							<Icon
-								name="heart"
-								className="h-5 w-5 fill-transparent text-rose-600"
-							/>
-						</div>
-						<div>
-							<h4 className="text-lg font-semibold text-slate-900 md:text-2xl dark:text-slate-100">
-								Favorite Venues
-							</h4>
-							<p className="text-sm text-slate-600 dark:text-slate-400">
-								Your saved venues for quick access
-							</p>
-						</div>
-					</div>
+					<SectionHeader
+						title="Favorite Venues"
+						description="Your saved venues for quick access"
+						iconName="heart"
+					/>
 					{user.favorites.length > 4 && (
 						<Link
 							to="/favorites"
@@ -720,9 +741,9 @@ export default function VendorRoute({
 			</section>
 			<section className="container mb-8 md:mb-12">
 				<SectionHeader
-					title="Booking History"
+					title=" Booking History"
+					description="Past and upcoming bookings"
 					iconName="calendar-days"
-					description="Your recent and upcoming bookings"
 				/>
 
 				<div className="relative">
@@ -803,22 +824,11 @@ export default function VendorRoute({
 			{/* Reviews Section */}
 			<section className="container mb-8">
 				<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-					<div className="mb-4 flex items-center gap-3">
-						<div className="aspect-square rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-800">
-							<Icon
-								name="star"
-								className="h-4 w-4 fill-transparent text-amber-600"
-							/>
-						</div>
-						<div>
-							<h4 className="text-lg font-semibold text-slate-900 md:text-2xl dark:text-slate-100">
-								Your Reviews
-							</h4>
-							<p className="text-sm text-slate-600 dark:text-slate-400">
-								{user.reviews.length} reviews written
-							</p>
-						</div>
-					</div>
+					<SectionHeader
+						title="Reviews"
+						description={`${user.reviews.length} reviews written`}
+						iconName="star"
+					/>
 
 					<ul className="space-y-4">
 						{user.reviews.slice(0, 2).map((review) => (
@@ -966,19 +976,24 @@ const SectionHeader = ({
 	description,
 }: {
 	title: string
-	iconName: string
+	iconName: IconName
 	description: string
 }) => {
 	return (
 		<div className="mb-4 flex items-center gap-3">
-			<div className="rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-900">
-				<Icon name={iconName as IconName} className="h-5 w-5 text-amber-600" />
+			<div className="aspect-square rounded-lg border border-amber-200 bg-amber-100 px-3 py-2 dark:border-amber-800 dark:bg-amber-800">
+				<Icon
+					name={iconName}
+					className="h-5 w-5 fill-transparent text-rose-600"
+				/>
 			</div>
 			<div>
-				<h3 className="text-lg font-bold text-slate-900 md:text-2xl dark:text-slate-50">
+				<h4 className="text-lg font-semibold text-slate-900 md:text-2xl dark:text-slate-100">
 					{title}
-				</h3>
-				<p className="text-slate-600 dark:text-slate-400">{description}</p>
+				</h4>
+				<p className="text-sm text-slate-600 dark:text-slate-400">
+					{description}
+				</p>
 			</div>
 		</div>
 	)
