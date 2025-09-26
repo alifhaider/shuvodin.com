@@ -513,7 +513,7 @@ export default function VendorRoute({
 								<Icon name="circle-alert" className="h-5 w-5 text-amber-600" />
 							</div>
 							<div>
-								<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
+								<h3 className="text-lg font-bold text-slate-900 md:text-2xl dark:text-slate-50">
 									Pending Booking Requests
 								</h3>
 								<p className="text-slate-600 dark:text-slate-400">
@@ -908,7 +908,7 @@ const SectionHeader = ({
 				<Icon name={iconName as IconName} className="h-5 w-5 text-amber-600" />
 			</div>
 			<div>
-				<h3 className="text-2xl font-bold text-slate-900 md:text-lg dark:text-slate-50">
+				<h3 className="text-lg font-bold text-slate-900 md:text-2xl dark:text-slate-50">
 					{title}
 				</h3>
 				<p className="text-slate-600 dark:text-slate-400">{description}</p>
