@@ -1,10 +1,14 @@
+import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
-import { data } from 'react-router'
+import { data, Form, useFetcher, useFetchers } from 'react-router'
 import { z } from 'zod'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route } from './+types/favorite-vendor-form'
+import { cn } from '#app/utils/misc.tsx'
+import { Button } from '#app/components/ui/button.tsx'
 
 const FavoriteVendorFormSchema = z.object({
 	vendorId: z.string().min(1),
@@ -61,7 +65,7 @@ export async function action({ request }: Route.ActionArgs) {
 			{ success: true, result: submission.reply() },
 			{
 				headers: await createToastHeaders({
-					description: 'Vendor removed from favorites successfully',
+					description: 'Vendor removed from shortlist!',
 					type: 'success',
 				}),
 			},
@@ -81,9 +85,71 @@ export async function action({ request }: Route.ActionArgs) {
 		{ success: true, result: submission.reply() },
 		{
 			headers: await createToastHeaders({
-				description: 'Vendor added to favorites successfully',
+				description: 'Vendor shortlisted!',
 				type: 'success',
 			}),
 		},
+	)
+}
+
+/**
+ * If the user's changing their favorite preference, this will return the
+ * value it's being changed to.
+ */
+export function useOptimisticFavoritePreference() {
+	const fetchers = useFetchers()
+	const favoriteFetcher = fetchers.find(
+		(f) => f.formAction === '/resources/favorite-vendor-form',
+	)
+
+	if (favoriteFetcher && favoriteFetcher.formData) {
+		const submission = parseWithZod(favoriteFetcher.formData, {
+			schema: FavoriteVendorFormSchema,
+		})
+
+		if (submission.status === 'success') {
+			return submission.value.vendorId
+		}
+	}
+}
+
+export function FavoriteVendorForm({
+	vendorId,
+	isFavorited,
+}: {
+	vendorId: string
+	isFavorited: boolean
+}) {
+	const fetcher = useFetcher<typeof action>()
+	const [form] = useForm({
+		id: 'favorite-vendor-form',
+		lastResult: fetcher.data?.result,
+		onValidate({ formData }) {
+			return parseWithZod(formData, { schema: FavoriteVendorFormSchema })
+		},
+		shouldRevalidate: 'onBlur',
+	})
+
+	return (
+		<fetcher.Form
+			method="POST"
+			{...getFormProps(form)}
+			action="/resources/favorite-vendor-form"
+		>
+			<input type="hidden" name="vendorId" value={vendorId} />
+			<Button
+				variant="ghost"
+				type="submit"
+				className={cn(
+					'hover:text-primary aspect-square rounded-full fill-transparent p-2',
+					{
+						'text-primary fill-primary': isFavorited,
+					},
+				)}
+			>
+				<span className="sr-only">Favorite</span>
+				<Icon name="heart" className="h-4 w-4" />
+			</Button>
+		</fetcher.Form>
 	)
 }

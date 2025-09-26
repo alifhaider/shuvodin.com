@@ -31,12 +31,15 @@ import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
+import { FavoriteVendorForm } from '../resources+/favorite-vendor-form.tsx'
+import { getUserId } from '#app/utils/auth.server.ts'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const userId = await getUserId(request)
 	const vendors = await prisma.vendor.findMany({
 		select: {
 			id: true,
@@ -74,7 +77,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// 	getVendors(vendorType, city, address, minPrice, maxPrice, sortOrder),
 	// )
 
-	return { vendors, filterSchema, ok: true }
+	let favoritedVendorIds: string[] = []
+	if (userId) {
+		const user = await prisma.user.findUnique({
+			where: { id: userId },
+			select: {
+				favorites: { select: { id: true } },
+			},
+		})
+		favoritedVendorIds = user?.favorites.map((vendor) => vendor.id) ?? []
+	}
+
+	return { vendors, filterSchema, favoritedVendorIds, ok: true }
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
@@ -146,6 +160,10 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			}
 			return newParams
 		})
+	}
+
+	const checkFavorited = (vendorId: string) => {
+		return loaderData.favoritedVendorIds.includes(vendorId)
 	}
 
 	const renderFilters = () => {
@@ -340,30 +358,15 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 									)}
 								</div>
 								<div className="w-full space-y-2">
-									<div className="flex items-center">
+									<div className="flex items-center justify-between">
 										<h4 className="line-clamp-1 text-xl font-extrabold group-hover:underline">
 											{vendor.businessName}
 										</h4>
 
-										<Form
-											method="post"
-											className="hover:text-primary ml-4 flex items-center"
-										>
-											<Checkbox
-												id="favorite"
-												name="favorite"
-												defaultChecked={false}
-												className="sr-only"
-												onCheckedChange={(checked) => {
-													// Handle favorite toggle logic here
-													console.log('Favorite toggled:', checked)
-												}}
-											/>
-											<Label htmlFor="favorite" className="ml-2">
-												<span className="sr-only">Favorite</span>
-												<Icon name="heart" className="h-4 w-4" />
-											</Label>
-										</Form>
+										<FavoriteVendorForm
+											vendorId={vendor.id}
+											isFavorited={checkFavorited(vendor.id)}
+										/>
 									</div>
 									<div className="flex items-center">
 										{Array.from({ length: 5 }, (_, index) => (
