@@ -694,7 +694,7 @@ export default function VendorRoute({
 								<h3 className="mb-1 line-clamp-1 text-sm font-semibold text-slate-900">
 									{fvrt.businessName}
 								</h3>
-								<div className="mb-2 flex items-center justify-between text-xs">
+								<div className="mb-2 flex flex-col text-xs">
 									<div className="flex items-center gap-1">
 										<Icon
 											name="star"
@@ -707,8 +707,7 @@ export default function VendorRoute({
 									<div className="flex items-center gap-1 text-slate-600">
 										<Icon name="map-pin" className="h-3 w-3" />
 										<span>
-											{fvrt.address}, {fvrt.thana}, {fvrt.district},{' '}
-											{fvrt.division}
+											{fvrt.thana}, {fvrt.district}, {fvrt.division}
 										</span>
 									</div>
 								</div>
