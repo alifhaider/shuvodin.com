@@ -868,6 +868,58 @@ export default function VendorRoute({
 					)}
 				</div>
 			</section>
+
+			<section className="container mb-8">
+				<div className="rounded-lg border border-slate-200 bg-slate-100 p-6 dark:border-slate-800 dark:bg-slate-900">
+					<h3 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">
+						Quick Actions
+					</h3>
+					<div className="space-y-3">
+						<Button
+							asChild
+							variant="ghost"
+							className="w-full justify-start text-slate-700 hover:bg-white hover:text-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-400"
+						>
+							<Link to="/vendors">
+								<Icon name="trending-up" className="mr-3 h-4 w-4" />
+								Browse Vendors
+							</Link>
+						</Button>
+						<Button
+							asChild
+							variant="ghost"
+							className="w-full justify-start fill-transparent text-slate-700 hover:bg-white hover:text-rose-600 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-rose-400"
+						>
+							<Link to="/favorites">
+								<Icon name="heart" className="mr-3 h-4 w-4" />
+								My Favorites
+							</Link>
+						</Button>
+						<Button
+							asChild
+							variant="ghost"
+							className="w-full justify-start text-slate-700 hover:bg-white hover:text-blue-600 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-400"
+						>
+							<Link to="/bookings">
+								<Icon name="calendar-days" className="mr-3 h-4 w-4" />
+								My Bookings
+							</Link>
+						</Button>
+						{isVendor && (
+							<Button
+								asChild
+								variant="ghost"
+								className="w-full justify-start text-slate-700 hover:bg-white hover:text-purple-600 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-purple-400"
+							>
+								<Link to="/dashboard">
+									<Icon name="award" className="mr-3 h-4 w-4" />
+									Vendor Dashboard
+								</Link>
+							</Button>
+						)}
+					</div>
+				</div>
+			</section>
 		</>
 	)
 }
