@@ -802,32 +802,34 @@ export default function VendorRoute({
 
 			{/* Reviews Section */}
 			<section className="container mb-8">
-				<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+				<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
 					<div className="mb-4 flex items-center gap-3">
-						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2">
+						<div className="aspect-square rounded-lg border border-amber-200 bg-amber-100 p-2 dark:border-amber-800 dark:bg-amber-800">
 							<Icon
 								name="star"
 								className="h-4 w-4 fill-transparent text-amber-600"
 							/>
 						</div>
 						<div>
-							<h3 className="font-semibold text-slate-900">Your Reviews</h3>
-							<p className="text-xs text-slate-600">
+							<h4 className="text-lg font-semibold text-slate-900 md:text-2xl dark:text-slate-100">
+								Your Reviews
+							</h4>
+							<p className="text-sm text-slate-600 dark:text-slate-400">
 								{user.reviews.length} reviews written
 							</p>
 						</div>
 					</div>
 
-					<div className="space-y-4">
+					<ul className="space-y-4">
 						{user.reviews.slice(0, 2).map((review) => (
-							<div
+							<li
 								key={review.id}
-								className="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+								className="border-b border-slate-100 pb-4 last:border-0 last:pb-0 dark:border-slate-900"
 							>
 								<div className="mb-2 flex items-center justify-between">
 									<Link
 										to={`/vendors/${review.vendor.slug}`}
-										className="line-clamp-1 text-sm font-medium text-slate-900 transition-colors hover:text-blue-600"
+										className="line-clamp-1 text-sm font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
 									>
 										{review.vendor.businessName}
 									</Link>
@@ -845,23 +847,25 @@ export default function VendorRoute({
 										))}
 									</div>
 								</div>
-								<p className="mb-2 line-clamp-2 text-xs text-slate-600">
+								<p className="mb-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-400">
 									{review.comment}
 								</p>
-								<p className="text-xs text-slate-400">
+								<p className="text-xs text-slate-400 dark:text-slate-600">
 									{formatDate(review.createdAt, 'dd MMM, yyyy')}
 								</p>
-							</div>
+							</li>
 						))}
-					</div>
+					</ul>
 
-					<Link
-						to="/profile/reviews"
-						className="mt-4 block text-center text-sm font-medium text-blue-600 hover:text-blue-700"
-					>
-						View All Reviews
-						<Icon name="chevron-right" className="ml-1 inline h-3 w-3" />
-					</Link>
+					{user.reviews.length > 2 && (
+						<Link
+							to="/profile/reviews"
+							className="mt-4 block text-center text-sm font-medium text-blue-600 hover:text-blue-700"
+						>
+							View All Reviews
+							<Icon name="chevron-right" className="ml-1 inline h-3 w-3" />
+						</Link>
+					)}
 				</div>
 			</section>
 		</>
