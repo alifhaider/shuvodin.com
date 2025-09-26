@@ -1,4 +1,4 @@
-import { fa, faker } from '@faker-js/faker'
+import { faker } from '@faker-js/faker'
 import { prisma } from '#app/utils/db.server.ts'
 import { VendorType } from '#app/utils/misc.tsx'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
