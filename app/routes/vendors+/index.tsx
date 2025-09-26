@@ -24,7 +24,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '#app/components/ui/select.tsx'
-import { getUserId } from '#app/utils/auth.server.ts'
+import { getUserFavoriteVendorIds } from '#app/utils/auth.server.ts'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
@@ -39,7 +39,6 @@ export const meta: Route.MetaFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-	const userId = await getUserId(request)
 	const vendors = await prisma.vendor.findMany({
 		select: {
 			id: true,
@@ -77,16 +76,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// 	getVendors(vendorType, city, address, minPrice, maxPrice, sortOrder),
 	// )
 
-	let favoritedVendorIds: string[] = []
-	if (userId) {
-		const user = await prisma.user.findUnique({
-			where: { id: userId },
-			select: {
-				favorites: { select: { id: true } },
-			},
-		})
-		favoritedVendorIds = user?.favorites.map((vendor) => vendor.id) ?? []
-	}
+	const favoritedVendorIds = await getUserFavoriteVendorIds(request)
 
 	return { vendors, filterSchema, favoritedVendorIds, ok: true }
 }

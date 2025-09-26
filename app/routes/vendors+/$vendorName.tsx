@@ -20,10 +20,15 @@ import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Label } from '#app/components/ui/label.tsx'
 import { Separator } from '#app/components/ui/separator.tsx'
-import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
+import {
+	getUserFavoriteVendorIds,
+	getUserId,
+	requireUserId,
+} from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getVendorImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
+import { FavoriteVendorForm } from '../resources+/favorite-vendor-form'
 import { type Route } from './+types/$vendorName'
 
 export const meta: Route.MetaFunction = ({ data }) => {
@@ -120,8 +125,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	})
 
 	invariantResponse(vendor, 'Vendor not found', { status: 404 })
+	const favoriteVendorIds = await getUserFavoriteVendorIds(request)
+	console.log({ favoriteVendorIds, id: vendor.id })
 
-	return { vendor, loggedInUserId }
+	return {
+		vendor,
+		loggedInUserId,
+		isFavorited: favoriteVendorIds.includes(vendor.id),
+	}
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -215,7 +226,7 @@ export default function VendorsPage({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const { vendor, loggedInUserId } = loaderData
+	const { vendor, loggedInUserId, isFavorited } = loaderData
 
 	return (
 		<>
@@ -315,14 +326,10 @@ export default function VendorsPage({
 									<span className="sr-only">Share</span>
 								</button>
 
-								<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
-									<Icon
-										name="heart"
-										fill="red"
-										className="h-5 w-5 fill-current"
-									/>
-									<span className="sr-only">Favorite</span>
-								</button>
+								<FavoriteVendorForm
+									vendorId={vendor.id}
+									isFavorited={isFavorited}
+								/>
 							</div>
 						</div>
 					</div>

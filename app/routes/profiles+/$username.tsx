@@ -15,6 +15,7 @@ import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getUserImgSrc, getVendorImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
+import { FavoriteVendorForm } from '../resources+/favorite-vendor-form'
 import { type Route } from './+types/$username'
 import { type IconName } from '@/icon-name'
 
@@ -54,6 +55,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			},
 			favorites: {
 				select: {
+					id: true,
 					slug: true,
 					businessName: true,
 					district: true,
@@ -676,7 +678,7 @@ export default function VendorRoute({
 					{user.favorites.slice(0, 8).map((fvrt) => (
 						<li
 							key={fvrt.slug}
-							className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:border-blue-300 hover:shadow-md"
+							className="group hover:border-accent relative overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950"
 						>
 							<div className="aspect-[4/3] overflow-hidden">
 								<Img
@@ -690,13 +692,10 @@ export default function VendorRoute({
 									className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 								/>
 								<div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-								<Button
-									size="sm"
-									variant="ghost"
-									className="absolute top-2 right-2 h-8 w-8 bg-white/90 p-0 text-rose-600 hover:bg-white hover:text-rose-700"
-								>
-									<Icon name="heart" className="h-4 w-4 fill-current" />
-								</Button>
+
+								<div className="absolute top-2 right-2 z-10">
+									<FavoriteVendorForm vendorId={fvrt.id} isFavorited />
+								</div>
 							</div>
 
 							<div className="absolute right-0 bottom-0 left-0 bg-white/95 p-3 backdrop-blur-sm">

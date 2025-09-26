@@ -15,6 +15,7 @@ const FavoriteVendorFormSchema = z.object({
 })
 
 export async function action({ request }: Route.ActionArgs) {
+	console.log('running action')
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const submission = await parseWithZod(formData, {
@@ -124,10 +125,6 @@ export function FavoriteVendorForm({
 	const [form] = useForm({
 		id: 'favorite-vendor-form',
 		lastResult: fetcher.data?.result,
-		onValidate({ formData }) {
-			return parseWithZod(formData, { schema: FavoriteVendorFormSchema })
-		},
-		shouldRevalidate: 'onBlur',
 	})
 
 	return (
@@ -141,7 +138,7 @@ export function FavoriteVendorForm({
 				variant="ghost"
 				type="submit"
 				className={cn(
-					'hover:text-primary aspect-square rounded-full fill-transparent p-2',
+					'hover:text-primary aspect-square cursor-pointer rounded-full fill-transparent p-2',
 					{
 						'text-primary fill-primary': isFavorited,
 					},

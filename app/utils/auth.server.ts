@@ -46,6 +46,24 @@ export async function getUserId(request: Request) {
 	return session.userId
 }
 
+export async function getUserFavoriteVendorIds(request: Request) {
+	const userId = await getUserId(request)
+	if (!userId) {
+		return []
+	}
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		select: {
+			favorites: {
+				select: {
+					id: true,
+				},
+			},
+		},
+	})
+	return user?.favorites.map((vendor) => vendor.id) ?? []
+}
+
 export async function requireVendor(request: Request) {
 	const userId = await requireUserId(request)
 	const vendor = await prisma.vendor.findUnique({
