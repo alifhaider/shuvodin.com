@@ -9,7 +9,6 @@ import { requireVendorId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route } from './+types/vendor-booking-action'
-import { formatDate } from 'date-fns'
 
 const BookingDeclineSchema = z.object({
 	bookingId: z.string().min(1),
@@ -126,7 +125,7 @@ export async function action({ request }: Route.ActionArgs) {
 				doesAlreadyHaveBookingOnSameDate: async (bookingId) => {
 					// if a vendor already has confirmed a booking on the same date, they cannot accept another booking on that date
 					// this is to prevent double booking
-					// we check for bookings that are in the future and have been accepted
+					// we check for bookings that are in the future and have been confirmed
 					// if a booking is found, we return true, otherwise false
 					const bookingDate = await prisma.booking.findUnique({
 						where: { id: bookingId },
@@ -137,7 +136,7 @@ export async function action({ request }: Route.ActionArgs) {
 					const existingBooking = await prisma.booking.findFirst({
 						where: {
 							date: bookingDate.date,
-							status: 'ACCEPTED',
+							status: 'confirmed',
 						},
 					})
 
