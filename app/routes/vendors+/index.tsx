@@ -24,15 +24,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '#app/components/ui/select.tsx'
+import { getUserId } from '#app/utils/auth.server.ts'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
 import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
+import { FavoriteVendorForm } from '../resources+/favorite-vendor-form.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
-import { FavoriteVendorForm } from '../resources+/favorite-vendor-form.tsx'
-import { getUserId } from '#app/utils/auth.server.ts'
 
 export const meta: Route.MetaFunction = () => {
 	return [{ title: 'Vendors / ShuvoDin' }]
