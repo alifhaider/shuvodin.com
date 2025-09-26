@@ -1,5 +1,6 @@
 import { getFormProps, useForm } from '@conform-to/react'
 import { parseWithZod } from '@conform-to/zod'
+import { motion } from 'framer-motion'
 import { data, useFetcher, useFetchers } from 'react-router'
 import { z } from 'zod'
 import { Button } from '#app/components/ui/button.tsx'
@@ -122,30 +123,37 @@ export function FavoriteVendorForm({
 }) {
 	const fetcher = useFetcher<typeof action>()
 	const [form] = useForm({
-		id: 'favorite-vendor-form',
 		lastResult: fetcher.data?.result,
 	})
 
 	return (
 		<fetcher.Form
 			method="POST"
-			{...getFormProps(form)}
 			action="/resources/favorite-vendor-form"
+			{...getFormProps(form)}
 		>
 			<input type="hidden" name="vendorId" value={vendorId} />
-			<Button
-				variant="ghost"
-				type="submit"
-				className={cn(
-					'hover:text-primary aspect-square cursor-pointer rounded-full fill-transparent p-2',
-					{
-						'text-primary fill-primary': isFavorited,
-					},
-				)}
+			<motion.div
+				key={isFavorited ? 'favorited' : 'unfavorited'}
+				initial={{ scale: isFavorited ? 0.8 : 1.2 }}
+				animate={{ scale: 1 }}
+				transition={{ type: 'spring', stiffness: 300, damping: 20 }}
 			>
-				<span className="sr-only">Favorite</span>
-				<Icon name="heart" className="h-4 w-4" />
-			</Button>
+				<Button
+					variant="ghost"
+					type="submit"
+					disabled={fetcher.state !== 'idle'}
+					className={cn(
+						'hover:text-primary aspect-square cursor-pointer rounded-full fill-transparent p-2',
+						{
+							'text-primary fill-primary': isFavorited,
+						},
+					)}
+				>
+					<span className="sr-only">Favorite</span>
+					<Icon name="heart" className="h-4 w-4" />
+				</Button>
+			</motion.div>
 		</fetcher.Form>
 	)
 }
