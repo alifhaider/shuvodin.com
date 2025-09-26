@@ -57,6 +57,8 @@ model Vendor {
   website String?
   socialLinks Json?
   
+  dailyBookingLimit Int @default(1)
+  
   rating Float @default(0)
   reviews Review[]
   

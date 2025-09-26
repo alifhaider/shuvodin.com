@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker'
+import { fa, faker } from '@faker-js/faker'
 import { prisma } from '#app/utils/db.server.ts'
 import { VendorType } from '#app/utils/misc.tsx'
 import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
@@ -180,6 +180,7 @@ async function seed() {
 					vendorTypeId: faker.helpers.arrayElement(vendorTypes)?.id,
 					phone: faker.phone.number(),
 					website: faker.internet.url(),
+					dailyBookingLimit: faker.number.int({ min: 1, max: 5 }),
 					rating: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
 					division: faker.helpers.arrayElement(mockVendorLocations)?.division,
 					district: faker.helpers.arrayElement(mockVendorLocations)?.district,
