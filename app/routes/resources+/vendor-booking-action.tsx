@@ -11,24 +11,29 @@ import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route } from './+types/vendor-booking-action'
 
 const BookingDeclineSchema = z.object({
-	bookingId: z.string().min(1),
-	vendorId: z.string().min(1),
+	bookingId: z.string(),
+	vendorId: z.string(),
 })
 
 function CreateBookingAcceptSchema(
 	intent: Intent | null,
 	options?: {
-		doesAlreadyHaveBookingOnSameDate: (bookingId: string) => Promise<boolean>
+		checkVendorBookingLimit: (
+			bookingId: string,
+			vendorId: string,
+		) => Promise<boolean>
 	},
 ) {
 	return z
 		.object({
-			bookingId: z.string().min(1),
+			bookingId: z.string(),
+			vendorId: z.string(),
 		})
 		.pipe(
 			z
 				.object({
 					bookingId: z.string(),
+					vendorId: z.string(),
 				})
 				.superRefine(async (data, ctx) => {
 					const isValidatingBooking =
@@ -42,7 +47,7 @@ function CreateBookingAcceptSchema(
 						return
 					}
 
-					if (typeof options?.doesAlreadyHaveBookingOnSameDate !== 'function') {
+					if (typeof options?.checkVendorBookingLimit !== 'function') {
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
 							message: 'Booking validation function is not provided.',
@@ -51,15 +56,18 @@ function CreateBookingAcceptSchema(
 					}
 
 					try {
-						const alreadyHasBooking =
-							await options.doesAlreadyHaveBookingOnSameDate(data.bookingId)
-						if (alreadyHasBooking) {
+						const exceedsLimit = await options.checkVendorBookingLimit(
+							data.bookingId,
+							data.vendorId,
+						)
+
+						if (exceedsLimit) {
 							ctx.addIssue({
 								code: z.ZodIssueCode.custom,
 								path: ['form'],
-								message: 'You have booking on this date.',
+								message:
+									'This vendor has already reached the booking limit for the selected date.',
 							})
-							return
 						}
 					} catch (error) {
 						if (error instanceof Error) {
@@ -70,7 +78,6 @@ function CreateBookingAcceptSchema(
 								fatal: true,
 							})
 						}
-						return
 					}
 				}),
 		)
@@ -122,25 +129,30 @@ export async function action({ request }: Route.ActionArgs) {
 		await requireVendorId(request)
 		const submission = parseWithZod(formData, {
 			schema: CreateBookingAcceptSchema(null, {
-				doesAlreadyHaveBookingOnSameDate: async (bookingId) => {
-					// if a vendor already has confirmed a booking on the same date, they cannot accept another booking on that date
-					// this is to prevent double booking
-					// we check for bookings that are in the future and have been confirmed
-					// if a booking is found, we return true, otherwise false
+				checkVendorBookingLimit: async (bookingId, vendorId) => {
+					// Get the booking date
 					const bookingDate = await prisma.booking.findUnique({
 						where: { id: bookingId },
 						select: { date: true },
 					})
 					if (!bookingDate) return false
 
-					const existingBooking = await prisma.booking.findFirst({
+					// Count confirmed bookings on the same date for this vendor
+					const existingCount = await prisma.booking.count({
 						where: {
+							vendorId,
 							date: bookingDate.date,
 							status: 'confirmed',
 						},
 					})
 
-					return !!existingBooking
+					// Fetch vendor limit
+					const vendor = await prisma.vendor.findUnique({
+						where: { id: vendorId },
+						select: { dailyBookingLimit: true },
+					})
+
+					return existingCount >= (vendor?.dailyBookingLimit ?? 1)
 				},
 			}),
 		})
