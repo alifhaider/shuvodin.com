@@ -13,7 +13,7 @@ import { Icon } from '#app/components/ui/icon.tsx'
 import { Progress } from '#app/components/ui/progress.tsx'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { getUserImgSrc, getVendorImgSrc } from '#app/utils/misc.tsx'
+import { cn, getUserImgSrc, getVendorImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { FavoriteVendorForm } from '../resources+/favorite-vendor-form'
 import { type Route } from './+types/$username'
@@ -802,16 +802,32 @@ export default function VendorRoute({
 
 			{/* Reviews Section */}
 			<section className="container mb-8">
-				<h2 className="mb-4 text-lg font-semibold md:text-2xl">Your Reviews</h2>
+				<div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+					<div className="mb-4 flex items-center gap-3">
+						<div className="rounded-lg border border-amber-200 bg-amber-100 p-2">
+							<Icon
+								name="star"
+								className="h-4 w-4 fill-transparent text-amber-600"
+							/>
+						</div>
+						<div>
+							<h3 className="font-semibold text-slate-900">Your Reviews</h3>
+							<p className="text-xs text-slate-600">
+								{user.reviews.length} reviews written
+							</p>
+						</div>
+					</div>
 
-				{user.reviews.length > 0 ? (
 					<div className="space-y-4">
-						{user.reviews.map((review) => (
-							<div key={review.id} className="bg-muted/20 rounded-lg p-4">
+						{user.reviews.slice(0, 2).map((review) => (
+							<div
+								key={review.id}
+								className="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+							>
 								<div className="mb-2 flex items-center justify-between">
 									<Link
 										to={`/vendors/${review.vendor.slug}`}
-										className="text-sm font-medium hover:underline md:text-lg"
+										className="line-clamp-1 text-sm font-medium text-slate-900 transition-colors hover:text-blue-600"
 									>
 										{review.vendor.businessName}
 									</Link>
@@ -820,29 +836,33 @@ export default function VendorRoute({
 											<Icon
 												name="star"
 												key={i}
-												className={`h-3.5 w-3.5 ${i < Math.floor(review.rating) ? 'fill-yellow-400 text-yellow-400' : i < review.rating ? 'fill-yellow-400/50 text-yellow-400/50' : 'text-muted'}`}
+												className={cn('h-3 w-3 fill-transparent', {
+													'fill-amber-400 text-amber-400':
+														i < Math.floor(review.rating),
+													'text-slate-300': i >= Math.floor(review.rating),
+												})}
 											/>
 										))}
 									</div>
 								</div>
-
-								<p className="mb-2 text-xs md:text-base">{review.comment}</p>
-
-								<div className="flex items-center justify-between">
-									<p className="text-muted-foreground text-xs md:text-base">
-										{formatDate(review.createdAt, 'PPP')}
-									</p>
-								</div>
+								<p className="mb-2 line-clamp-2 text-xs text-slate-600">
+									{review.comment}
+								</p>
+								<p className="text-xs text-slate-400">
+									{formatDate(review.createdAt, 'dd MMM, yyyy')}
+								</p>
 							</div>
 						))}
 					</div>
-				) : (
-					<div className="bg-muted/20 rounded-lg border py-8 text-center">
-						<p className="text-muted-foreground text-sm md:text-lg">
-							You haven't written any reviews yet.
-						</p>
-					</div>
-				)}
+
+					<Link
+						to="/profile/reviews"
+						className="mt-4 block text-center text-sm font-medium text-blue-600 hover:text-blue-700"
+					>
+						View All Reviews
+						<Icon name="chevron-right" className="ml-1 inline h-3 w-3" />
+					</Link>
+				</div>
 			</section>
 		</>
 	)

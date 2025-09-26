@@ -364,7 +364,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 												key={index}
 												name="star"
 												className={clsx(
-													'h-3.5 w-3.5',
+													'h-3.5 w-3.5 fill-transparent',
 													index < vendor.rating
 														? 'fill-yellow-500 text-yellow-500'
 														: 'text-gray-300',
