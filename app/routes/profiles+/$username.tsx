@@ -47,12 +47,7 @@ export const meta = ({ data }: Route.MetaArgs) => {
 export async function loader({ request, params }: Route.LoaderArgs) {
 	const user = await prisma.user.findFirst({
 		include: {
-			image: {
-				select: {
-					objectKey: true,
-					altText: true,
-				},
-			},
+			image: { select: { objectKey: true, altText: true } },
 			favorites: {
 				select: {
 					id: true,
@@ -129,13 +124,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 				},
 			},
 
-			_count: {
-				select: {
-					reviews: true,
-					favorites: true,
-					bookings: true,
-				},
-			},
+			_count: { select: { reviews: true, favorites: true, bookings: true } },
 		},
 
 		where: { username: params.username },
