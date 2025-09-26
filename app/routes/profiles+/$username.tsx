@@ -61,6 +61,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 					rating: true,
 					vendorType: { select: { name: true } },
 				},
+				orderBy: { createdAt: 'desc' },
 			},
 			reviews: {
 				orderBy: { createdAt: 'desc' },
@@ -654,16 +655,19 @@ export default function VendorRoute({
 							</p>
 						</div>
 					</div>
-					<Link
-						to="/favorites"
-						className="text-primary text-sm font-medium hover:underline md:text-base"
-					>
-						View all &rarr;
-					</Link>
+					{user.favorites.length > 4 && (
+						<Link
+							to="/favorites"
+							className="text-primary text-sm font-medium hover:underline md:text-base"
+						>
+							View all
+							<Icon name="chevron-right" className="ml-1 inline h-3 w-3" />
+						</Link>
+					)}
 				</div>
 
 				<ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-					{user.favorites.slice(0, 8).map((fvrt) => (
+					{user.favorites.slice(0, 4).map((fvrt) => (
 						<li
 							key={fvrt.slug}
 							className="group hover:border-accent relative overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950"
