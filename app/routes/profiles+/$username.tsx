@@ -302,9 +302,8 @@ export default function VendorRoute({
 				<Breadcrumb
 					items={[
 						{ to: '/', label: 'Home' },
-						{ to: `/users`, label: 'Users' },
 						{
-							to: `/users/${user.username}`,
+							to: `/profiles/${user.username}`,
 							label: user.name ?? user.username,
 							isCurrent: true,
 						},

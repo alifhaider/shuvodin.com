@@ -126,7 +126,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
 	invariantResponse(vendor, 'Vendor not found', { status: 404 })
 	const favoriteVendorIds = await getUserFavoriteVendorIds(request)
-	console.log({ favoriteVendorIds, id: vendor.id })
 
 	return {
 		vendor,

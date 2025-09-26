@@ -15,7 +15,6 @@ const FavoriteVendorFormSchema = z.object({
 })
 
 export async function action({ request }: Route.ActionArgs) {
-	console.log('running action')
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	const submission = await parseWithZod(formData, {

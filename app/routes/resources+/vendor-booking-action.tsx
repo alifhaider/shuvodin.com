@@ -8,6 +8,7 @@ import { requireVendorId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
 import { type Route } from './+types/vendor-booking-action'
+import { formatDate } from 'date-fns'
 
 const BookingDeclineSchema = z.object({
 	bookingId: z.string().min(1),
@@ -158,17 +159,18 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 
 		const { bookingId } = submission.value
-		await prisma.booking.update({
+		const acceptedBooking = await prisma.booking.update({
 			where: { id: bookingId },
-			data: { status: 'ACCEPTED' },
+			data: { status: 'confirmed' },
+			select: { date: true },
 		})
 
 		return data(
-			{ success: true, result: 'Booking accepted successfully.' },
+			{ success: true, result: 'Booking confirmed successfully.' },
 			{
 				headers: await createToastHeaders({
-					title: 'Booking Accepted',
-					description: 'The booking has been accepted successfully.',
+					title: 'Booking Confirmed',
+					description: `Now you got a new booking on ${formatDate(acceptedBooking.date, 'dd MMM, yyyy')}.`,
 					type: 'success',
 				}),
 			},
