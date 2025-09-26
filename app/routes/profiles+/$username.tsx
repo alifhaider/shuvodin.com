@@ -650,7 +650,10 @@ export default function VendorRoute({
 				<div className="mb-6 flex items-center justify-between">
 					<div className="flex items-center gap-4">
 						<div className="rounded-lg border border-rose-200 bg-rose-100 p-2">
-							<Icon name="heart" className="h-5 w-5 text-rose-600" />
+							<Icon
+								name="heart"
+								className="h-5 w-5 fill-transparent text-rose-600"
+							/>
 						</div>
 						<div>
 							<h4 className="text-lg font-semibold text-slate-900 md:text-2xl dark:text-slate-100">

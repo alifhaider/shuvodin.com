@@ -316,7 +316,11 @@ export default function VendorsPage({
 								</button>
 
 								<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
-									<Icon name="heart" fill="red" className="h-5 w-5" />
+									<Icon
+										name="heart"
+										fill="red"
+										className="h-5 w-5 fill-current"
+									/>
 									<span className="sr-only">Favorite</span>
 								</button>
 							</div>
