@@ -138,6 +138,7 @@ function createVendor() {
 		rating: 0,
 		latitude: 0,
 		longitude: 0,
+		dailyBookingLimit: 1,
 	} satisfies Omit<
 		Vendor,
 		'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'type'

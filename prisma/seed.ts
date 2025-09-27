@@ -180,6 +180,7 @@ async function seed() {
 					vendorTypeId: faker.helpers.arrayElement(vendorTypes)?.id,
 					phone: faker.phone.number(),
 					website: faker.internet.url(),
+					dailyBookingLimit: faker.number.int({ min: 1, max: 5 }),
 					rating: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
 					division: faker.helpers.arrayElement(mockVendorLocations)?.division,
 					district: faker.helpers.arrayElement(mockVendorLocations)?.district,
@@ -517,6 +518,18 @@ async function seed() {
 					date: bookingDate,
 					status: 'confirmed',
 					totalPrice: faker.number.int({ min: 100, max: 1000 }),
+					items: {
+						create: [
+							{
+								name: 'Sample Item 1',
+								price: faker.number.int({ min: 50, max: 500 }),
+							},
+							{
+								name: 'Sample Item 2',
+								price: faker.number.int({ min: 50, max: 500 }),
+							},
+						],
+					},
 				},
 			})
 		}),

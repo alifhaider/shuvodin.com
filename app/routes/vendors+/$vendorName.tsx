@@ -20,10 +20,15 @@ import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Label } from '#app/components/ui/label.tsx'
 import { Separator } from '#app/components/ui/separator.tsx'
-import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
+import {
+	getUserFavoriteVendorIds,
+	getUserId,
+	requireUserId,
+} from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { getVendorImgSrc } from '#app/utils/misc.tsx'
+import { cn, getVendorImgSrc } from '#app/utils/misc.tsx'
 import { createToastHeaders } from '#app/utils/toast.server.ts'
+import { FavoriteVendorForm } from '../resources+/favorite-vendor-form'
 import { type Route } from './+types/$vendorName'
 
 export const meta: Route.MetaFunction = ({ data }) => {
@@ -120,8 +125,13 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	})
 
 	invariantResponse(vendor, 'Vendor not found', { status: 404 })
+	const favoriteVendorIds = await getUserFavoriteVendorIds(request)
 
-	return { vendor, loggedInUserId }
+	return {
+		vendor,
+		loggedInUserId,
+		isFavorited: favoriteVendorIds.includes(vendor.id),
+	}
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -215,7 +225,7 @@ export default function VendorsPage({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const { vendor, loggedInUserId } = loaderData
+	const { vendor, loggedInUserId, isFavorited } = loaderData
 
 	return (
 		<>
@@ -255,7 +265,7 @@ export default function VendorsPage({
 										key={index}
 										name="star"
 										className={clsx(
-											'h-6 w-6',
+											'h-6 w-6 fill-transparent',
 											index < vendor.rating
 												? 'fill-yellow-500 text-yellow-500'
 												: 'text-gray-300',
@@ -315,10 +325,10 @@ export default function VendorsPage({
 									<span className="sr-only">Share</span>
 								</button>
 
-								<button className="border-primary group text-primary hover:text-primary-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2 hover:bg-red-400">
-									<Icon name="heart" fill="red" className="h-5 w-5" />
-									<span className="sr-only">Favorite</span>
-								</button>
+								<FavoriteVendorForm
+									vendorId={vendor.id}
+									isFavorited={isFavorited}
+								/>
 							</div>
 						</div>
 					</div>
@@ -567,7 +577,7 @@ const Reviews = ({
 				<p className="flex items-center gap-2 text-6xl font-extrabold">
 					{overallRating || 0}
 					<span>
-						<Icon name="star" className="fill-priamry text-primary h-6 w-6" />
+						<Icon name="star" className="fill-primary text-primary h-6 w-6" />
 					</span>
 				</p>
 
@@ -596,7 +606,9 @@ const Reviews = ({
 									<span key={i}>
 										<Icon
 											name="star"
-											className={`h-5 w-5 fill-transparent text-gray-300 ${review.rating > i ? 'fill-primary text-primary' : ''}`}
+											className={cn('h-5 w-5 fill-transparent text-gray-300', {
+												'fill-primary text-primary': review.rating > i,
+											})}
 										/>
 									</span>
 								))}
@@ -663,7 +675,16 @@ const Reviews = ({
 									/>
 									<Icon
 										name="star"
-										className={`h-8 w-8 ${star <= Number(fields.rating.value) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 hover:text-yellow-400'} transition-colors duration-150`}
+										className={cn(
+											'h-8 w-8 fill-transparent',
+											{
+												'fill-yellow-400 text-yellow-400':
+													star <= Number(fields.rating.value),
+												'text-gray-300 hover:text-yellow-400':
+													star > Number(fields.rating.value),
+											},
+											'transition-colors duration-150',
+										)}
 									/>
 								</label>
 							))}

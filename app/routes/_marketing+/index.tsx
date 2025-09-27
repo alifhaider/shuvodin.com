@@ -233,7 +233,10 @@ export default function Index() {
 								100% Verified Vendors
 							</div>
 							<div className="flex items-center gap-2">
-								<Icon name="star" className="text-primary h-5 w-5" />
+								<Icon
+									name="star"
+									className="text-primary h-5 w-5 fill-transparent"
+								/>
 								4.8+ Average Rating
 							</div>
 							<div className="flex items-center gap-2">

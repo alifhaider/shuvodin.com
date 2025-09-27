@@ -310,6 +310,7 @@
 	::backdrop,
 	::file-selector-button {
 		border-color: hsl(var(--border));
+		@apply border-border;
 	}
 
 	body {

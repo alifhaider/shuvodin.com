@@ -24,10 +24,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '#app/components/ui/select.tsx'
+import { getUserFavoriteVendorIds } from '#app/utils/auth.server.ts'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
 import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
+import { FavoriteVendorForm } from '../resources+/favorite-vendor-form.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
 import { type Route } from './+types/index.ts'
@@ -74,7 +76,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 	// 	getVendors(vendorType, city, address, minPrice, maxPrice, sortOrder),
 	// )
 
-	return { vendors, filterSchema, ok: true }
+	const favoritedVendorIds = await getUserFavoriteVendorIds(request)
+
+	return { vendors, filterSchema, favoritedVendorIds, ok: true }
 }
 
 export default function VendorsPage({ loaderData }: Route.ComponentProps) {
@@ -146,6 +150,10 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 			}
 			return newParams
 		})
+	}
+
+	const checkFavorited = (vendorId: string) => {
+		return loaderData.favoritedVendorIds.includes(vendorId)
 	}
 
 	const renderFilters = () => {
@@ -340,30 +348,15 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 									)}
 								</div>
 								<div className="w-full space-y-2">
-									<div className="flex items-center">
+									<div className="flex items-center justify-between">
 										<h4 className="line-clamp-1 text-xl font-extrabold group-hover:underline">
 											{vendor.businessName}
 										</h4>
 
-										<Form
-											method="post"
-											className="hover:text-primary ml-4 flex items-center"
-										>
-											<Checkbox
-												id="favorite"
-												name="favorite"
-												defaultChecked={false}
-												className="sr-only"
-												onCheckedChange={(checked) => {
-													// Handle favorite toggle logic here
-													console.log('Favorite toggled:', checked)
-												}}
-											/>
-											<Label htmlFor="favorite" className="ml-2">
-												<span className="sr-only">Favorite</span>
-												<Icon name="heart" className="h-4 w-4" />
-											</Label>
-										</Form>
+										<FavoriteVendorForm
+											vendorId={vendor.id}
+											isFavorited={checkFavorited(vendor.id)}
+										/>
 									</div>
 									<div className="flex items-center">
 										{Array.from({ length: 5 }, (_, index) => (
@@ -371,7 +364,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 												key={index}
 												name="star"
 												className={clsx(
-													'h-3.5 w-3.5',
+													'h-3.5 w-3.5 fill-transparent',
 													index < vendor.rating
 														? 'fill-yellow-500 text-yellow-500'
 														: 'text-gray-300',
