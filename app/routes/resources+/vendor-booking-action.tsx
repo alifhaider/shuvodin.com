@@ -236,7 +236,7 @@ export function VendorBookingAction({
 			<declineBookingFetcher.Form
 				method="post"
 				className="inline"
-				action="/vendor-booking-action"
+				action="/resources/vendor-booking-action"
 			>
 				<input type="hidden" name="bookingId" value={bookingId} />
 				<input type="hidden" name="vendorId" value={vendorId} />
@@ -254,7 +254,7 @@ export function VendorBookingAction({
 			<acceptBookingFetcher.Form
 				method="post"
 				className="ml-2 inline"
-				action="/vendor-booking-action"
+				action="/resources/vendor-booking-action"
 			>
 				<input type="hidden" name="bookingId" value={bookingId} />
 				<input type="hidden" name="vendorId" value={vendorId} />
