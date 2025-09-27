@@ -241,9 +241,7 @@ export function VendorBookingAction({
 				<input type="hidden" name="bookingId" value={bookingId} />
 				<input type="hidden" name="vendorId" value={vendorId} />
 				<StatusButton
-					status={
-						declineBookingFetcher.state !== 'idle' ? 'pending' : 'success'
-					}
+					status={declineBookingFetcher.state !== 'idle' ? 'pending' : 'idle'}
 					type="submit"
 					name="_action"
 					value="cancelBooking"
@@ -261,7 +259,7 @@ export function VendorBookingAction({
 				<input type="hidden" name="bookingId" value={bookingId} />
 				<input type="hidden" name="vendorId" value={vendorId} />
 				<StatusButton
-					status={acceptBookingFetcher.state !== 'idle' ? 'pending' : 'success'}
+					status={acceptBookingFetcher.state !== 'idle' ? 'pending' : 'idle'}
 					type="submit"
 					name="_action"
 					value="acceptBooking"

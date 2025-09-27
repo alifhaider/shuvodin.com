@@ -39,12 +39,10 @@ let vendorImages: Array<{ altText: string; objectKey: string }> | undefined
 export async function getVendorImages() {
 	if (vendorImages) return vendorImages
 
-	return (vendorImages = await Promise.all(
-		Array.from({ length: 10 }, (_, index) => ({
-			altText: `Vendor Image ${index + 1}`,
-			objectKey: `vendor/${index}.jpg`,
-		})),
-	))
+	return (vendorImages = Array.from({ length: 10 }, (_, index) => ({
+		altText: `Vendor Image ${index + 1}`,
+		objectKey: `vendor/${index}.jpg`,
+	})))
 }
 
 let userImages: Array<{ objectKey: string }> | undefined
