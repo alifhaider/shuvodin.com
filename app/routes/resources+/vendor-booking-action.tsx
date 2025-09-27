@@ -126,7 +126,6 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 
 	async function acceptBooking(formData: FormData) {
-		await requireVendorId(request)
 		const submission = parseWithZod(formData, {
 			schema: CreateBookingAcceptSchema(null, {
 				checkVendorBookingLimit: async (bookingId, vendorId) => {
