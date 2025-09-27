@@ -65,9 +65,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		where: { username: params.username },
 	}
 
+	const user = await prisma.user.findFirst(baseSelect)
+	invariantResponse(user, 'User not found', { status: 404 })
+
+	const isOwner = loggedInUserId === user.id
+	const isVendor = !!user.vendor
+
 	// If user is viewing their own profile, include private data
-	if (loggedInUserId) {
-		const user = await prisma.user.findFirst({
+	if (isOwner) {
+		const userWithPrivateData = await prisma.user.findFirst({
 			include: {
 				...baseSelect.include,
 				favorites: {
@@ -94,25 +100,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 						comment: true,
 						createdAt: true,
 						vendor: { select: { businessName: true, slug: true } },
-					},
-				},
-				vendor: {
-					select: {
-						id: true,
-						slug: true,
-						businessName: true,
-						rating: true,
-						vendorType: { select: { name: true } },
-						_count: {
-							select: {
-								bookings: {
-									where: {
-										status: { in: ['confirmed'] },
-										date: { lt: new Date() },
-									},
-								},
-							},
-						},
 					},
 				},
 				bookings: {
@@ -150,16 +137,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			where: baseSelect.where,
 		})
 
-		invariantResponse(user, 'User not found', { status: 404 })
+		invariantResponse(userWithPrivateData, 'User not found', { status: 404 })
 
-		const vendorId = user.vendor?.id
-		const isOwner = loggedInUserId === user.id
-		const isVendor = !!user.vendor
+		const vendorId = userWithPrivateData.vendor?.id
 
 		if (!vendorId) {
 			return {
-				user,
-				userJoinedDisplay: user.createdAt.toLocaleDateString(),
+				user: userWithPrivateData,
+				userJoinedDisplay: userWithPrivateData.createdAt.toLocaleDateString(),
 				isOwner,
 				loggedInUserId,
 				isVendor,
@@ -209,8 +194,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 			groupedCounts.find((g) => g.status === 'confirmed')?._count.status ?? 0
 
 		return {
-			user,
-			userJoinedDisplay: user.createdAt.toLocaleDateString(),
+			user: userWithPrivateData,
+			userJoinedDisplay: userWithPrivateData.createdAt.toLocaleDateString(),
 			isOwner,
 			loggedInUserId,
 			isVendor,
@@ -221,24 +206,28 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 		}
 	}
 
-	// For non-logged-in users or users viewing other profiles
-	const user = await prisma.user.findFirst(baseSelect)
-
-	invariantResponse(user, 'User not found', { status: 404 })
-
-	const isVendor = !!user.vendor
-
+	// For non-owners (logged-in users viewing other profiles or non-logged-in users)
 	return {
 		user: {
 			...user,
+			// Explicitly set private data to null/empty for non-owners
 			favorites: [],
 			reviews: [],
-			vendor: user.vendor,
 			bookings: [],
+			// Keep vendor info public but remove sensitive vendor data
+			vendor: user.vendor
+				? {
+						id: user.vendor.id,
+						businessName: user.vendor.businessName,
+						vendorType: user.vendor.vendorType,
+						rating: user.vendor.rating,
+						_count: user.vendor._count,
+					}
+				: null,
 		},
 		userJoinedDisplay: user.createdAt.toLocaleDateString(),
 		isOwner: false,
-		loggedInUserId: null,
+		loggedInUserId,
 		isVendor,
 		vendorPendingBookings: [],
 		vendorUpcomingBookings: [],
