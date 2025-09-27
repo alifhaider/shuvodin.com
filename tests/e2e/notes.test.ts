@@ -81,7 +81,6 @@ function createVendor() {
 		vendorTypeId: '1',
 		mapUrl: '',
 		socialLinks: [],
-
 		phone: faker.phone.number(),
 		isFeatured: false,
 		website: faker.internet.url(),
