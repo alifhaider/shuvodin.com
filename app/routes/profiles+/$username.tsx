@@ -307,8 +307,6 @@ export default function VendorRoute({
 		vendorUpcomingBookingCount,
 	} = loaderData
 
-	console.log('isVendor', isVendor)
-
 	function getInitials(name: string) {
 		return name
 			.split(' ')
