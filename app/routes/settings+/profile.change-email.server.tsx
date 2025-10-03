@@ -79,7 +79,7 @@ export function EmailChangeEmail({
 		<E.Html lang="en" dir="ltr">
 			<E.Container>
 				<h1>
-					<E.Text>ShuvoDin Bari Email Change</E.Text>
+					<E.Text>ShuvoDin Email Change</E.Text>
 				</h1>
 				<p>
 					<E.Text>
