@@ -96,7 +96,7 @@ export default function PasswordCreate({ actionData }: Route.ComponentProps) {
 			<div className="mb-6">
 				<div className="mb-2 flex items-center gap-2">
 					<Icon name="key" className="h-6 w-6" />
-					<h1 className="text-2xl font-bold">Change Password</h1>
+					<h1 className="text-2xl font-bold">Create Password</h1>
 				</div>
 				<p className="text-muted-foreground">
 					Update your password to keep your account secure. Choose a strong
