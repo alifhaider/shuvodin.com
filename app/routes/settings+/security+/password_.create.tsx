@@ -76,7 +76,7 @@ export async function action({ request }: Route.ActionArgs) {
 		},
 	})
 
-	return redirect(`/settings/profile`, { status: 302 })
+	return redirect(`/settings/account`, { status: 302 })
 }
 
 export default function PasswordCreate({ actionData }: Route.ComponentProps) {
