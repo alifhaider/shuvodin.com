@@ -36,7 +36,7 @@ function getStatusColor(status: string) {
 
 export const meta = ({ data }: Route.MetaArgs) => {
 	return [
-		{ title: `${data?.user.username} / ShuvoDin` },
+		{ title: `${data?.user.name ?? data?.user.username} / ShuvoDin` },
 		{
 			name: 'description',
 			content: `ShuvoDin ${data?.user.name || data?.user.username} Profile!`,
