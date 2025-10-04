@@ -54,7 +54,7 @@ export default function TwoFactorPage({ loaderData }: Route.ComponentProps) {
 		<div className="space-y-6">
 			<Card>
 				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
+					<CardTitle className="flex items-center gap-2 font-sans">
 						<Icon name="shield" className="h-5 w-5" />
 						Two-Factor Authentication
 						{loaderData.is2FAEnabled && (
@@ -73,9 +73,9 @@ export default function TwoFactorPage({ loaderData }: Route.ComponentProps) {
 				<CardContent className="space-y-6">
 					{!loaderData.is2FAEnabled ? (
 						<>
-							<Alert variant="destructive" className="w-max">
-								<Icon name="triangle-alert" className="h-4 w-4" />
-								<AlertTitle>
+							<Alert variant="destructive" className="flex w-max items-center">
+								<Icon name="triangle-alert" className="mt-1 h-4 w-4" />
+								<AlertTitle className="mb-0 font-sans text-base">
 									Two-factor authentication is currently{' '}
 									<strong>disabled</strong>. Your account is less secure without
 									2FA.
@@ -86,10 +86,12 @@ export default function TwoFactorPage({ loaderData }: Route.ComponentProps) {
 								<div className="flex items-start gap-3">
 									<Icon
 										name="shield-check"
-										className="mt-0.5 h-5 w-5 text-green-600"
+										className="h-5 w-5 text-green-600"
 									/>
 									<div>
-										<h3 className="font-semibold">Enhanced Security</h3>
+										<h3 className="font-sans font-semibold">
+											Enhanced Security
+										</h3>
 										<p className="text-muted-foreground text-sm">
 											Protect your account even if your password is compromised.
 										</p>
@@ -97,12 +99,11 @@ export default function TwoFactorPage({ loaderData }: Route.ComponentProps) {
 								</div>
 
 								<div className="flex items-start gap-3">
-									<Icon
-										name="smartphone"
-										className="mt-0.5 h-5 w-5 text-blue-600"
-									/>
+									<Icon name="smartphone" className="h-5 w-5 text-blue-600" />
 									<div>
-										<h3 className="font-semibold">Authenticator App</h3>
+										<h3 className="font-sans font-semibold">
+											Authenticator App
+										</h3>
 										<p className="text-muted-foreground text-sm">
 											Use{' '}
 											<a className="underline" href="https://1password.com/">

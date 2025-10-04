@@ -128,11 +128,13 @@ export default function ChangeEmailPage({
 				</CardHeader>
 				<CardContent className="space-y-6">
 					<Alert className="w-max">
-						<AlertTitle className="space-x-2">
+						<AlertTitle className="space-x-2 font-sans">
 							<Icon name="shield" className="h-4 w-4" />
 							<span>
 								Your current email address is:{' '}
-								<strong>{loaderData.user.email}</strong>
+								<strong className="text-primary">
+									{loaderData.user.email}
+								</strong>
 							</span>
 						</AlertTitle>
 					</Alert>

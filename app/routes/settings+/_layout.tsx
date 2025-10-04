@@ -43,7 +43,7 @@ const navigationItems = [
 				title: 'Two-Factor Authentication',
 				href: '/settings/security/2FA',
 				type: 'default',
-				icon: 'lock',
+				icon: 'monitor-smartphone',
 				description: 'Secure your account with 2FA',
 			},
 			{
@@ -57,7 +57,7 @@ const navigationItems = [
 				title: 'Manage Passkeys',
 				href: '/settings/security/passkeys',
 				type: 'default',
-				icon: 'key',
+				icon: 'lock',
 				description: 'Biometric and security keys',
 			},
 		],
