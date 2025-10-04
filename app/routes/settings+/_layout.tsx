@@ -12,9 +12,9 @@ import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
+import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/_layout'
 import { type IconName } from '@/icon-name'
-import { cn } from '#app/utils/misc.tsx'
 
 const navigationItems = [
 	{
@@ -140,7 +140,11 @@ function SettingsNavigation() {
 									<Icon name={item.icon as IconName} />
 									<div className="flex-1">
 										<div className="font-medium">{item.title}</div>
-										<div className="text-muted-foreground text-xs">
+										<div
+											className={cn('text-muted-foreground text-xs', {
+												'text-destructive': item.type === 'destructive',
+											})}
+										>
 											{item.description}
 										</div>
 									</div>
