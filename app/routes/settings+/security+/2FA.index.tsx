@@ -120,7 +120,7 @@ export default function TwoFactorPage({ loaderData }: Route.ComponentProps) {
 									name="intent"
 									value="enable"
 									status={
-										enable2FAFetcher.state === 'loading' ? 'pending' : 'idle'
+										enable2FAFetcher.state !== 'idle' ? 'pending' : 'idle'
 									}
 								>
 									Enable Two-Factor Authentication
