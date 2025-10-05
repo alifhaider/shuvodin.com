@@ -104,7 +104,7 @@ function EmailChangeNoticeEmail({ userId }: { userId: string }) {
 				</h1>
 				<p>
 					<E.Text>
-						We're writing to let you know that your ShivoDin email has been
+						We're writing to let you know that your ShuvoDin email has been
 						changed.
 					</E.Text>
 				</p>
