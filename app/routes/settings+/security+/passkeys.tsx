@@ -99,6 +99,10 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 		try {
 			setError(null)
 			const resp = await fetch('/webauthn/registration')
+			if (!resp.ok) {
+				const errorText = await resp.text();
+				throw new Error(`Failed to fetch registration options: ${resp.status} ${resp.statusText} - ${errorText}`);
+			}
 			const jsonResult = await resp.json()
 			const parsedResult = RegistrationOptionsSchema.parse(jsonResult)
 
