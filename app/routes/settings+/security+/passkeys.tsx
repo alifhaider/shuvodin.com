@@ -40,7 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
 			)
 		}
 
-		await prisma.passkey.delete({
+		await prisma.passkey.deleteMany({
 			where: {
 				id: passkeyId,
 				userId, // Ensure the passkey belongs to the user
