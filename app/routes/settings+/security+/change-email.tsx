@@ -145,7 +145,7 @@ export default function ChangeEmailPage({
 							inputProps={{
 								...getInputProps(fields.email, { type: 'email' }),
 								placeholder: 'Enter your new email address',
-
+								className: 'max-w-lg',
 								autoComplete: 'email',
 							}}
 							errors={fields.email.errors}
