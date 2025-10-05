@@ -425,7 +425,7 @@ export default function VendorRoute({
 
 						<div className="flex gap-3">
 							<Button asChild variant="outline" size="sm">
-								<Link to="/settings/profile">
+								<Link to="/settings/account">
 									<Icon name="settings" className="mr-2 h-4 w-4" />
 									Settings
 								</Link>

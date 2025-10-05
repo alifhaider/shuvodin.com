@@ -129,7 +129,7 @@ export default function DownloadPage() {
 				<Button asChild>
 					<Link
 						reloadDocument
-						download="my-daktarbari-data.pdf"
+						download="my-shuvodin-data.pdf"
 						to="/resources/download-user-data"
 					>
 						<Icon name="download" className="mr-2 h-4 w-4" />
