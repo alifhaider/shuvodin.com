@@ -9,12 +9,11 @@ import {
 	BreadcrumbSeparator,
 } from '#app/components/ui/breadcrumb.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
+import { type IconName, Icon } from '#app/components/ui/icon.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { cn } from '#app/utils/misc.tsx'
 import { type Route } from './+types/_layout'
-import { type IconName } from '#app/components/ui/icon.tsx'
 
 const navigationItems = [
 	{
