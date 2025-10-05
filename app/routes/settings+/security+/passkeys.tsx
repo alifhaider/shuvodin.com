@@ -94,7 +94,8 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 	const revalidator = useRevalidator()
 	const [error, setError] = useState<string | null>(null)
 
-	async function handlePasskeyRegistration() {
+	async function handlePasskeyRegistration(e: React.FormEvent) {
+		e.preventDefault()
 		try {
 			setError(null)
 			const resp = await fetch('/webauthn/registration')
@@ -138,7 +139,7 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 			<div className="space-y-6">
 				<Alert>
 					<Icon name="info" className="h-4 w-4" />
-					<AlertTitle>
+					<AlertTitle className="font-sans text-sm">
 						Passkeys use your device's built-in security features like Face ID,
 						Touch ID, or Windows Hello for authentication.
 					</AlertTitle>
@@ -147,8 +148,8 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 				<Spacer size="4xs" />
 
 				<div className="flex items-center justify-between">
-					<h2 className="text-lg font-semibold">Your Passkeys</h2>
-					<form action={handlePasskeyRegistration}>
+					<h2 className="font-sans text-lg font-semibold">Your Passkeys</h2>
+					<form onSubmit={handlePasskeyRegistration}>
 						<Button type="submit">
 							<Icon name="plus" className="mr-2 h-4 w-4" />
 							Register New Passkey
