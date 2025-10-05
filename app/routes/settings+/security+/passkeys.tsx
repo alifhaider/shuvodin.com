@@ -198,7 +198,8 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 										size="sm"
 										className="flex items-center gap-2"
 									>
-										<Icon name="trash">Delete</Icon>
+										<Icon name="trash" />
+										Delete
 									</Button>
 								</Form>
 							</div>
