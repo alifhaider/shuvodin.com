@@ -38,7 +38,7 @@ export async function action({ request }: Route.ActionArgs) {
 	await prisma.verification.delete({
 		where: { target_type: { target: userId, type: twoFAVerificationType } },
 	})
-	return redirectWithToast('/settings/profile/2FA', {
+	return redirectWithToast('/settings/security/2FA', {
 		title: '2FA Disabled',
 		description: 'Two factor authentication has been disabled.',
 	})

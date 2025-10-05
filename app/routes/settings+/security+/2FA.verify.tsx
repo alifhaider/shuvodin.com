@@ -100,16 +100,16 @@ export async function action({ request }: Route.ActionArgs) {
 			await prisma.verification.deleteMany({
 				where: { type: twoFAVerifyVerificationType, target: userId },
 			})
-			return redirect('/settings/profile/two-factor')
+			return redirect('/settings/security/2FA')
 		}
 		case 'verify': {
 			await prisma.verification.update({
 				where: {
 					target_type: { type: twoFAVerifyVerificationType, target: userId },
 				},
-				data: { type: twoFAVerificationType },
+				data: { type: twoFAVerificationType, target: userId },
 			})
-			return redirectWithToast('/settings/profile/two-factor', {
+			return redirectWithToast('/settings/security/2FA', {
 				type: 'success',
 				title: 'Enabled',
 				description: 'Two-factor authentication has been enabled.',
