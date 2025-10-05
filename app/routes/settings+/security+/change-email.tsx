@@ -1,9 +1,16 @@
 import { getFormProps, getInputProps, useForm } from '@conform-to/react'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { data, redirect, Form } from 'react-router'
+import { data, Form, redirect } from 'react-router'
 import { z } from 'zod'
 import { ErrorList, Field } from '#app/components/forms.tsx'
+import { Alert, AlertTitle } from '#app/components/ui/alert.tsx'
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '#app/components/ui/card.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import {
@@ -16,17 +23,10 @@ import { sendEmail } from '#app/utils/email.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { EmailSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
-import { type Route } from './+types/profile.change-email.ts'
-import { EmailChangeEmail } from './profile.change-email.server.tsx'
-import { type BreadcrumbHandle } from './profile.tsx'
-
-export const handle: BreadcrumbHandle & SEOHandle = {
-	breadcrumb: <Icon name="envelope-closed">Change Email</Icon>,
-	getSitemapEntries: () => null,
-}
+import { type Route } from './+types/change-email'
+import { EmailChangeEmail } from './change-email.server'
 
 export const newEmailAddressSessionKey = 'new-email-address'
-
 const ChangeEmailSchema = z.object({
 	email: EmailSchema,
 })
@@ -79,7 +79,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const response = await sendEmail({
 		to: submission.value.email,
-		subject: 'ShuvoDin Email Change Verification',
+		subject: `ShuvoDin Email Change Verification`,
 		react: <EmailChangeEmail verifyUrl={verifyUrl.toString()} otp={otp} />,
 	})
 
@@ -99,7 +99,7 @@ export async function action({ request }: Route.ActionArgs) {
 	}
 }
 
-export default function ChangeEmailIndex({
+export default function ChangeEmailPage({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
@@ -114,33 +114,51 @@ export default function ChangeEmailIndex({
 
 	const isPending = useIsPending()
 	return (
-		<div>
-			<h1 className="text-h1">Change Email</h1>
-			<p>You will receive an email at the new email address to confirm.</p>
-			<p>
-				An email notice will also be sent to your old address{' '}
-				{loaderData.user.email}.
-			</p>
-			<div className="mx-auto mt-5 max-w-sm">
-				<Form method="POST" {...getFormProps(form)}>
-					<Field
-						labelProps={{ children: 'New Email' }}
-						inputProps={{
-							...getInputProps(fields.email, { type: 'email' }),
-							autoComplete: 'email',
-						}}
-						errors={fields.email.errors}
-					/>
-					<ErrorList id={form.errorId} errors={form.errors} />
-					<div>
+		<div className="space-y-6">
+			<Card>
+				<CardHeader>
+					<CardTitle className="flex items-center gap-2">
+						<Icon name="mail" className="h-5 w-5" />
+						Change Email Address
+					</CardTitle>
+					<CardDescription>
+						Update your email address. You'll need to verify your new email
+						before the change takes effect.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-6">
+					<Alert className="w-max">
+						<AlertTitle className="space-x-2 font-sans">
+							<Icon name="shield" className="h-4 w-4" />
+							<span>
+								Your current email address is:{' '}
+								<strong className="text-primary">
+									{loaderData.user.email}
+								</strong>
+							</span>
+						</AlertTitle>
+					</Alert>
+
+					<Form method="POST" {...getFormProps(form)} className="space-y-4">
+						<Field
+							labelProps={{ children: 'New Email Address' }}
+							inputProps={{
+								...getInputProps(fields.email, { type: 'email' }),
+								placeholder: 'Enter your new email address',
+								className: 'max-w-lg',
+								autoComplete: 'email',
+							}}
+							errors={fields.email.errors}
+						/>
+						<ErrorList id={form.errorId} errors={form.errors} />
 						<StatusButton
 							status={isPending ? 'pending' : (form.status ?? 'idle')}
 						>
 							Send Confirmation
 						</StatusButton>
-					</div>
-				</Form>
-			</div>
+					</Form>
+				</CardContent>
+			</Card>
 		</div>
 	)
 }

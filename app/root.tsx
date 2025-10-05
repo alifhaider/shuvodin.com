@@ -241,15 +241,25 @@ function App() {
 						{user ? (
 							<UserDropdown />
 						) : (
-							<Button variant="ghost" size="sm">
-								Sign In
+							<Button asChild variant="ghost" size="sm">
+								<Link to="/login" prefetch="intent">
+									Sign In
+								</Link>
 							</Button>
 						)}
-						<Button size="sm" asChild>
-							<Link to="/vendors/onboarding/hint" prefetch="intent">
-								Join as Vendor
-							</Link>
-						</Button>
+						{user?.vendor?.id ? (
+							<Button size="sm" asChild>
+								<Link to={`/vendors/${user.vendor.slug}`} prefetch="intent">
+									Vendor Profile
+								</Link>
+							</Button>
+						) : (
+							<Button size="sm" asChild>
+								<Link to="/vendors/onboarding/hint" prefetch="intent">
+									Join as Vendor
+								</Link>
+							</Button>
+						)}
 					</div>
 				</div>
 			</header>

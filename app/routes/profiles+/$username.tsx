@@ -36,7 +36,7 @@ function getStatusColor(status: string) {
 
 export const meta = ({ data }: Route.MetaArgs) => {
 	return [
-		{ title: `${data?.user.username} / ShuvoDin` },
+		{ title: `${data?.user.name ?? data?.user.username} / ShuvoDin` },
 		{
 			name: 'description',
 			content: `ShuvoDin ${data?.user.name || data?.user.username} Profile!`,
@@ -425,7 +425,7 @@ export default function VendorRoute({
 
 						<div className="flex gap-3">
 							<Button asChild variant="outline" size="sm">
-								<Link to="/settings/profile">
+								<Link to="/settings/account">
 									<Icon name="settings" className="mr-2 h-4 w-4" />
 									Settings
 								</Link>

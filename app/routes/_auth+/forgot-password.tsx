@@ -114,7 +114,7 @@ function ForgotPasswordEmail({
 }
 
 export const meta: Route.MetaFunction = () => {
-	return [{ title: 'Password Recovery for Epic Notes' }]
+	return [{ title: 'Password Recovery for ShuvoDin' }]
 }
 
 export default function ForgotPasswordRoute() {
