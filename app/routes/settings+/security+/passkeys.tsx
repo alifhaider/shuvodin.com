@@ -99,10 +99,6 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 		try {
 			setError(null)
 			const resp = await fetch('/webauthn/registration')
-			if (!resp.ok) {
-				const errorText = await resp.text();
-				throw new Error(`Failed to fetch registration options: ${resp.status} ${resp.statusText} - ${errorText}`);
-			}
 			const jsonResult = await resp.json()
 			const parsedResult = RegistrationOptionsSchema.parse(jsonResult)
 
@@ -224,10 +220,12 @@ export default function PasskeysPage({ loaderData }: Route.ComponentProps) {
 							Register your first passkey to enable secure, passwordless
 							authentication.
 						</p>
-						<Button className="mt-4">
-							<Icon name="plus" className="mr-2 h-4 w-4" />
-							Register Your First Passkey
-						</Button>
+						<form onSubmit={handlePasskeyRegistration}>
+							<Button className="mt-4">
+								<Icon name="plus" className="mr-2 h-4 w-4" />
+								Register Your First Passkey
+							</Button>
+						</form>
 					</div>
 				)}
 			</div>
