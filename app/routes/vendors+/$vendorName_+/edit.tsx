@@ -1,7 +1,7 @@
 import Breadcrumb from '#app/components/breadcrumb.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
-import { Route } from './+types/edit'
+import { type Route } from './+types/edit'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
 	await requireUserId(request)
