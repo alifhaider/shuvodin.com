@@ -57,7 +57,7 @@ export const LinksSchema = z.object({
 
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireUserId(request)
-	redirect('/vendors/onboarding/general')
+	return redirect('/vendors/onboarding/general')
 }
 
 export default function OnboardingVendor() {
