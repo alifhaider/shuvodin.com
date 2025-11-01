@@ -333,7 +333,7 @@ export default function VendorsPage({
 									Get Quote
 								</Button>
 
-								<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+								<button className="border-primary text-primary hover:text-accent-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
 									<Icon name="share" className="h-5 w-5" />
 									<span className="sr-only">Share</span>
 								</button>
@@ -341,6 +341,7 @@ export default function VendorsPage({
 								<FavoriteVendorForm
 									vendorId={vendor.id}
 									isFavorited={isFavorited}
+									size="lg"
 								/>
 							</div>
 						</div>
