@@ -21,7 +21,7 @@ const LinksSchema = z.object({
 	socialLinks: z
 		.array(
 			z.object({
-				platform: z.string().min(1, 'Platform is required').optional(),
+				platform: z.string().min(1, 'Platform is required').or(z.literal('')),
 				url: z.string().url('Invalid URL').optional(),
 			}),
 		)
