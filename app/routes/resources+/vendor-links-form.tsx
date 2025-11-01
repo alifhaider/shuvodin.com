@@ -42,7 +42,7 @@ const LinksSchema = z.object({
 		.union([
 			z
 				.number()
-				.refine((val) => val === undefined || (val >= -180 && val <= 180), {
+				.refine((val) => val >= -180 && val <= 180, {
 					message: 'Longitude must be between -180 and 180',
 				})
 				.optional(),
