@@ -81,8 +81,6 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const { website, socialLinks, latitude, longitude } = submission.value
 
-	console.log({ latitude, longitude, website })
-
 	await prisma.vendor.update({
 		where: { id: vendorId, ownerId: userId },
 		data: {
