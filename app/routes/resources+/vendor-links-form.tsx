@@ -29,7 +29,7 @@ const LinksSchema = z.object({
 		.default([]),
 	latitude: z
 		.number()
-		.refine((val) => val === undefined || (val >= -90 && val <= 90), {
+		.refine((val) => val >= -90 && val <= 90, {
 			message: 'Latitude must be between -90 and 90',
 		})
 		.or(
