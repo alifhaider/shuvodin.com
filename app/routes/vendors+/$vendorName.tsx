@@ -252,7 +252,8 @@ export default function VendorsPage({
 
 						{isOwner ? (
 							<Button asChild variant="secondary">
-								<Link to={isOwner ? `/vendors/${vendor.slug}/edit` : '#'}>
+								<Link to="/vendors/onboarding/general">
+									<Icon name="pencil-2" className="mr-2 h-4 w-4" />
 									Edit Vendor Profile
 								</Link>
 							</Button>

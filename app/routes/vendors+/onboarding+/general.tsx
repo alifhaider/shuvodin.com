@@ -72,24 +72,6 @@ export async function action({ request }: Route.ActionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 
-	const name = formData.get('businessName') ?? ''
-
-	const vendor = await prisma.vendor.findUnique({
-		where: { ownerId: userId },
-		select: {
-			id: true,
-			slug: true,
-		},
-	})
-
-	if (vendor) {
-		return redirectWithToast(`/vendors/${vendor.slug}/edit`, {
-			type: 'error',
-			title: 'Vendor Profile Exists',
-			description: `You have already created a vendor profile named "${name}". You can only create one vendor profile per account.`,
-		})
-	}
-
 	// business name: Studio by Fariha Borsha
 	// primary slug: studio-by-fariha-borsha
 	// check if slug exists in db
