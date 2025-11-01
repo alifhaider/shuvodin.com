@@ -68,6 +68,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			gallery: { take: 4, select: { objectKey: true, altText: true } },
 			owner: {
 				select: {
+					id: true,
 					name: true,
 					image: { select: { objectKey: true, altText: true } },
 				},
@@ -130,6 +131,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	return {
 		vendor,
 		loggedInUserId,
+		isOwner: loggedInUserId === vendor.owner.id,
 		isFavorited: favoriteVendorIds.includes(vendor.id),
 	}
 }
@@ -225,27 +227,37 @@ export default function VendorsPage({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const { vendor, loggedInUserId, isFavorited } = loaderData
+	const { vendor, loggedInUserId, isFavorited, isOwner } = loaderData
 
 	return (
 		<>
 			<section className="from-primary/10 via-accent/5 to-secondary/10 relative bg-gradient-to-r py-6">
 				<div className="container">
-					<Breadcrumb
-						items={[
-							{ to: '/', label: 'Home' },
-							{ to: '/vendors', label: 'Vendors' },
-							{
-								to: `/vendors?vendorType=${vendor.vendorType.slug}`,
-								label: vendor.vendorType.name,
-							},
-							{
-								to: `/vendors/${vendor.slug}`,
-								label: vendor.businessName,
-								isCurrent: true,
-							},
-						]}
-					/>
+					<div className="flex items-center justify-between">
+						<Breadcrumb
+							items={[
+								{ to: '/', label: 'Home' },
+								{ to: '/vendors', label: 'Vendors' },
+								{
+									to: `/vendors?vendorType=${vendor.vendorType.slug}`,
+									label: vendor.vendorType.name,
+								},
+								{
+									to: `/vendors/${vendor.slug}`,
+									label: vendor.businessName,
+									isCurrent: true,
+								},
+							]}
+						/>
+
+						{isOwner ? (
+							<Button asChild variant="secondary">
+								<Link to={isOwner ? `/vendors/${vendor.slug}/edit` : '#'}>
+									Edit Vendor Profile
+								</Link>
+							</Button>
+						) : null}
+					</div>
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
 					<div className="flex justify-between gap-6 py-12">
 						<div className="mr-6 flex-1">
