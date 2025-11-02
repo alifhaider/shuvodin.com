@@ -333,8 +333,8 @@ export default function VendorsPage({
 									Get Quote
 								</Button>
 
-								<button className="border-primary text-primary hover:text-accent-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
-									<Icon name="share" className="h-5 w-5" />
+								<button className="border-primary text-primary hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+									<Icon name="share-2" className="h-5 w-5" />
 									<span className="sr-only">Share</span>
 								</button>
 
@@ -482,7 +482,12 @@ const VenueDetails = ({ venue }: VenueDetailsProps) => {
 								<span className="font-medium">
 									{service.globalService.name}
 								</span>
-								<span className="font-bold">TK: {service.price}/-</span>
+
+								{service.price ? (
+									<span className="font-bold">TK: {service.price}/-</span>
+								) : (
+									<span className="font-light">Included with total price</span>
+								)}
 							</span>
 							<span className="text-muted-foreground text-xs md:text-sm">
 								{service.description}
