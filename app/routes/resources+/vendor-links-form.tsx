@@ -19,32 +19,35 @@ const LinksSchema = z.object({
 	vendorId: z.string(),
 	website: z.union([z.string().url('Invalid URL'), z.literal('')]),
 	socialLinks: z
-		.object({
-			platform: z.string(),
-			url: z.string().url('Invalid URL'),
-		})
-		.array()
-		.optional(),
+		.array(
+			z.object({
+				platform: z.string().min(1, 'Platform is required').or(z.literal('')),
+				url: z.string().url('Invalid URL').optional(),
+			}),
+		)
+		.optional()
+		.default([]),
 	latitude: z
-		.string()
-		.refine((val) => val === '' || !isNaN(Number(val)), {
-			message: 'Latitude must be a number',
-		})
-		.refine((val) => val === '' || (Number(val) >= -90 && Number(val) <= 90), {
-			message: 'Latitude must be between -90 and 90',
-		})
+		.union([
+			z
+				.number()
+				.min(-90, { message: 'Latitude must be between -90 and 90' })
+				.max(90, { message: 'Latitude must be between -90 and 90' }),
+			z.string().refine((val) => val === '' || !isNaN(Number(val)), {
+				message: 'Latitude must be a number',
+			}),
+		])
 		.optional(),
 	longitude: z
-		.string()
-		.refine((val) => val === '' || !isNaN(Number(val)), {
-			message: 'Longitude must be a number',
-		})
-		.refine(
-			(val) => val === '' || (Number(val) >= -180 && Number(val) <= 180),
-			{
-				message: 'Longitude must be between -180 and 180',
-			},
-		)
+		.union([
+			z
+				.number()
+				.min(-180, { message: 'Longitude must be between -180 and 180' })
+				.max(180, { message: 'Longitude must be between -180 and 180' }),
+			z.string().refine((val) => val === '' || !isNaN(Number(val)), {
+				message: 'Longitude must be a number',
+			}),
+		])
 		.optional(),
 })
 
@@ -79,10 +82,10 @@ export async function action({ request }: Route.ActionArgs) {
 	await prisma.vendor.update({
 		where: { id: vendorId, ownerId: userId },
 		data: {
-			website: website || null,
+			website,
 			socialLinks: socialLinks || [],
-			latitude: latitude ? parseFloat(latitude) : null,
-			longitude: longitude ? parseFloat(longitude) : null,
+			latitude: latitude ? parseFloat(String(latitude)) : null,
+			longitude: longitude ? parseFloat(String(longitude)) : null,
 		},
 	})
 
@@ -106,10 +109,12 @@ export function VendorLinksForm({
 		lastResult: actionData?.result,
 		defaultValue: {
 			vendorId: loaderData.vendorId,
-			website: '',
-			socialLinks: [{ platform: '', url: '' }],
-			latitude: '',
-			longitude: '',
+			website: loaderData.vendor.website,
+			socialLinks: (Array.isArray(loaderData.vendor.socialLinks)
+				? loaderData.vendor.socialLinks
+				: []) as { platform?: string | null; url?: string | null }[],
+			latitude: loaderData.vendor.latitude,
+			longitude: loaderData.vendor.longitude,
 		},
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: LinksSchema })
@@ -143,7 +148,7 @@ export function VendorLinksForm({
 						placeholder="Latitude"
 						defaultValue={fields.latitude.value}
 						{...getInputProps(fields.latitude, {
-							type: 'text',
+							type: 'number',
 						})}
 					/>
 					<ErrorList errors={fields.latitude.errors} />
@@ -153,7 +158,7 @@ export function VendorLinksForm({
 						placeholder="Longitude"
 						defaultValue={fields.longitude.value}
 						{...getInputProps(fields.longitude, {
-							type: 'text',
+							type: 'number',
 						})}
 					/>
 					<ErrorList errors={fields.longitude.errors} />

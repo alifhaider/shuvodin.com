@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router'
+import { Outlet, redirect } from 'react-router'
 import { z } from 'zod'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { VendorType } from '#app/utils/misc.tsx'
@@ -57,6 +57,7 @@ export const LinksSchema = z.object({
 
 export async function loader({ request }: Route.LoaderArgs) {
 	await requireUserId(request)
+	return redirect('/vendors/onboarding/general')
 }
 
 export default function OnboardingVendor() {

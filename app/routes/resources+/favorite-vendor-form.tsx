@@ -117,9 +117,11 @@ export function useOptimisticFavoritePreference() {
 export function FavoriteVendorForm({
 	vendorId,
 	isFavorited,
+	size = 'sm',
 }: {
 	vendorId: string
 	isFavorited: boolean
+	size?: 'sm' | 'md' | 'lg'
 }) {
 	const fetcher = useFetcher<typeof action>()
 	const [form] = useForm({
@@ -139,20 +141,33 @@ export function FavoriteVendorForm({
 				animate={{ scale: 1 }}
 				transition={{ type: 'spring', stiffness: 300, damping: 20 }}
 			>
-				<Button
-					variant="ghost"
-					type="submit"
-					disabled={fetcher.state !== 'idle'}
-					className={cn(
-						'hover:text-primary aspect-square cursor-pointer rounded-full fill-transparent p-2',
-						{
-							'text-primary fill-primary': isFavorited,
-						},
-					)}
-				>
-					<span className="sr-only">Favorite</span>
-					<Icon name="heart" className="h-4 w-4" />
-				</Button>
+				{size === 'sm' ? (
+					<Button
+						variant="ghost"
+						type="submit"
+						disabled={fetcher.state !== 'idle'}
+						className={cn(
+							'hover:text-primary aspect-square cursor-pointer rounded-full fill-transparent p-2',
+							{
+								'text-primary fill-primary': isFavorited,
+							},
+						)}
+					>
+						<span className="sr-only">Shortlist</span>
+						<Icon name="heart" className="h-4 w-4" />
+					</Button>
+				) : (
+					<button className="border-primary text-primary group hover:text-accent-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+						<Icon
+							name="heart"
+							className={cn(
+								'group-hover:fill-primary group-hover:text-primary h-5 w-5 fill-transparent',
+								{ 'fill-primary text-primary': isFavorited },
+							)}
+						/>
+						<span className="sr-only">Shortlist</span>
+					</button>
+				)}
 			</motion.div>
 		</fetcher.Form>
 	)

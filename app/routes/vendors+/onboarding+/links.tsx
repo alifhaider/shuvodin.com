@@ -1,10 +1,21 @@
 import { VendorLinksForm } from '#app/routes/resources+/vendor-links-form.tsx'
 import { requireVendorId } from '#app/utils/auth.server.ts'
+import { prisma } from '#app/utils/db.server.ts'
 import { type Route } from './+types/links'
 
 export async function loader({ request }: Route.LoaderArgs) {
 	const vendorId = await requireVendorId(request)
-	return { vendorId }
+	const vendor = await prisma.vendor.findUniqueOrThrow({
+		where: { id: vendorId },
+		select: {
+			id: true,
+			website: true,
+			socialLinks: true,
+			latitude: true,
+			longitude: true,
+		},
+	})
+	return { vendorId, vendor }
 }
 
 export default function OnboardingFinal({

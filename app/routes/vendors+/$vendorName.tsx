@@ -68,6 +68,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			gallery: { take: 4, select: { objectKey: true, altText: true } },
 			owner: {
 				select: {
+					id: true,
 					name: true,
 					image: { select: { objectKey: true, altText: true } },
 				},
@@ -130,6 +131,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 	return {
 		vendor,
 		loggedInUserId,
+		isOwner: loggedInUserId === vendor.owner.id,
 		isFavorited: favoriteVendorIds.includes(vendor.id),
 	}
 }
@@ -225,27 +227,38 @@ export default function VendorsPage({
 	loaderData,
 	actionData,
 }: Route.ComponentProps) {
-	const { vendor, loggedInUserId, isFavorited } = loaderData
+	const { vendor, loggedInUserId, isFavorited, isOwner } = loaderData
 
 	return (
 		<>
 			<section className="from-primary/10 via-accent/5 to-secondary/10 relative bg-gradient-to-r py-6">
 				<div className="container">
-					<Breadcrumb
-						items={[
-							{ to: '/', label: 'Home' },
-							{ to: '/vendors', label: 'Vendors' },
-							{
-								to: `/vendors?vendorType=${vendor.vendorType.slug}`,
-								label: vendor.vendorType.name,
-							},
-							{
-								to: `/vendors/${vendor.slug}`,
-								label: vendor.businessName,
-								isCurrent: true,
-							},
-						]}
-					/>
+					<div className="flex items-center justify-between">
+						<Breadcrumb
+							items={[
+								{ to: '/', label: 'Home' },
+								{ to: '/vendors', label: 'Vendors' },
+								{
+									to: `/vendors?vendorType=${vendor.vendorType.slug}`,
+									label: vendor.vendorType.name,
+								},
+								{
+									to: `/vendors/${vendor.slug}`,
+									label: vendor.businessName,
+									isCurrent: true,
+								},
+							]}
+						/>
+
+						{isOwner ? (
+							<Button asChild variant="secondary">
+								<Link to="/vendors/onboarding/general">
+									<Icon name="pencil-2" className="mr-2 h-4 w-4" />
+									Edit Vendor Profile
+								</Link>
+							</Button>
+						) : null}
+					</div>
 					<Gallery gallery={vendor.gallery} uniqueName={vendor.slug} />
 					<div className="flex justify-between gap-6 py-12">
 						<div className="mr-6 flex-1">
@@ -320,7 +333,7 @@ export default function VendorsPage({
 									Get Quote
 								</Button>
 
-								<button className="border-primary text-primary hover:text-secondary-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+								<button className="border-primary text-primary hover:text-accent-foreground hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
 									<Icon name="share" className="h-5 w-5" />
 									<span className="sr-only">Share</span>
 								</button>
@@ -328,6 +341,7 @@ export default function VendorsPage({
 								<FavoriteVendorForm
 									vendorId={vendor.id}
 									isFavorited={isFavorited}
+									size="lg"
 								/>
 							</div>
 						</div>
