@@ -56,8 +56,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 					slug: { contains: vendorType },
 				},
 			}),
-			division: city ? city : undefined,
-			district: address ? address : undefined,
+			...(city && { division: city }),
+			...(address && { district: address }),
 		},
 		select: {
 			id: true,
