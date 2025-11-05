@@ -25,34 +25,30 @@ export function LocationCombobox() {
 
 	const selectedItem = useMemo(() => {
 		// Prioritize division over district if both exist
-		if (currentDivision) {
+		if (currentDivision)
 			return { type: 'division' as const, value: currentDivision }
-		}
-		if (currentDistrict) {
+		if (currentDistrict)
 			return { type: 'district' as const, value: currentDistrict }
-		}
-		if (currentThana) {
-			return { type: 'thana' as const, value: currentThana }
-		}
+		if (currentThana) return { type: 'thana' as const, value: currentThana }
 		return null
 	}, [currentDivision, currentDistrict, currentThana])
 
 	const divisions = useMemo(
 		() =>
 			locationFetcher.data?.divisions.map((division) => ({
-				type: 'division',
+				type: 'division' as const,
 				value: division,
-			})) || [],
+			})) ?? [],
 		[locationFetcher.data],
 	)
 
 	const districts = useMemo(
 		() =>
 			locationFetcher.data?.districts.map((district) => ({
-				type: 'district',
+				type: 'district' as const,
 
 				value: district,
-			})) || [],
+			})) ?? [],
 		[locationFetcher.data],
 	)
 
@@ -61,7 +57,7 @@ export function LocationCombobox() {
 			locationFetcher.data?.thanas?.map((thana) => ({
 				type: 'thana',
 				value: thana,
-			})) || [],
+			})) ?? [],
 		[locationFetcher.data],
 	)
 
@@ -71,7 +67,7 @@ export function LocationCombobox() {
 		id,
 		items,
 		itemToString: (item) => (item ? item.value : ''),
-		selectedItem: selectedItem,
+		selectedItem,
 		onInputValueChange: async ({ inputValue }) => {
 			if (inputValue) {
 				await locationFetcher.submit(
@@ -81,6 +77,7 @@ export function LocationCombobox() {
 			} else {
 				setSearchParams((prev) => {
 					const newParams = new URLSearchParams(prev)
+
 					newParams.delete('division')
 					newParams.delete('district')
 					newParams.delete('thana')
@@ -89,17 +86,16 @@ export function LocationCombobox() {
 			}
 		},
 		onSelectedItemChange: ({ selectedItem }) => {
-			const newSearchParams = new URLSearchParams(searchParams)
+			if (!selectedItem) return
 
-			// Clear both params first
+			const newSearchParams = new URLSearchParams(searchParams)
 			newSearchParams.delete('division')
 			newSearchParams.delete('district')
 			newSearchParams.delete('thana')
 
 			// Then set the selected one
-			if (selectedItem?.value) {
+			if (selectedItem?.value)
 				newSearchParams.set(selectedItem.type, selectedItem.value)
-			}
 
 			setSearchParams(newSearchParams)
 		},
@@ -151,6 +147,7 @@ export function LocationCombobox() {
 								const newParams = new URLSearchParams(prev)
 								newParams.delete('division')
 								newParams.delete('district')
+								newParams.delete('thana')
 								return newParams
 							})
 							cb.reset()
@@ -169,85 +166,52 @@ export function LocationCombobox() {
 					className: clsx(menuClassName, { hidden: !displayMenu }),
 				})}
 			>
-				{displayMenu && divisions.length > 0 && (
-					<>
-						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
-							Divisions
-						</h5>
-						{divisions.map((item, index) => (
-							<li
-								key={`division-${item.value}`}
-								{...cb.getItemProps({
-									item,
-									index,
-									className: cn(
-										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
-										{
-											'bg-accent text-accent-foreground':
-												selectedItem?.value === item.value,
-										},
-									),
-								})}
-							>
-								{item.value}
-							</li>
-						))}
-					</>
-				)}
+				{displayMenu &&
+					items.map((item, index) => {
+						// Dynamically insert category headers
+						const showHeader =
+							(item.type === 'division' && index === 0) ||
+							(item.type === 'district' &&
+								(index === divisions.length ||
+									items[index - 1]?.type !== 'district')) ||
+							(item.type === 'thana' &&
+								(index === divisions.length + districts.length ||
+									items[index - 1]?.type !== 'thana'))
 
-				{displayMenu && districts.length > 0 && (
-					<>
-						<hr className="border-accent mx-4 my-1" />
-						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
-							Districts
-						</h5>
-						{districts.map((district, index) => (
-							<li
-								key={`district-${district.value}`}
-								{...cb.getItemProps({
-									item: district,
-									index: districts.length + index, // Important for correct indexing
-									className: cn(
-										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
-										{
-											'bg-accent text-accent-foreground':
-												selectedItem?.value === district.value,
-										},
-									),
-								})}
-							>
-								{district.value}
-							</li>
-						))}
-					</>
-				)}
-
-				{displayMenu && thanas.length > 0 && (
-					<>
-						<hr className="border-accent mx-4 my-1" />
-						<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
-							Thanas
-						</h5>
-						{thanas.map((thana, index) => (
-							<li
-								key={`thana-${thana.value}`}
-								{...cb.getItemProps({
-									item: thana,
-									index: divisions.length + districts.length + index, // Important for correct indexing
-									className: cn(
-										'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
-										{
-											'bg-accent text-accent-foreground':
-												selectedItem?.value === thana.value,
-										},
-									),
-								})}
-							>
-								{thana.value}
-							</li>
-						))}
-					</>
-				)}
+						return (
+							<div key={`${item.type}-${item.value}`}>
+								{showHeader && (
+									<>
+										{item.type !== 'division' && (
+											<hr className="border-accent mx-4 my-1" />
+										)}
+										<h5 className="mt-4 mb-2 px-2 text-sm font-bold text-gray-950 dark:text-gray-50">
+											{item.type === 'division'
+												? 'Divisions'
+												: item.type === 'district'
+													? 'Districts'
+													: 'Thanas'}
+										</h5>
+									</>
+								)}
+								<li
+									{...cb.getItemProps({
+										item,
+										index,
+										className: cn(
+											'hover:bg-accent hover:text-accent-foreground cursor-pointer px-4 py-2 text-sm',
+											{
+												'bg-accent text-accent-foreground':
+													selectedItem?.value === item.value,
+											},
+										),
+									})}
+								>
+									{item.value}
+								</li>
+							</div>
+						)
+					})}
 			</ul>
 
 			<input type="hidden" value={selectedItem?.value ?? ''} />
