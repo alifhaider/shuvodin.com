@@ -51,9 +51,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const vendors = await prisma.vendor.findMany({
 		where: {
 			businessName: { contains: name },
-			vendorType: {
-				slug: { contains: vendorType ? vendorType : undefined },
-			},
+			...(vendorType && {
+				vendorType: {
+					slug: { contains: vendorType },
+				},
+			}),
 			division: city ? city : undefined,
 			district: address ? address : undefined,
 		},
