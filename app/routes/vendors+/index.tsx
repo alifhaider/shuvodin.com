@@ -349,7 +349,7 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 						{loaderData.vendors.map((vendor) => {
 							const totalGuests =
 								(vendor.venueDetails?.spaces[0]?.sittingCapacity ?? 0) +
-									(vendor.venueDetails?.spaces[0]?.standingCapacity ?? 0) || 0
+								(vendor.venueDetails?.spaces[0]?.standingCapacity ?? 0)
 							return (
 								<a
 									key={vendor.id}
