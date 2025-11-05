@@ -55,7 +55,7 @@ export function LocationCombobox() {
 	const thanas = useMemo(
 		() =>
 			locationFetcher.data?.thanas?.map((thana) => ({
-				type: 'thana',
+				type: 'thana' as const,
 				value: thana,
 			})) ?? [],
 		[locationFetcher.data],
