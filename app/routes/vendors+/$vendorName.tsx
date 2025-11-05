@@ -333,7 +333,7 @@ export default function VendorsPage({
 									Get Quote
 								</Button>
 
-								<button className="border-primary text-primary hover:bg-accent flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
+								<button className="border-primary text-primary hover:bg-accent hover:text-accent-foreground flex aspect-square h-14 cursor-pointer items-center justify-center rounded-full border p-2">
 									<Icon name="share-2" className="h-5 w-5" />
 									<span className="sr-only">Share</span>
 								</button>
