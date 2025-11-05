@@ -39,7 +39,24 @@ export const meta: Route.MetaFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const searchParams = new URL(request.url).searchParams
+	const vendorType = searchParams.get('vendorType') ?? ''
+	const name = searchParams.get('search') ?? ''
+	const city = searchParams.get('city') ?? ''
+	const address = searchParams.get('address') ?? ''
+	const minPrice = searchParams.get('minPrice') ?? ''
+	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+
 	const vendors = await prisma.vendor.findMany({
+		where: {
+			businessName: { contains: name },
+			vendorType: {
+				slug: { contains: vendorType ? vendorType : undefined },
+			},
+			division: city ? city : undefined,
+			district: address ? address : undefined,
+		},
 		select: {
 			id: true,
 			businessName: true,
@@ -74,14 +91,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 		},
 	})
-
-	const searchParams = new URL(request.url).searchParams
-	const vendorType = searchParams.get('vendorType') ?? ''
-	// const city = searchParams.get('city') ?? ''
-	// const address = searchParams.get('address') ?? ''
-	// const minPrice = searchParams.get('minPrice') ?? ''
-	// const maxPrice = searchParams.get('maxPrice') ?? ''
-	// const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
 
 	const filterSchema = getFilterInputs(vendorType)
 
