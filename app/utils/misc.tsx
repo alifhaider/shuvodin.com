@@ -301,3 +301,25 @@ export async function downloadFile(url: string, retries: number = 0) {
 		return downloadFile(url, retries + 1)
 	}
 }
+export function getCapacityRange(capacities: string[]) {
+	const allNumbers = capacities.flatMap((capacity) => {
+		const numbers = capacity
+			.split(/[-]/)
+			.map((part) => {
+				const num = parseInt(part.trim(), 10)
+				return isNaN(num) ? null : num
+			})
+			.filter((num): num is number => num !== null)
+
+		return numbers
+	})
+
+	if (allNumbers.length === 0) {
+		return [undefined, undefined]
+	}
+
+	const minCapacity = Math.min(...allNumbers)
+	const maxCapacity = Math.max(...allNumbers)
+
+	return [minCapacity, maxCapacity]
+}

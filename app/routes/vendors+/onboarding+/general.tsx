@@ -72,12 +72,12 @@ export async function action({ request }: Route.ActionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 
-	// business name: Studio by Fariha Borsha
-	// primary slug: studio-by-fariha-borsha
+	// business name: Kona's Dream Makeover
+	// primary slug: konas-dream-makeover
 	// check if slug exists in db
 	// if exists, append a number to the slug
-	// in db i have studio-by-fariha-borsha, studio-by-fariha-borsha-1, studio-by-fariha-borsha-2
-	// so next slug will be studio-by-fariha-borsha-3
+	// in db i have konas-dream-makeover, konas-dream-makeover-1, konas-dream-makeover-2
+	// so next slug will be konas-dream-makeover-3
 
 	const submission = parseWithZod(formData, { schema: GeneralInfoSchema })
 

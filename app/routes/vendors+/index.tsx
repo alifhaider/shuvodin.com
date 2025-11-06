@@ -28,7 +28,11 @@ import { getUserFavoriteVendorIds } from '#app/utils/auth.server.ts'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
-import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
+import {
+	getCapacityRange,
+	getVendorImgSrc,
+	useDebounce,
+} from '#app/utils/misc.tsx'
 import { FavoriteVendorForm } from '../resources+/favorite-vendor-form.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
@@ -39,7 +43,64 @@ export const meta: Route.MetaFunction = () => {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+	const searchParams = new URL(request.url).searchParams
+	const vendorType = searchParams.get('vendorType') ?? ''
+	const name = searchParams.get('search') ?? ''
+	const city = searchParams.get('city') ?? ''
+	const address = searchParams.get('address') ?? ''
+	const minPrice = searchParams.get('minPrice') ?? ''
+	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const capacities = searchParams.getAll('capacity') ?? []
+	const venueTypes = searchParams.getAll('venueType') ?? []
+	const incluededs = searchParams.getAll('included') ?? []
+	const amenities = searchParams.getAll('amenity') ?? []
+	const eventTypes = searchParams.getAll('event-type') ?? []
+
+	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+
+	const [minCapacity, maxCapacity] = getCapacityRange(capacities)
+	console.log({ minCapacity, maxCapacity, capacities })
+
 	const vendors = await prisma.vendor.findMany({
+		where: {
+			businessName: { contains: name },
+			...(vendorType && {
+				vendorType: {
+					slug: { contains: vendorType },
+				},
+			}),
+			...(city && { division: city }),
+			...(address && { district: address }),
+			venueDetails: {
+				spaces: {
+					some: {
+						sittingCapacity:
+							minCapacity || maxCapacity
+								? {
+										...(minCapacity && { gte: minCapacity }),
+										...(maxCapacity && { lte: maxCapacity }),
+									}
+								: undefined,
+						price:
+							minPrice || maxPrice
+								? {
+										...(minPrice && { gte: parseInt(minPrice, 10) }),
+										...(maxPrice && { lte: parseInt(maxPrice, 10) }),
+									}
+								: undefined,
+					},
+				},
+				eventTypes: {
+					some: eventTypes.length
+						? {
+								globalEventType: {
+									name: { in: eventTypes },
+								},
+							}
+						: undefined,
+				},
+			},
+		},
 		select: {
 			id: true,
 			businessName: true,
@@ -51,6 +112,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 			isFeatured: true,
 			rating: true,
 			gallery: { take: 4, select: { objectKey: true, altText: true } },
+			venueDetails: {
+				select: {
+					spaces: {
+						select: {
+							price: true,
+							sittingCapacity: true,
+							standingCapacity: true,
+						},
+						take: 1,
+						orderBy: { price: 'asc' },
+					},
+				},
+			},
 			reviews: {
 				take: 1,
 				select: {
@@ -61,14 +135,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 			},
 		},
 	})
-
-	const searchParams = new URL(request.url).searchParams
-	const vendorType = searchParams.get('vendorType') ?? ''
-	// const city = searchParams.get('city') ?? ''
-	// const address = searchParams.get('address') ?? ''
-	// const minPrice = searchParams.get('minPrice') ?? ''
-	// const maxPrice = searchParams.get('maxPrice') ?? ''
-	// const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
 
 	const filterSchema = getFilterInputs(vendorType)
 
@@ -324,116 +390,124 @@ export default function VendorsPage({ loaderData }: Route.ComponentProps) {
 					</div>
 
 					<div className="divide-accent-foreground/10 divide-y">
-						{loaderData.vendors.map((vendor) => (
-							<a
-								key={vendor.id}
-								href={`/vendors/${vendor.slug}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="group flex flex-col gap-4 py-4 md:gap-6 lg:flex-row"
-							>
-								<div className="relative h-60 min-w-103">
-									<Img
-										src={getVendorImgSrc(vendor.gallery[0]?.objectKey)}
-										alt={`Vendor ${vendor.id}`}
-										width={412}
-										height={240}
-										className="h-60 w-full rounded-lg object-cover"
-									/>
-
-									{vendor.isFeatured && (
-										<div className="text-primary absolute top-2 left-2 rounded-md bg-gray-700/60 px-2 py-1 text-xs font-bold">
-											Featured
-										</div>
-									)}
-								</div>
-								<div className="w-full space-y-2">
-									<div className="flex items-center justify-between">
-										<h4 className="line-clamp-1 text-xl font-extrabold group-hover:underline">
-											{vendor.businessName}
-										</h4>
-
-										<FavoriteVendorForm
-											vendorId={vendor.id}
-											isFavorited={checkFavorited(vendor.id)}
+						{loaderData.vendors.map((vendor) => {
+							const totalGuests =
+								(vendor.venueDetails?.spaces[0]?.sittingCapacity ?? 0) +
+								(vendor.venueDetails?.spaces[0]?.standingCapacity ?? 0)
+							return (
+								<a
+									key={vendor.id}
+									href={`/vendors/${vendor.slug}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="group flex flex-col gap-4 py-4 md:gap-6 lg:flex-row"
+								>
+									<div className="relative h-60 min-w-103">
+										<Img
+											src={getVendorImgSrc(vendor.gallery[0]?.objectKey)}
+											alt={`Vendor ${vendor.id}`}
+											width={412}
+											height={240}
+											className="h-60 w-full rounded-lg object-cover"
 										/>
+
+										{vendor.isFeatured && (
+											<div className="text-primary absolute top-2 left-2 rounded-md bg-gray-700/60 px-2 py-1 text-xs font-bold">
+												Featured
+											</div>
+										)}
 									</div>
-									<div className="flex items-center">
-										{Array.from({ length: 5 }, (_, index) => (
-											<Icon
-												key={index}
-												name="star"
-												className={clsx(
-													'h-3.5 w-3.5 fill-transparent',
-													index < vendor.rating
-														? 'fill-yellow-500 text-yellow-500'
-														: 'text-gray-300',
-												)}
+									<div className="w-full space-y-2">
+										<div className="flex items-center justify-between">
+											<h4 className="line-clamp-1 text-xl font-extrabold group-hover:underline">
+												{vendor.businessName}
+											</h4>
+
+											<FavoriteVendorForm
+												vendorId={vendor.id}
+												isFavorited={checkFavorited(vendor.id)}
 											/>
-										))}
-										<span className="ml-1 text-base">{vendor.rating}</span>
-
-										<span className="ml-3 text-sm font-medium">
-											<Icon name="map-pin" className="h-4 w-4" />
-											{vendor.address}- {vendor?.district}
-										</span>
-									</div>
-
-									<div className="flex items-center gap-4 font-bold">
-										<div className="flex items-center gap-1">
-											<Icon name="coins" className="h-4 w-4" />
-											<span className="text-sm">Starts at 20000 tk</span>
 										</div>
-										<div className="flex items-center gap-1">
-											<Icon name="users" className="h-4 w-4" />
-											<span className="text-sm">3000 Guests</span>
-										</div>
-									</div>
-
-									<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-										<p className="text-secondary-foreground pb-10 text-sm">
-											{vendor.description}
-										</p>
-									</div>
-									{vendor.reviews.length > 0 && (
-										<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
-											<p>
-												{vendor.reviews[0]?.comment}
-												{vendor.reviews[0] &&
-													vendor.reviews[0]?.comment &&
-													vendor.reviews[0]?.comment?.length > 100 &&
-													'...'}
-												{/* Show "Read More" button if content is truncated */}
-												{vendor.reviews[0] &&
-													vendor.reviews[0]?.comment &&
-													vendor.reviews[0]?.comment?.length > 100 && (
-														<button className="text-primary ml-4 font-semibold">
-															Read More
-														</button>
+										<div className="flex items-center">
+											{Array.from({ length: 5 }, (_, index) => (
+												<Icon
+													key={index}
+													name="star"
+													className={clsx(
+														'h-3.5 w-3.5 fill-transparent',
+														index < vendor.rating
+															? 'fill-yellow-500 text-yellow-500'
+															: 'text-gray-300',
 													)}
-											</p>
+												/>
+											))}
+											<span className="ml-1 text-base">{vendor.rating}</span>
 
-											<span className="text-muted-foreground text-xs font-medium">
-												Reviewed by{' '}
-												<strong>
-													{vendor.reviews[0]?.user.name ??
-														vendor.reviews[0]?.user.username}{' '}
-												</strong>
-												on{' '}
-												{vendor.reviews[0]?.createdAt ? (
-													<strong>
-														{format(
-															vendor.reviews[0]?.createdAt,
-															'MMM dd, yyyy',
-														)}
-													</strong>
-												) : null}
+											<span className="ml-3 text-sm font-medium">
+												<Icon name="map-pin" className="h-4 w-4" />
+												{vendor.address}- {vendor?.district}
 											</span>
 										</div>
-									)}
-								</div>
-							</a>
-						))}
+
+										<div className="flex items-center gap-4 font-bold">
+											<div className="flex items-center gap-1">
+												<Icon name="coins" className="h-4 w-4" />
+												<span className="text-sm">
+													Starts at {vendor.venueDetails?.spaces[0]?.price ?? 0}{' '}
+													tk
+												</span>
+											</div>
+											<div className="flex items-center gap-1">
+												<Icon name="users" className="h-4 w-4" />
+												<span className="text-sm">{totalGuests} Guests</span>
+											</div>
+										</div>
+
+										<div className="max-h-20 max-w-md overflow-y-auto mask-b-from-5% [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+											<p className="text-secondary-foreground pb-10 text-sm">
+												{vendor.description}
+											</p>
+										</div>
+										{vendor.reviews.length > 0 && (
+											<div className="bg-secondary text-secondary-foreground rounded-md px-3 py-2 text-sm">
+												<p>
+													{vendor.reviews[0]?.comment}
+													{vendor.reviews[0] &&
+														vendor.reviews[0]?.comment &&
+														vendor.reviews[0]?.comment?.length > 100 &&
+														'...'}
+													{/* Show "Read More" button if content is truncated */}
+													{vendor.reviews[0] &&
+														vendor.reviews[0]?.comment &&
+														vendor.reviews[0]?.comment?.length > 100 && (
+															<button className="text-primary ml-4 font-semibold">
+																Read More
+															</button>
+														)}
+												</p>
+
+												<span className="text-muted-foreground text-xs font-medium">
+													Reviewed by{' '}
+													<strong>
+														{vendor.reviews[0]?.user.name ??
+															vendor.reviews[0]?.user.username}{' '}
+													</strong>
+													on{' '}
+													{vendor.reviews[0]?.createdAt ? (
+														<strong>
+															{format(
+																vendor.reviews[0]?.createdAt,
+																'MMM dd, yyyy',
+															)}
+														</strong>
+													) : null}
+												</span>
+											</div>
+										)}
+									</div>
+								</a>
+							)
+						})}
 					</div>
 				</div>
 			</section>
