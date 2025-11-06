@@ -37,7 +37,7 @@ export function LocationCombobox() {
 		() =>
 			locationFetcher.data?.divisions.map((division) => ({
 				type: 'division' as const,
-				value: division,
+				value: division as string,
 			})) ?? [],
 		[locationFetcher.data],
 	)
@@ -47,7 +47,7 @@ export function LocationCombobox() {
 			locationFetcher.data?.districts.map((district) => ({
 				type: 'district' as const,
 
-				value: district,
+				value: district as string,
 			})) ?? [],
 		[locationFetcher.data],
 	)
@@ -56,7 +56,7 @@ export function LocationCombobox() {
 		() =>
 			locationFetcher.data?.thanas?.map((thana) => ({
 				type: 'thana' as const,
-				value: thana,
+				value: thana as string,
 			})) ?? [],
 		[locationFetcher.data],
 	)
