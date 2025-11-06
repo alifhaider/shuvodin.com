@@ -294,29 +294,6 @@ const venueFilterInputsSchema: FilterOption[] = [
 		],
 	},
 	{
-		title: 'Indoor/Outdoor',
-		value: 'indoor-outdoor',
-		inputs: [
-			{
-				name: 'indoor',
-				type: 'checkbox',
-				label: 'Indoor',
-			},
-			{
-				name: 'outdoor',
-				type: 'checkbox',
-				label: 'Outdoor',
-				description:
-					'Not Covered,but can often accommodate temporary options like tents and canopies.',
-			},
-			{
-				name: 'outdoor-covered',
-				type: 'checkbox',
-				label: 'Covered outdoor',
-			},
-		],
-	},
-	{
 		title: 'Venue Type',
 		value: 'venue-type',
 		inputs: [
@@ -433,8 +410,8 @@ const venueFilterInputsSchema: FilterOption[] = [
 		],
 	},
 	{
-		title: 'Event Types',
-		value: 'event-types',
+		title: 'Event Type',
+		value: 'event-type',
 		inputs: [
 			{
 				name: 'wedding-ceremony',

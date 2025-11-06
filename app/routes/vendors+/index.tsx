@@ -28,7 +28,11 @@ import { getUserFavoriteVendorIds } from '#app/utils/auth.server.ts'
 import { vendorTypes } from '#app/utils/constants.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getFilterInputs } from '#app/utils/filters.server.ts'
-import { getVendorImgSrc, useDebounce } from '#app/utils/misc.tsx'
+import {
+	getCapacityRange,
+	getVendorImgSrc,
+	useDebounce,
+} from '#app/utils/misc.tsx'
 import { FavoriteVendorForm } from '../resources+/favorite-vendor-form.tsx'
 import { LocationCombobox } from '../resources+/location-combobox'
 import { VendorCombobox } from '../resources+/vendor-combobox'
@@ -46,7 +50,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 	const address = searchParams.get('address') ?? ''
 	const minPrice = searchParams.get('minPrice') ?? ''
 	const maxPrice = searchParams.get('maxPrice') ?? ''
+	const capacities = searchParams.getAll('capacity') ?? []
+	const venueTypes = searchParams.getAll('venueType') ?? []
+	const incluededs = searchParams.getAll('included') ?? []
+	const amenities = searchParams.getAll('amenity') ?? []
+	const eventTypes = searchParams.getAll('event-type') ?? []
+
 	const sortOrder = searchParams.get('sortOrder') ?? 'relevance'
+
+	const [minCapacity, maxCapacity] = getCapacityRange(capacities)
+	console.log({ minCapacity, maxCapacity, capacities })
 
 	const vendors = await prisma.vendor.findMany({
 		where: {
@@ -58,6 +71,35 @@ export async function loader({ request }: Route.LoaderArgs) {
 			}),
 			...(city && { division: city }),
 			...(address && { district: address }),
+			venueDetails: {
+				spaces: {
+					some: {
+						sittingCapacity:
+							minCapacity || maxCapacity
+								? {
+										...(minCapacity && { gte: minCapacity }),
+										...(maxCapacity && { lte: maxCapacity }),
+									}
+								: undefined,
+						price:
+							minPrice || maxPrice
+								? {
+										...(minPrice && { gte: parseInt(minPrice, 10) }),
+										...(maxPrice && { lte: parseInt(maxPrice, 10) }),
+									}
+								: undefined,
+					},
+				},
+				eventTypes: {
+					some: eventTypes.length
+						? {
+								globalEventType: {
+									name: { in: eventTypes },
+								},
+							}
+						: undefined,
+				},
+			},
 		},
 		select: {
 			id: true,
